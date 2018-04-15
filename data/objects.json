@@ -1,0 +1,22 @@
+{
+    "objects":
+    [
+        {
+            "xMax": 10,
+            "xMin": 0, 
+            "yMax": 100, 
+            "yMin": 90, 
+            "className": "cup", 
+            "classID": 0
+        },
+
+        {
+            "xMax": 20,
+            "xMin": 10, 
+            "yMax": 10, 
+            "yMin": 0, 
+            "className": "cup", 
+            "classID": 0
+        }        
+    ]
+}
