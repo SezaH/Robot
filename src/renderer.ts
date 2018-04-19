@@ -17,6 +17,30 @@ document.getElementById('run-btn').addEventListener('click', () => {
 
 });
 
+document.getElementById('photo-btn').addEventListener('click', () => {
+    console.log('hello photo function');
+
+
+
+
+    // Prefer camera resolution nearest to 1280x720.
+    var constraints = { audio: false, video: true }; 
+
+    navigator.mediaDevices.getUserMedia(constraints)
+    .then(function(mediaStream) {
+      var video = document.querySelector('video');
+      console.log('hello 1');
+      video.srcObject = mediaStream;
+      console.log('hello 2');
+      video.onloadedmetadata = function(e) {
+        video.play();
+      };
+    })
+    .catch(function(err) { console.log(err.name + ": " + err.message); }); // always check for errors at the end.
+
+
+
+});
 
 interface ILabeled {
     xMax: number;
