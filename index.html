@@ -13,6 +13,52 @@
   <button id="browse-btn">Browse</button>
   <button id="run-btn">Run</button>
   <button id="photo-btn">Take Image</button>
+  <br>
+  <br>
+  <form id="serial-frm">
+    port: <input type="text" name="port" value="\dev\tty.usbmodem1421">
+    test: <input type="text" name="test">
+  </form>
+  <form id="belt-coordinates-frm">
+    <br>
+    <p>belt coordinate points</p><br>
+    x1: <input type="number" value = 0>
+    y1: <input type="number" value = 1><br>
+    x2: <input type="number" value = 0>
+    y2: <input type="number" value = 0><br>
+    x3: <input type="number" value = 1>
+    y3: <input type="number" value = 0><br>
+    <br>
+  </form>
+  <form id="robot-coordinates-frm">
+    <p>robot coordinate points</p><br>
+    x1: <input type="number" value = 600>
+    y1: <input type="number" value = 200>
+    z1: <input type="number" value = 0.1><br>
+    x2: <input type="number" value = -200>
+    y2: <input type="number" value = 500>
+    z2: <input type="number" value = 0.1><br>
+    x3: <input type="number" value = 300>
+    y3: <input type="number" value = -200>
+    z3: <input type="number" value = 0.1><br>
+    <br>
+  </form>
+  <button id="calibration-save-btn">Save</button>
+  <button id="calibration-load-btn">Load</button>
+  <br>
+  <br>
+  <form id="item-location">
+    x: <input type="number">
+    y: <input type="number">
+  </form>
+  <br>
+  <p id = "belt-location-p"></p>
+  <br>
+  <button id="compute-btn">Compute Belt Coordinates</button>
+  <br>
+  <br>
+  <button id="connect-btn">Connect</button>
+  <br>
   <video></video>
   <script>
     require('./dist/renderer.js')

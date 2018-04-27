@@ -25,6 +25,8 @@
   },
   "dependencies": {
     "@types/fs-extra": "^5.0.1",
-    "fs-extra": "^5.0.0"
+    "fs-extra": "^5.0.0",
+    "mathjs": "^4.1.2",
+    "serialport": "^6.2.0"
   }
 }
