@@ -1,3 +1,4 @@
+import { DataController } from './data-io';
 import { Item, ItemQueue } from './item_queue';
 import { Util } from './utils';
 
@@ -18,7 +19,7 @@ async function main() {
   console.log('hello');
   obj.display();
 
-
+  DataController.test();
 }
 
 // Binds a function to the 'click' event of the html element with 'browse-btn' id.
