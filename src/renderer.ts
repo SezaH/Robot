@@ -1,6 +1,15 @@
+import * as fs from 'fs-extra';
 import { DataController } from './data-io';
 import { Item, ItemQueue } from './item_queue';
 import { Util } from './utils';
+
+const datafile = './data.json'; // Object bounding boxes returned from CV.
+const labeledImageFile = './labeled.jpg'; // Image returned from CV with bounding boxes.
+const unlabeledImageFile = './unlabeled.jpg'; // Unlabeled image sent to CV.
+const cameraID = 0; // If multiple cameras are present, specify which.
+
+const imageCanvas = document.getElementById('canvas') as HTMLCanvasElement;
+const imageContext = imageCanvas.getContext('2d');
 
 async function main() {
   // Code here runs on page load.
@@ -19,7 +28,28 @@ async function main() {
   console.log('hello');
   obj.display();
 
-  DataController.test();
+  // Watch for new data and load into the itemQueue and draw the image to screen.
+  // Remove the data files when complete.
+  DataController.newData(datafile, labeledImageFile).subscribe(async ({ objects, bitmap }) => {
+    console.log('New data detected: ', objects);
+
+    if (objects === undefined) return;
+
+    for (const object of objects) {
+      // insert into itemQueue
+    }
+
+    imageContext.drawImage(bitmap, 0, 0);
+
+    await Promise.all([
+      fs.remove(datafile),
+      fs.remove(labeledImageFile),
+    ]);
+
+    await Util.delay(100);
+
+    DataController.capture(unlabeledImageFile, 0);
+  });
 }
 
 // Binds a function to the 'click' event of the html element with 'browse-btn' id.

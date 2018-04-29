@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 
 export namespace DataController {
 
+  // Defines a labeled object returned from CV.
   export interface IObject {
     bndbox: {
       xmin: number,
@@ -16,22 +17,36 @@ export namespace DataController {
     id: number;
   }
 
-  function fileChanged(file: string) {
-    return new Observable<string>(observer => {
+
+  /**
+   * @returns An observable that emits whenever the file appears
+   *  or disappears in the directory.
+   * https://nodejs.org/docs/latest/api/fs.html#fs_fs_watch_filename_options_listener
+   * @param file The file to watch for changes.
+   */
+  function fileRenamed(file: string) {
+    return new Observable<void>(observer => {
       const parsedPath = path.parse(file);
       fs.watch(parsedPath.dir, (event, fileName) => {
         if (fileName === parsedPath.base) {
-          observer.next(fileName);
+          observer.next();
         }
       });
     });
   }
 
+
+  /**
+   * @returns An observable that emits whenever both the data file and image file are created.
+   * The obserable emits an array of IObject and the bitmap of the image found.
+   * @param dataFile The json file containing data on the objects detected in the image.
+   * @param imageFile The image file that contains the bounding boxes.
+   */
   export function newData(dataFile: string, imageFile: string) {
     return Observable
       .zip(
-        fileChanged(dataFile),
-        fileChanged(imageFile))
+        fileRenamed(dataFile),
+        fileRenamed(imageFile))
       .concatMap(async () => {
         try {
           const [rawData, rawImage] = await Promise.all([
@@ -49,48 +64,13 @@ export namespace DataController {
       });
   }
 
-  export async function test() {
-    const imageCanvas = document.getElementById('canvas') as HTMLCanvasElement;
-    const imageContext = imageCanvas.getContext('2d');
 
-    newData('./data.json', './image.jpg').subscribe(async ({ objects, bitmap }) => {
-      console.log(objects);
-      if (objects === undefined) return;
-
-      for (const object of objects) {
-        // insert into itemQueue
-      }
-
-      imageContext.drawImage(bitmap, 0, 0);
-    });
-
-    const testObjects = new Array<IObject>();
-
-    testObjects.push({
-      bndbox: {
-        xmax: 20,
-        xmin: 0,
-        ymax: 40,
-        ymin: 10,
-      },
-      id: 1,
-      name: 'cup',
-    }, {
-        bndbox: {
-          xmax: 40,
-          xmin: 1,
-          ymax: 70,
-          ymin: 10,
-        },
-        id: 1,
-        name: 'cup',
-      });
-
-    await fs.writeFile('./data.json', JSON.stringify(testObjects));
-    capture();
-  }
-
-  export function capture() {
-    spawn('python3', ['./src/capture.py']);
+  /**
+   * Triggers a python script to capture a image from the webcam and save it to a directory.
+   * @param imageFile File to save the image to.
+   * @param camera CameraID to capture from.
+   */
+  export function capture(imageFile: string, camera: number) {
+    spawn('python3', ['./src/capture.py', imageFile, camera.toString()]);
   }
 }
