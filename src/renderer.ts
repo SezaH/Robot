@@ -26,9 +26,9 @@ document.getElementById('connect-btn').addEventListener('click', () => {
   var portName = (<HTMLInputElement>x.elements[0]).value;
   console.log(portName);
   var SerialPort = require('serialport');
-  //port = new SerialPort(portName, {
-  //  baudRate: 115200
-  //});
+  port = new SerialPort(portName, {
+    baudRate: 115200
+  });
 
 
 
