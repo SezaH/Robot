@@ -16,5 +16,7 @@
     "node_modules/": true
   },
   "typescript.tsdk": "node_modules\\typescript\\lib",
-  "tslint.autoFixOnSave": true
+  "tslint.autoFixOnSave": true,
+  "python.linting.enabled": false,
+  "python.formatting.provider": "yapf"
 }

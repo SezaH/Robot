@@ -1,3 +1,4 @@
+import { spawn } from 'child_process';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Observable } from 'rxjs';
@@ -86,5 +87,10 @@ export namespace DataController {
       });
 
     await fs.writeFile('./data.json', JSON.stringify(testObjects));
+    capture();
+  }
+
+  export function capture() {
+    spawn('python3', ['./src/capture.py']);
   }
 }
