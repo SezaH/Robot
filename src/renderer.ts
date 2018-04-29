@@ -61,12 +61,18 @@ document.getElementById('compute-btn').addEventListener('click', () => {
                       Number((<HTMLInputElement>robotPoints.elements[7]).value),
                       Number((<HTMLInputElement>robotPoints.elements[8]).value)];
 
-  var beltMatrix = [belt1Vector, belt2Vector];
+  belt1Vector.push(1);
+  belt2Vector.push(1); 
+  belt3Vector.push(1);
 
-  var robotMatrix = [robot1Vector.slice(0,2), robot2Vector.slice(0,2)];
+  var beltMatrix = [belt1Vector, belt2Vector, belt3Vector];
+
+  //var robotMatrix = [robot1Vector.slice(0,2), robot3Vector.slice(0,2)];
+  var robotMatrix = [robot1Vector, robot2Vector, robot3Vector];
 
   var inputVector = [Number((<HTMLInputElement>itemPoints.elements[0]).value),
-                     Number((<HTMLInputElement>itemPoints.elements[1]).value)];
+                     Number((<HTMLInputElement>itemPoints.elements[1]).value),
+                     1];
 
   var testMatrix = [[1,2],[3,4]];
   console.log(beltMatrix);
@@ -79,6 +85,8 @@ document.getElementById('compute-btn').addEventListener('click', () => {
   var transform = math.multiply(math.inv(beltMatrix), robotMatrix);
   console.log("transform: ", transform);
 
+  let output = math.multiply(inputVector, transform);
+  console.log("output: ", output);
 
 });
 
