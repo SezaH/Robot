@@ -4,6 +4,7 @@
   "description": "A robot control panel",
   "scripts": {
     "build": "tsc",
+    "install": "electron-rebuild",
     "watch": "tsc --watch",
     "lint": "tslint -c tslint.json -p tsconfig.json",
     "start": "npm run build && electron --serve --console ./dist/main.js",

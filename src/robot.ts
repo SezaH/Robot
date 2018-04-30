@@ -21,6 +21,6 @@ class Robot {
 }
 
 let robot = new Robot();
-robot.connect("/dev/ttyACM0");
+robot.connect("/dev/tty.usbmodem1421");
 robot.sendMessage("@\r\n");
 robot.receiveMessage();
