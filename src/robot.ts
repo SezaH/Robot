@@ -4,7 +4,7 @@ let SerialPort = require('serialport');
 
 class Robot {
     private isConnected: boolean;
-    private port;
+    private port: any;
     constructor() {
         this.isConnected = false;
     }

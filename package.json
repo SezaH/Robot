@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "description": "A robot control panel",
   "scripts": {
-    "build": "tsc",
     "install": "electron-rebuild",
+    "build": "tsc && copyfiles index.html style.css dist",
     "watch": "tsc --watch",
     "lint": "tslint -c tslint.json -p tsconfig.json",
     "start": "npm run build && electron --serve --console ./dist/main.js",
@@ -21,6 +21,7 @@
   "devDependencies": {
     "electron": "^1.8.6",
     "electron-rebuild": "^1.7.3",
+    "copyfiles": "^2.0.0",
     "electron-reload": "^1.2.2",
     "tslint": "^5.9.1",
     "typescript": "^2.8.1"

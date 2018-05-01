@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Hello World!</title>
+  <base href="">
   <link rel="stylesheet"
         href="./style.css"></link>
 </head>
@@ -60,10 +61,9 @@
   <button id="connect-btn">Connect</button>
   <br>
   <video></video>
-  <script>
-    require('./dist/renderer.js')
-    require('./dist/robot.js')
-  </script>
+  <script>var exports = {};</script>
+  <script type="text/javascript"
+          src="./renderer.js"></script>
 </body>
 
 </html>
