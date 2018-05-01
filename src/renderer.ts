@@ -3,9 +3,9 @@ import { DataController } from './data-io';
 import { Item, ItemQueue } from './item_queue';
 import { Util } from './utils';
 
-const datafile = './data.json'; // Object bounding boxes returned from CV.
-const labeledImageFile = './labeled.jpg'; // Image returned from CV with bounding boxes.
-const unlabeledImageFile = './unlabeled.jpg'; // Unlabeled image sent to CV.
+const datafile = '../../models/research/object_detection/sample/output.json'; // Object bounding boxes returned from CV.
+const labeledImageFile = '../../models/research/object_detection/sample/output.jpg'; //Image returned from CV with bounding boxes.
+const unlabeledImageFile = '../../models/research/object_detection/sample/input.jpg'; // Unlabeled image sent to CV.
 const cameraID = 0; // If multiple cameras are present, specify which.
 
 const imageCanvas = document.getElementById('canvas') as HTMLCanvasElement;
