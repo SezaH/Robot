@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Hello World!</title>
+  <base href="">
   <link rel="stylesheet"
         href="./style.css"></link>
 </head>
@@ -12,12 +13,9 @@
   <h1>ROBOT</h1>
   <button id="browse-btn">Browse</button>
   <canvas id="canvas"></canvas>
-  <script>
-    require('./dist/renderer.js')
-  </script>
-
-
-
+  <script>var exports = {};</script>
+  <script type="text/javascript"
+          src="./renderer.js"></script>
 </body>
 
 </html>
