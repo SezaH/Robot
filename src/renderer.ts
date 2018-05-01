@@ -13,6 +13,7 @@ const imageContext = imageCanvas.getContext('2d');
 
 async function main() {
   // Code here runs on page load.
+  DataController.capture(unlabeledImageFile, 0);
 
   const cup1: Item = { x: 10, y: 10, z: 10, encoderValue: 10, classID: 1, className: 'cup' };
   const cup2: Item = { x: 11, y: 11, z: 11, encoderValue: 11, classID: 1, className: 'cup' };
