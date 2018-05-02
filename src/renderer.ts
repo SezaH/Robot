@@ -3,23 +3,24 @@ import { DataController } from './data-io';
 import { Item, ItemQueue } from './item_queue';
 import { Util } from './utils';
 
-// Object bounding boxes returned from CV.
-const datafile = '../../models/research/object_detection/sample/output.json';
+/** Object bounding boxes returned from CV. */
+const datafile = '../models/research/object_detection/sample/output.json';
 
-// Image returned from CV with bounding boxes.
-const labeledImageFile = '../../models/research/object_detection/sample/output.jpg';
+/** Image returned from CV with bounding boxes. */
+const labeledImageFile = '../models/research/object_detection/sample/output.jpg';
 
-// Unlabeled image sent to CV.
-const unlabeledImageFile = '../../models/research/object_detection/sample/input.jpg';
+/** Unlabeled image sent to CV. */
+const unlabeledImageFile = '../models/research/object_detection/sample/input.jpg';
 
-const cameraID = 0; // If multiple cameras are present, specify which.
+/** If multiple cameras are present, specify which. */
+const cameraID = 0;
 
 const imageCanvas = document.getElementById('canvas') as HTMLCanvasElement;
 const imageContext = imageCanvas.getContext('2d');
 
 async function main() {
   // Code here runs on page load.
-  DataController.capture(unlabeledImageFile, 0);
+  DataController.capture(unlabeledImageFile, cameraID);
 
   const cup1: Item = { x: 10, y: 10, z: 10, encoderValue: 10, classID: 1, className: 'cup' };
   const cup2: Item = { x: 11, y: 11, z: 11, encoderValue: 11, classID: 1, className: 'cup' };
@@ -55,7 +56,7 @@ async function main() {
 
     await Util.delay(100);
 
-    DataController.capture(unlabeledImageFile, 0);
+    DataController.capture(unlabeledImageFile, cameraID);
   });
 }
 
