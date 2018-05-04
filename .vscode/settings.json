@@ -1,9 +1,9 @@
 {
   "editor.wrappingIndent": "indent",
   "editor.tabSize": 2,
-  "editor.formatOnSave": true,
+  "editor.formatOnSave": false,
   "files.autoSave": "onFocusChange",
-  "html.format.wrapAttributes": "force-aligned",
+  "html.format.wrapAttributes": "auto",
   "editor.renderWhitespace": "all",
   "editor.wordWrapColumn": 80,
   "search.exclude": {

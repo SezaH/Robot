@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "A robot control panel",
   "scripts": {
+    "install": "electron-rebuild",
     "build": "tsc && copyfiles index.html style.css dist",
     "watch": "tsc --watch",
     "lint": "tslint -c tslint.json -p tsconfig.json",
@@ -20,6 +21,8 @@
   "devDependencies": {
     "copyfiles": "^2.0.0",
     "electron": "2.0.0-beta.8",
+    "@types/serialport": "^6.0.1",
+    "electron-rebuild": "^1.7.3",
     "electron-reload": "^1.2.2",
     "tslint": "^5.9.1",
     "typescript": "^2.8.1"
@@ -27,6 +30,8 @@
   "dependencies": {
     "@types/fs-extra": "^5.0.1",
     "fs-extra": "^5.0.0",
-    "rxjs": "^5.4.2"
+    "rxjs": "^5.4.2",
+    "mathjs": "^4.1.2",
+    "serialport": "^6.2.0"
   }
 }

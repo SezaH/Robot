@@ -10,9 +10,123 @@
 </head>
 
 <body>
-  <h1>ROBOT</h1>
+  <h1>Robot<h1>
   <button id="browse-btn">Browse</button>
   <canvas id="canvas"></canvas>
+  <h2>Connection</h2>
+  <form id="serial-frm">
+    Port: <input type="text" name="port" style="width: 20em;" value="/dev/tty.usbmodem1421">
+    Baud Rate: <input type="nuber" name="baudRate" value="115200">
+  </form>
+  <br>
+  <button id="connect-btn">Connect</button>
+  <br>
+  <h2>Raw Interface</h2>
+  Input: <input id="input-command" type="text" style="width: 60em;">
+  <button id="send-btn">send</button>
+  <br>
+  <br>
+  Output:
+  <br>
+  <div style="height:300px;width:600px;border:1px solid #ccc;overflow:auto;">
+    <p id="oputput-p"></p>
+  </div>
+  <h2>Configuration</h2>
+  <form id="configuration-frm">
+    config filename: <input type="text">.json <br>
+    robot speed (mm/min): <input type="number" value="5000"> <br>
+    gripper Z-offest: <input type="number" value="0"> <br>
+    wall Z-offset: <input type="number"> <br>
+  </form>
+  <button id="config-save-btn">Save</button>
+  <button id="config-load-btn">Load</button>
+  <h2>Calibration</h2>
+  <p id = "isCalibrated - p">robot not calibrated</p>
+  <button id="calibrate-btn">Calibrate</button>
+  <form id="belt-coordinates-frm">
+    <br>
+    <p>belt coordinate points</p><br>
+    x1: <input type="number" value="10">
+    y1: <input type="number" value="-10"><br>
+    x2: <input type="number" value="-10">
+    y2: <input type="number" value="-10"><br>
+    x3: <input type="number" value="-10">
+    y3: <input type="number" value="10"><br>
+  </form>
+  <br>
+  <form id="robot-coordinates-frm">
+    <p>robot coordinate points</p><br>
+    x1: <input type="number" value="330">
+    y1: <input type="number" value="-88">
+    z1: <input type="number" value="-697">
+    
+    x2: <input type="number" value="-133">
+    y2: <input type="number" value="-74">
+    z2: <input type="number" value="-744">
+    
+    x3: <input type="number" value="-112">
+    y3: <input type="number" value="159">
+    z3: <input type="number" value="-744">
+    
+  </form>
+  <button id="point1-capture-btn">capture</button> <br>
+  <button id="point2-capture-btn">capture</button> <br>
+  <button id="point3-capture-btn">capture</button> <br>
+  <br>
+  <button id="calibration-save-btn">Save</button>
+  <button id="calibration-load-btn">Load</button>
+  <h3>Calibration Test</h3>
+  <form id="item-location">
+    input belt coordinates:<br>
+    x: <input type="number">
+    y: <input type="number">
+   
+  </form>
+   <button id="test-calibration-btn">Compute</button>
+  output robot coordinates:<br>
+  <p id = "belt-location-p"></p>
+  <br>
+
+  <h2>Control</h2>
+
+  Gripper: 
+  <button id="open-gripper-btn">Open</button>
+  <button id="close-gripper-btn">Close</button>
+  <br>
+  <br>
+
+  Motor Power:
+  <button id="motor-on-btn">On</button>
+  <button id="motor-off-btn">Off</button>
+  <br>
+  <br>
+
+  Current Robot Coordinates:
+  <button id="capture-coordinate">Capture</button>
+  <p id="robot-coordinate-p"></p>
+
+
+  Move To Coordinate:
+  <br>
+  <br>
+  <form id="robot-coordinate-move-frm">
+    <p>robot coordinate points</p>
+    x1: <input type="number" value="0">
+    y1: <input type="number" value="0">
+    z1: <input type="number" value="-500">
+  </form>
+  <button id="robot-coordinate-move-btn">Move</button> <br>
+
+  <br>
+  <form id="belt-coordinate-move-frm">
+    <p>belt coordinate points</p>
+    x1: <input type="number" value="0">
+    y1: <input type="number" value="0">
+  
+  </form>
+  <button id="belt-coordinate-move-btn">Move</button> <br>
+
+
   <script>var exports = {};</script>
   <script type="text/javascript"
           src="./renderer.js"></script>
