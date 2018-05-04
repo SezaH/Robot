@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "@types/fs-extra": "^5.0.1",
-    "fs-extra": "^5.0.0",
-    "priority-queue-ts": "^0.4.1"
+    "fs-extra": "^5.0.0"
   }
 }
