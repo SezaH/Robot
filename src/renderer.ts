@@ -42,26 +42,26 @@ async function main() {
 
   // Watch for new data and load into the itemQueue and draw the image to screen.
   // Remove the data files when complete.
-  DataController.newData(datafile, labeledImageFile).subscribe(async ({ objects, bitmap }) => {
-    console.log('New data detected: ', objects);
+  // DataController.newData(datafile, labeledImageFile).subscribe(async ({ objects, bitmap }) => {
+  //   console.log('New data detected: ', objects);
 
-    if (objects === undefined) return;
+  //   if (objects === undefined) return;
 
-    for (const object of objects) {
-      // insert into itemQueue
-    }
+  //   for (const object of objects) {
+  //     // insert into itemQueue
+  //   }
 
-    imageContext.drawImage(bitmap, 0, 0);
+  //   imageContext.drawImage(bitmap, 0, 0);
 
-    await Promise.all([
-      fs.remove(datafile),
-      fs.remove(labeledImageFile),
-    ]);
+  //   await Promise.all([
+  //     fs.remove(datafile),
+  //     fs.remove(labeledImageFile),
+  //   ]);
 
-    await Util.delay(100);
+  //   await Util.delay(100);
 
-    DataController.capture(unlabeledImageFile, cameraID);
-  });
+  //   DataController.capture(unlabeledImageFile, cameraID);
+  // });
 }
 
 
