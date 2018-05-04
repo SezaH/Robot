@@ -1,5 +1,5 @@
 
-let SerialPort = require('serialport');
+const SerialPort = require('serialport');
 
 
 export class Robot {
@@ -10,84 +10,84 @@ export class Robot {
     constructor() {
         this.isConnected = false;
     }
-    connect(portName: string, baudRate: number) {
-       	this.port = new SerialPort(portName, {baudRate: baudRate});
+    public connect(portName: string, baudRate: number) {
+       	this.port = new SerialPort(portName, {baudRate});
         this.isConnected = true;
         this.port.on('data', (data: any) => {
-            let terminal = document.getElementById("oputput-p") as HTMLParagraphElement;
+            const terminal = document.getElementById('oputput-p') as HTMLParagraphElement;
             terminal.appendChild(document.createTextNode(data.toString()));
      });
     }
 
 
-    sendMessage(message: string){
-	    this.port.write(message + "\r\n");
+    public sendMessage(message: string) {
+	    this.port.write(message + '\r\n');
     }
 
     // currently doesn't do anything because yolo
-    receiveMessage(){
+    public receiveMessage() {
 	console.log(this.port.read());
     }
 
-    calibrate(robotCoordinates: number[][], beltCoordinates: number[][]){
+    public calibrate(robotCoordinates: number[][], beltCoordinates: number[][]) {
 
       // set z values of belt coordinates to 1
       beltCoordinates[0].push(1);
       beltCoordinates[1].push(1);
       beltCoordinates[2].push(1);
 
-      let math = require('mathjs');
+      const math = require('mathjs');
 
       this.transform = math.multiply(math.inv(beltCoordinates), robotCoordinates);
-      console.log("transform: ", this.transform);
+      console.log('transform: ', this.transform);
 
 
     }
 
-    belt2robotCoordinates(x: number, y: number){
+    public belt2robotCoordinates(x: number, y: number) {
 
-      let inputVector = [x, y, 1];
-      let math = require('mathjs');
-      let output = math.multiply(inputVector, this.transform);
+      const inputVector = [x, y, 1];
+      const math = require('mathjs');
+      const output = math.multiply(inputVector, this.transform);
       //console.log("output: ", output);
       return output;
 
     }
 
-    moveToRobotCoordinate(x: number, y:number, z:number){
-        let configFrm = document.getElementById("configuration-frm") as HTMLFormElement;
-        let speed = Number((<HTMLInputElement>configFrm.elements[1]).value);
-        let message = "G0 X" + x + " Y" + y + " Z" + z + " F" + speed;
+    public moveToRobotCoordinate(x: number, y: number, z: number) {
+        const configFrm = document.getElementById('configuration-frm') as HTMLFormElement;
+        const speed = Number((configFrm.elements[1] as HTMLInputElement).value);
+        const message = 'G0 X' + x + ' Y' + y + ' Z' + z + ' F' + speed;
         console.log(message);
-        this.sendMessage("G0 X" + x + " Y" + y + " Z" + z + " F" + speed);
+        this.sendMessage('G0 X' + x + ' Y' + y + ' Z' + z + ' F' + speed);
 
 
     }
 
-    moveToBeltCoordinate(x:number, y:number, zOffset:number){
+    public moveToBeltCoordinate(x: number, y: number, zOffset: number) {
 
-        let coordinates = this.belt2robotCoordinates(x, y);
+        const coordinates = this.belt2robotCoordinates(x, y);
         this.moveToRobotCoordinate(coordinates[0], coordinates[1], coordinates[2] + zOffset);
 
     }
 
-    openGripper(){
+    public openGripper() {
 
     }
 
-    closeGripper(){
+    public closeGripper() {
 
     }
 
-    motorsOn(){
-        this.sendMessage("M17");
+    public motorsOn() {
+        this.sendMessage('M17');
     }
 
-    motorsOff(){
-        this.sendMessage("M18");
+    public motorsOff() {
+        this.sendMessage('M18');
     }
 
-    getCurrentRobotCoordinate(){
+    public getCurrentRobotCoordinate() {
 
     }
 }

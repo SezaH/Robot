@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { Util } from './utils';
 import { Robot } from './robot';
+import { Util } from './utils';
 
 
 
@@ -12,20 +12,20 @@ async function main() {
 }
 
 
-let robot = new Robot();
+const robot = new Robot();
 
 // connect
 document.getElementById('connect-btn').addEventListener('click', async () => {
-    let connectFrm = document.getElementById('serial-frm') as HTMLFormElement;
-    let port = (<HTMLInputElement>connectFrm.elements[0]).value;
-    let baudRate = Number((<HTMLInputElement>connectFrm.elements[1]).value);
+    const connectFrm = document.getElementById('serial-frm') as HTMLFormElement;
+    const port = (connectFrm.elements[0] as HTMLInputElement).value;
+    const baudRate = Number((connectFrm.elements[1] as HTMLInputElement).value);
     //console.log(port, baudRate);
     robot.connect(port, baudRate);
 });
 
 // send message
 document.getElementById('send-btn').addEventListener('click', async () => {
-    let command = (<HTMLInputElement>document.getElementById('input-command')).value;
+    const command = (document.getElementById('input-command') as HTMLInputElement).value;
     robot.sendMessage(command);
 
 });
@@ -33,32 +33,32 @@ document.getElementById('send-btn').addEventListener('click', async () => {
 
 // calibrate
 document.getElementById('calibrate-btn').addEventListener('click', () => {
-    
-    // get data 
-    let beltPoints = document.getElementById('belt-coordinates-frm') as HTMLFormElement;
-    let robotPoints = document.getElementById('robot-coordinates-frm') as HTMLFormElement;
 
-    let belt1Vector = [Number((<HTMLInputElement>beltPoints.elements[0]).value),
-                       Number((<HTMLInputElement>beltPoints.elements[1]).value)];
+    // get data
+    const beltPoints = document.getElementById('belt-coordinates-frm') as HTMLFormElement;
+    const robotPoints = document.getElementById('robot-coordinates-frm') as HTMLFormElement;
 
-    let belt2Vector = [Number((<HTMLInputElement>beltPoints.elements[2]).value),
-                       Number((<HTMLInputElement>beltPoints.elements[3]).value)];
+    const belt1Vector = [Number((beltPoints.elements[0] as HTMLInputElement).value),
+                       Number((beltPoints.elements[1] as HTMLInputElement).value)];
 
-    let belt3Vector = [Number((<HTMLInputElement>beltPoints.elements[4]).value),
-                       Number((<HTMLInputElement>beltPoints.elements[5]).value)];
+    const belt2Vector = [Number((beltPoints.elements[2] as HTMLInputElement).value),
+                       Number((beltPoints.elements[3] as HTMLInputElement).value)];
+
+    const belt3Vector = [Number((beltPoints.elements[4] as HTMLInputElement).value),
+                       Number((beltPoints.elements[5] as HTMLInputElement).value)];
 
 
-    let robot1Vector = [Number((<HTMLInputElement>robotPoints.elements[0]).value),
-                        Number((<HTMLInputElement>robotPoints.elements[1]).value),
-                        Number((<HTMLInputElement>robotPoints.elements[2]).value)];
+    const robot1Vector = [Number((robotPoints.elements[0] as HTMLInputElement).value),
+                        Number((robotPoints.elements[1] as HTMLInputElement).value),
+                        Number((robotPoints.elements[2] as HTMLInputElement).value)];
 
-    let robot2Vector = [Number((<HTMLInputElement>robotPoints.elements[3]).value),
-                        Number((<HTMLInputElement>robotPoints.elements[4]).value),
-                        Number((<HTMLInputElement>robotPoints.elements[5]).value)];
+    const robot2Vector = [Number((robotPoints.elements[3] as HTMLInputElement).value),
+                        Number((robotPoints.elements[4] as HTMLInputElement).value),
+                        Number((robotPoints.elements[5] as HTMLInputElement).value)];
 
-    let robot3Vector = [Number((<HTMLInputElement>robotPoints.elements[6]).value),
-                        Number((<HTMLInputElement>robotPoints.elements[7]).value),
-                        Number((<HTMLInputElement>robotPoints.elements[8]).value)];
+    const robot3Vector = [Number((robotPoints.elements[6] as HTMLInputElement).value),
+                        Number((robotPoints.elements[7] as HTMLInputElement).value),
+                        Number((robotPoints.elements[8] as HTMLInputElement).value)];
 
 
 
@@ -70,12 +70,12 @@ document.getElementById('calibrate-btn').addEventListener('click', () => {
 
 // test calibration
 document.getElementById('test-calibration-btn').addEventListener('click', () => {
-    let itemPoints = document.getElementById('item-location') as HTMLFormElement;
-    let x = Number((<HTMLInputElement>itemPoints.elements[0]).value);
-    let y = Number((<HTMLInputElement>itemPoints.elements[1]).value);
-    let outputVector = robot.belt2robotCoordinates(x, y)
-    let output =  document.getElementById("belt-location-p") as HTMLParagraphElement;
-    let outputString = "x: " +  outputVector[0] + ", y: " + outputVector[1] + ", z: " + outputVector[2];
+    const itemPoints = document.getElementById('item-location') as HTMLFormElement;
+    const x = Number((itemPoints.elements[0] as HTMLInputElement).value);
+    const y = Number((itemPoints.elements[1] as HTMLInputElement).value);
+    const outputVector = robot.belt2robotCoordinates(x, y);
+    const output =  document.getElementById('belt-location-p') as HTMLParagraphElement;
+    const outputString = 'x: ' +  outputVector[0] + ', y: ' + outputVector[1] + ', z: ' + outputVector[2];
     console.log('output:', outputString);
     //output.appendChild(document.createTextNode("x: " +  outputVector[0] + ", y: " + outputVector[1] + ", z: " + outputVector[2]));
 });
@@ -98,11 +98,11 @@ document.getElementById('motor-off-btn').addEventListener('click', () => {
 });
 
 document.getElementById('robot-coordinate-move-btn').addEventListener('click', () => {
-  let robotPoints = document.getElementById('robot-coordinate-move-frm') as HTMLFormElement;
+  const robotPoints = document.getElementById('robot-coordinate-move-frm') as HTMLFormElement;
 
-  let x = Number((<HTMLInputElement>robotPoints.elements[0]).value);
-  let y = Number((<HTMLInputElement>robotPoints.elements[1]).value);
-  let z = Number((<HTMLInputElement>robotPoints.elements[2]).value);
+  const x = Number((robotPoints.elements[0] as HTMLInputElement).value);
+  const y = Number((robotPoints.elements[1] as HTMLInputElement).value);
+  const z = Number((robotPoints.elements[2] as HTMLInputElement).value);
 
   robot.moveToRobotCoordinate(x, y, z);
 
@@ -110,13 +110,13 @@ document.getElementById('robot-coordinate-move-btn').addEventListener('click', (
 
 document.getElementById('belt-coordinate-move-btn').addEventListener('click', () => {
 
-  let beltPoints = document.getElementById('belt-coordinate-move-frm') as HTMLFormElement;
+  const beltPoints = document.getElementById('belt-coordinate-move-frm') as HTMLFormElement;
 
-  let x = Number((<HTMLInputElement>beltPoints.elements[0]).value);
-  let y = Number((<HTMLInputElement>beltPoints.elements[1]).value);
+  const x = Number((beltPoints.elements[0] as HTMLInputElement).value);
+  const y = Number((beltPoints.elements[1] as HTMLInputElement).value);
 
-  let configFrm = document.getElementById("configuration-frm") as HTMLFormElement;
-  let z = Number((<HTMLInputElement>configFrm.elements[2]).value);
+  const configFrm = document.getElementById('configuration-frm') as HTMLFormElement;
+  const z = Number((configFrm.elements[2] as HTMLInputElement).value);
 
   robot.moveToBeltCoordinate(x, y, z);
 });
@@ -181,7 +181,7 @@ document.getElementById('belt-coordinate-move-btn').addEventListener('click', ()
 //                       Number((<HTMLInputElement>robotPoints.elements[8]).value)];
 
 //   belt1Vector.push(1);
-//   belt2Vector.push(1); 
+//   belt2Vector.push(1);
 //   belt3Vector.push(1);
 
 //   var beltMatrix = [belt1Vector, belt2Vector, belt3Vector];
@@ -216,7 +216,7 @@ document.getElementById('belt-coordinate-move-btn').addEventListener('click', ()
 
 
 //     // Prefer camera resolution nearest to 1280x720.
-//     var constraints = { audio: false, video: true }; 
+//     var constraints = { audio: false, video: true };
 
 //     navigator.mediaDevices.getUserMedia(constraints)
 //     .then(function(mediaStream) {
