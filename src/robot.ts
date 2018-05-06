@@ -8,9 +8,11 @@ export class Robot {
   private isCalibrated: boolean;
   private port: SerialPort;
   private transform: number[][];
+  private newData: number;
 
   constructor() {
     this.isConnected = false;
+    this.newData = 0;
   }
 
   public connect(portName: string, baudRate: number) {
@@ -19,7 +21,23 @@ export class Robot {
     this.port.on('data', (data: any) => {
       const terminal = document.getElementById('oputput-p') as HTMLParagraphElement;
       terminal.appendChild(document.createTextNode(data.toString()));
+      this.newData++;
     });
+  }
+
+  public commandComplete() {
+      return new Promise<string>((resolve) => {
+
+          this.port.once('data', (data: any) => {
+
+              console.log(data);
+              resolve(data.toString());
+
+          });
+
+      });
+
+
   }
 
   public sendMessage(message: string) {
@@ -69,9 +87,13 @@ export class Robot {
 
   public openGripper() {
     // todo
+    this.sendMessage('M801');
+    this.sendMessage('M810');
   }
 
   public closeGripper() {
+    this.sendMessage('M811');
+    this.sendMessage('M800');
     // todo
   }
 
@@ -85,5 +107,20 @@ export class Robot {
 
   public getCurrentRobotCoordinate() {
     // todo
+  }
+
+
+  public async testStuff() {
+      while(true)
+      {
+          this.closeGripper();
+          this.moveToRobotCoordinate(0,0,-400);
+          await this.commandComplete();
+          this.openGripper();
+          this.moveToRobotCoordinate(0,0,-750);
+          await this.commandComplete();
+      }
+      
+      
   }
 }

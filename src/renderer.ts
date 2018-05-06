@@ -140,10 +140,11 @@ document.getElementById('test-calibration-btn').addEventListener('click', () => 
 });
 
 
-document.getElementById('open-gripper-btn').addEventListener('click', () => robot.openGripper());
-document.getElementById('close-gripper-btn').addEventListener('click', () => robot.closeGripper());
-document.getElementById('motor-on-btn').addEventListener('click', () => robot.motorsOn());
-document.getElementById('motor-off-btn').addEventListener('click', () => robot.motorsOff());
+document.getElementById('open-gripper-btn').addEventListener('click', () => {robot.openGripper();});
+document.getElementById('close-gripper-btn').addEventListener('click', () => {robot.closeGripper();});
+document.getElementById('motor-on-btn').addEventListener('click', () => {robot.motorsOn();});
+document.getElementById('motor-off-btn').addEventListener('click', () => {robot.motorsOff();});
+document.getElementById('test-stuff-btn').addEventListener('click', () => {robot.testStuff();});
 
 document.getElementById('robot-coordinate-move-btn').addEventListener('click', () => {
   const robotPoints = document.getElementById('robot-coordinate-move-frm') as HTMLFormElement;
