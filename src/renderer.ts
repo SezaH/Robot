@@ -26,18 +26,21 @@ async function main() {
   // Code here runs on page load.
   DataController.capture(unlabeledImageFile, cameraID);
 
-  const cup1: Item = { x: 10, y: 10, z: 10, encoderValue: 10, classID: 1, className: 'cup' };
-  const cup2: Item = { x: 11, y: 11, z: 11, encoderValue: 11, classID: 1, className: 'cup' };
-  const cup3: Item = { x: 20, y: 20, z: 20, encoderValue: 20, classID: 1, className: 'cup' };
+  const cup1: Item = { x: 10, y: 10, z: 10, encoderValue: 10, numberOfDuplicate: 0, xDirectionMoveInCaseOfDuplicate: 0,
+       yDirectionMoveInCaseOfDuplicate: 0, classID: 1, className: 'cup' };
+  const cup2: Item = { x: 11, y: 11, z: 11, encoderValue: 10, numberOfDuplicate: 0, xDirectionMoveInCaseOfDuplicate: 0,
+       yDirectionMoveInCaseOfDuplicate: 0, classID: 1, className: 'cup' };
+  const cup3: Item = { x: 40, y: 40, z: 40, encoderValue: 40, numberOfDuplicate: 0, xDirectionMoveInCaseOfDuplicate: 0,
+       yDirectionMoveInCaseOfDuplicate: 0, classID: 1, className: 'cup' };
 
   const obj = new ItemQueue();
   obj.insert(cup1);
   obj.insert(cup2);
   obj.insert(cup3);
 
-  obj.display();
-  obj.delete(0);
-  console.log('hello');
+  obj.display()
+  const removeItem = obj.remove();
+  console.log(removeItem.x);
   obj.display();
 
   // Watch for new data and load into the itemQueue and draw the image to screen.
