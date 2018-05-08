@@ -25,7 +25,8 @@
     ],
     "arrow-parens": false,
     "no-namespace": false,
-    "no-console": false
+    "no-console": false,
+    "variable-name": [true, "ban-keywords", "check-format","allow-leading-underscore"]
   },
   "jsRules": {
     "max-line-length": {
