@@ -35,7 +35,7 @@
   <form id="configuration-frm">
     config filename: <input type="text">.json <br>
     robot speed (mm/min): <input type="number" value="5000"> <br>
-    gripper Z-offest: <input type="number" value="0"> <br>
+    gripper Z-offest: <input type="number" value="50"> <br>
     wall Z-offset: <input type="number"> <br>
   </form>
   <button id="config-save-btn">Save</button>
@@ -102,7 +102,8 @@
   <br>
 
   Current Robot Coordinates:
-  <button id="capture-coordinate">Capture</button>
+  <button id="capture-coordinate-btn">Capture</button>
+  <output id = "current-coordinate-output" type = "text"></output>
   <p id="robot-coordinate-p"></p>
 
 
@@ -125,11 +126,18 @@
   
   </form>
   <button id="belt-coordinate-move-btn">Move</button> <br>
+  <button id="test-stuff-btn">Test</button> <br>
 
 
   <script>var exports = {};</script>
   <script type="text/javascript"
           src="./renderer.js"></script>
+
+ 
+
+
+
+
 </body>
 
 </html>

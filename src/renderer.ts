@@ -140,10 +140,28 @@ document.getElementById('test-calibration-btn').addEventListener('click', () => 
 });
 
 
-document.getElementById('open-gripper-btn').addEventListener('click', () => robot.openGripper());
-document.getElementById('close-gripper-btn').addEventListener('click', () => robot.closeGripper());
-document.getElementById('motor-on-btn').addEventListener('click', () => robot.motorsOn());
-document.getElementById('motor-off-btn').addEventListener('click', () => robot.motorsOff());
+document.getElementById('open-gripper-btn').addEventListener('click', () => {robot.openGripper(); });
+document.getElementById('close-gripper-btn').addEventListener('click', () => {robot.closeGripper(); });
+document.getElementById('motor-on-btn').addEventListener('click', () => {robot.motorsOn(); });
+document.getElementById('motor-off-btn').addEventListener('click', () => {robot.motorsOff(); });
+document.getElementById('test-stuff-btn').addEventListener('click', () => {robot.testStuff(); });
+
+
+document.getElementById('capture-coordinate-btn').addEventListener('click', async () => {
+    const output = await robot.getCurrentRobotCoordinate();
+    console.log('current coordinates: ', output);
+    document.getElementById('current-coordinate-output').innerHTML = output;
+    const numbers = output.split(',').map((str) => {
+      const num = str.match(/[-+]?[0-9]*\.?[0-9]+/);
+      return (num !== null ) ? parseFloat(num[0]) : undefined;
+    });
+
+    console.log('X = ', numbers[0], ', Y = ', numbers[1], ', Z = ', numbers[2]);
+
+
+  });
+
+
 
 document.getElementById('robot-coordinate-move-btn').addEventListener('click', () => {
   const robotPoints = document.getElementById('robot-coordinate-move-frm') as HTMLFormElement;
