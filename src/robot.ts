@@ -131,6 +131,7 @@ export class Robot {
 
   public async pick(x: number, y: number, z: number) {
       this.openGripper();
+      await this.async_moveToRobotCoordinate(0, 0, -400);
       await this.async_moveToBeltCoordinate(x, y, z);
       this.closeGripper();
       await this.async_moveToRobotCoordinate(0, 0, -400);
@@ -140,6 +141,7 @@ export class Robot {
       await this.async_moveToRobotCoordinate(0, 0, -400);
       await this.async_moveToRobotCoordinate(x, y, z);
       this.openGripper();
+      await this.async_moveToRobotCoordinate(0, 0, -400);
   }
 
 

@@ -22,11 +22,13 @@ const robot = new Robot();
 const imageCanvas = document.getElementById('canvas') as HTMLCanvasElement;
 const imageContext = imageCanvas.getContext('2d');
 
+const queue = new ItemQueue();
+
 async function main() {
   // Code here runs on page load.
   DataController.capture(unlabeledImageFile, cameraID);
 
-  const queue = new ItemQueue();
+  
   // queue.insert({ x: 10, y: 10, z: 10, encoderValue: 10, classID: 1, className: 'cup' });
   // queue.insert({ x: 11, y: 11, z: 11, encoderValue: 10, classID: 1, className: 'cup' });
   // queue.insert({ x: 40, y: 40, z: 40, encoderValue: 40, classID: 1, className: 'cup' });
@@ -63,6 +65,9 @@ async function main() {
     DataController.capture(unlabeledImageFile, cameraID);
   });
 }
+
+
+
 
 
 // connect
@@ -145,6 +150,47 @@ document.getElementById('close-gripper-btn').addEventListener('click', () => {ro
 document.getElementById('motor-on-btn').addEventListener('click', () => {robot.motorsOn(); });
 document.getElementById('motor-off-btn').addEventListener('click', () => {robot.motorsOff(); });
 document.getElementById('test-stuff-btn').addEventListener('click', () => {robot.testStuff(); });
+
+
+
+document.getElementById('pick-btn').addEventListener('click', () => {
+  let x = Number((<HTMLInputElement>document.getElementById('pick_x_input')).value);
+  let y = Number((<HTMLInputElement>document.getElementById('pick_y_input')).value);
+  let z = Number((<HTMLInputElement>document.getElementById('pick_z_input')).value);
+  console.log("x: ", x, ", y: ", y, ", z: ", z);
+  robot.pick(x, y, z); 
+});
+
+document.getElementById('place-btn').addEventListener('click', () => {
+  let x = Number((<HTMLInputElement>document.getElementById('place_x_input')).value);
+  let y = Number((<HTMLInputElement>document.getElementById('place_y_input')).value);
+  let z = Number((<HTMLInputElement>document.getElementById('place_z_input')).value);
+  console.log("x: ", x, ", y: ", y, ", z: ", z);
+  robot.place(x, y, z); 
+});
+
+document.getElementById('pick-place-queue-btn').addEventListener('click', () => {
+  let place_x = Number((<HTMLInputElement>document.getElementById('place_x_input')).value);
+  let place_y = Number((<HTMLInputElement>document.getElementById('place_y_input')).value);
+  let place_z = Number((<HTMLInputElement>document.getElementById('place_z_input')).value);
+  const item = queue.remove();
+  if(item !== undefined)
+  {
+    const pick_x = item.x;
+    const pick_y = item.y;
+    const pick_z = item.z;
+    robot.pick(pick_x, pick_y, pick_z);
+
+  }
+  else{
+    console.log("error in not find item!!!");
+  }
+  
+
+  robot.testStuff(); 
+});
+
+
 
 
 document.getElementById('capture-coordinate-btn').addEventListener('click', async () => {
