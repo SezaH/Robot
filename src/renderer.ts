@@ -27,36 +27,41 @@ async function main() {
   DataController.capture(unlabeledImageFile, cameraID);
 
   const queue = new ItemQueue();
-  queue.insert({ x: 10, y: 10, z: 10, encoderValue: 10, classID: 1, className: 'cup' });
-  queue.insert({ x: 11, y: 11, z: 11, encoderValue: 10, classID: 1, className: 'cup' });
-  queue.insert({ x: 40, y: 40, z: 40, encoderValue: 40, classID: 1, className: 'cup' });
+  // queue.insert({ x: 10, y: 10, z: 10, encoderValue: 10, classID: 1, className: 'cup' });
+  // queue.insert({ x: 11, y: 11, z: 11, encoderValue: 10, classID: 1, className: 'cup' });
+  // queue.insert({ x: 40, y: 40, z: 40, encoderValue: 40, classID: 1, className: 'cup' });
 
-  queue.display();
-  const removeItem = queue.remove();
-  queue.display();
+  // queue.display();
+  // const removeItem = queue.remove();
+  // queue.display();
 
   // Watch for new data and load into the itemQueue and draw the image to screen.
   // Remove the data files when complete.
-  // DataController.newData(datafile, labeledImageFile).subscribe(async ({ objects, bitmap }) => {
-  //   console.log('New data detected: ', objects);
+  DataController.newData(datafile, labeledImageFile).subscribe(async ({ objects, bitmap }) => {
+    console.log('New data detected: ', objects);
 
-  //   if (objects === undefined) return;
+    if (objects === undefined) return;
 
-  //   for (const object of objects) {
-  //     // insert into itemQueue
-  //   }
+    for (const object of objects) {
+      // insert into itemQueue
+      const x = (object.bndbox.xmax + object.bndbox.xmin) / 2;
+      const y = (object.bndbox.ymax + object.bndbox.ymin) / 2;
 
-  //   imageContext.drawImage(bitmap, 0, 0);
+      queue.insert({x, y, z: 1, encoderValue: 0, classID: object.id, className: object.name});
+    }
+    queue.display();
 
-  //   await Promise.all([
-  //     fs.remove(datafile),
-  //     fs.remove(labeledImageFile),
-  //   ]);
+    imageContext.drawImage(bitmap, 0, 0);
 
-  //   await Util.delay(100);
+    await Promise.all([
+      fs.remove(datafile),
+      fs.remove(labeledImageFile),
+    ]);
 
-  //   DataController.capture(unlabeledImageFile, cameraID);
-  // });
+    await Util.delay(100);
+
+    DataController.capture(unlabeledImageFile, cameraID);
+  });
 }
 
 

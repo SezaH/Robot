@@ -15,6 +15,7 @@ export namespace DataController {
     };
     name: string;
     id: number;
+    score: number;
   }
 
 
