@@ -178,16 +178,14 @@ document.getElementById('pick-place-queue-btn').addEventListener('click', () => 
   {
     const pick_x = item.x;
     const pick_y = item.y;
-    const pick_z = item.z;
+    const pick_z = 50;
     robot.pick(pick_x, pick_y, pick_z);
+    console.log('Moving to item', item);
 
   }
   else{
     console.log("error in not find item!!!");
   }
-  
-
-  robot.testStuff(); 
 });
 
 
