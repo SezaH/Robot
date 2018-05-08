@@ -19,8 +19,10 @@ export class Robot {
     this.port = new SerialPort(portName, { baudRate }, err => console.error(err));
     this.isConnected = true;
     this.port.on('data', (data: any) => {
-      const terminal = document.getElementById('oputput-p') as HTMLParagraphElement;
-      terminal.appendChild(document.createTextNode(data.toString()));
+      const terminal = document.getElementById('oputput-p');
+      terminal.innerHTML += data.toString();
+      terminal.innerHTML += '<br>';
+
       this.newData++;
     });
   }
@@ -105,22 +107,62 @@ export class Robot {
     this.sendMessage('M18');
   }
 
-  public getCurrentRobotCoordinate() {
+  public async getCurrentRobotCoordinate() {
+      const promise = this.commandComplete();
+      this.sendMessage('M895');
+      const coordinates = await promise;
+      return coordinates;
     // todo
   }
 
 
+  public async async_moveToRobotCoordinate(x: number, y: number, z: number) {
+      const moveComplete = this.commandComplete();
+      this.moveToRobotCoordinate(x, y, z);
+      await moveComplete;
+  }
+
+  public async async_moveToBeltCoordinate(x: number, y: number, z: number) {
+      const moveComplete = this.commandComplete();
+      this.moveToBeltCoordinate(x, y, z);
+      await moveComplete;
+  }
+
+
+  public async pick(x: number, y: number, z: number) {
+      this.openGripper();
+      await this.async_moveToBeltCoordinate(x, y, z);
+      this.closeGripper();
+      await this.async_moveToRobotCoordinate(0, 0, -400);
+  }
+
+  public async place(x: number, y: number, z: number) {
+      await this.async_moveToRobotCoordinate(0, 0, -400);
+      await this.async_moveToRobotCoordinate(x, y, z);
+      this.openGripper();
+  }
+
+
+
+
+
+
   public async testStuff() {
-      while(true)
-      {
+      while (true) {
           this.closeGripper();
-          this.moveToRobotCoordinate(0,0,-400);
+          this.moveToRobotCoordinate(0, 0, -400);
           await this.commandComplete();
           this.openGripper();
-          this.moveToRobotCoordinate(0,0,-750);
+          this.moveToRobotCoordinate(0, 0, -750);
           await this.commandComplete();
       }
-      
-      
+
+
   }
+
+
+
+
+
+
 }
