@@ -28,7 +28,7 @@ async function main() {
   // Code here runs on page load.
   DataController.capture(unlabeledImageFile, cameraID);
 
-  
+
   // queue.insert({ x: 10, y: 10, z: 10, encoderValue: 10, classID: 1, className: 'cup' });
   // queue.insert({ x: 11, y: 11, z: 11, encoderValue: 10, classID: 1, className: 'cup' });
   // queue.insert({ x: 40, y: 40, z: 40, encoderValue: 40, classID: 1, className: 'cup' });
@@ -49,7 +49,7 @@ async function main() {
       const x = (object.bndbox.xmax + object.bndbox.xmin) / 2;
       const y = (object.bndbox.ymax + object.bndbox.ymin) / 2;
 
-      queue.insert({x, y, z: 1, encoderValue: 0, classID: object.id, className: object.name});
+      queue.insert({ x, y, z: 1, encoderValue: 0, classID: object.id, className: object.name });
     }
     queue.display();
 
@@ -145,46 +145,38 @@ document.getElementById('test-calibration-btn').addEventListener('click', () => 
 });
 
 
-document.getElementById('open-gripper-btn').addEventListener('click', () => {robot.openGripper(); });
-document.getElementById('close-gripper-btn').addEventListener('click', () => {robot.closeGripper(); });
-document.getElementById('motor-on-btn').addEventListener('click', () => {robot.motorsOn(); });
-document.getElementById('motor-off-btn').addEventListener('click', () => {robot.motorsOff(); });
-document.getElementById('test-stuff-btn').addEventListener('click', () => {robot.testStuff(); });
+document.getElementById('open-gripper-btn').addEventListener('click', () => { robot.openGripper(); });
+document.getElementById('close-gripper-btn').addEventListener('click', () => { robot.closeGripper(); });
+document.getElementById('motor-on-btn').addEventListener('click', () => { robot.motorsOn(); });
+document.getElementById('motor-off-btn').addEventListener('click', () => { robot.motorsOff(); });
+document.getElementById('test-stuff-btn').addEventListener('click', () => { robot.testStuff(); });
 
 
 
 document.getElementById('pick-btn').addEventListener('click', () => {
-  let x = Number((<HTMLInputElement>document.getElementById('pick_x_input')).value);
-  let y = Number((<HTMLInputElement>document.getElementById('pick_y_input')).value);
-  let z = Number((<HTMLInputElement>document.getElementById('pick_z_input')).value);
-  console.log("x: ", x, ", y: ", y, ", z: ", z);
-  robot.pick(x, y, z); 
+  const x = Number((document.getElementById('pick_x_input') as HTMLInputElement).value);
+  const y = Number((document.getElementById('pick_y_input') as HTMLInputElement).value);
+  const z = Number((document.getElementById('pick_z_input') as HTMLInputElement).value);
+  console.log('x: ', x, ', y: ', y, ', z: ', z);
+  robot.pick(x, y, z);
 });
 
 document.getElementById('place-btn').addEventListener('click', () => {
-  let x = Number((<HTMLInputElement>document.getElementById('place_x_input')).value);
-  let y = Number((<HTMLInputElement>document.getElementById('place_y_input')).value);
-  let z = Number((<HTMLInputElement>document.getElementById('place_z_input')).value);
-  console.log("x: ", x, ", y: ", y, ", z: ", z);
-  robot.place(x, y, z); 
+  const x = Number((document.getElementById('place_x_input') as HTMLInputElement).value);
+  const y = Number((document.getElementById('place_y_input') as HTMLInputElement).value);
+  const z = Number((document.getElementById('place_z_input') as HTMLInputElement).value);
+  console.log('x: ', x, ', y: ', y, ', z: ', z);
+  robot.place(x, y, z);
 });
 
 document.getElementById('pick-place-queue-btn').addEventListener('click', () => {
-  let place_x = Number((<HTMLInputElement>document.getElementById('place_x_input')).value);
-  let place_y = Number((<HTMLInputElement>document.getElementById('place_y_input')).value);
-  let place_z = Number((<HTMLInputElement>document.getElementById('place_z_input')).value);
   const item = queue.remove();
-  if(item !== undefined)
-  {
-    const pick_x = item.x;
-    const pick_y = item.y;
-    const pick_z = 50;
-    robot.pick(pick_x, pick_y, pick_z);
+  if (item !== undefined) {
+    robot.pick(item.x, item.y, 50);
     console.log('Moving to item', item);
 
-  }
-  else{
-    console.log("error in not find item!!!");
+  } else {
+    console.log('error in not find item!!!');
   }
 });
 
@@ -192,18 +184,16 @@ document.getElementById('pick-place-queue-btn').addEventListener('click', () => 
 
 
 document.getElementById('capture-coordinate-btn').addEventListener('click', async () => {
-    const output = await robot.getCurrentRobotCoordinate();
-    console.log('current coordinates: ', output);
-    document.getElementById('current-coordinate-output').innerHTML = output;
-    const numbers = output.split(',').map((str) => {
-      const num = str.match(/[-+]?[0-9]*\.?[0-9]+/);
-      return (num !== null ) ? parseFloat(num[0]) : undefined;
-    });
-
-    console.log('X = ', numbers[0], ', Y = ', numbers[1], ', Z = ', numbers[2]);
-
-
+  const output = await robot.getCurrentRobotCoordinate();
+  console.log('current coordinates: ', output);
+  document.getElementById('current-coordinate-output').innerHTML = output;
+  const numbers = output.split(',').map((str) => {
+    const num = str.match(/[-+]?[0-9]*\.?[0-9]+/);
+    return (num !== null) ? parseFloat(num[0]) : undefined;
   });
+
+  console.log('X = ', numbers[0], ', Y = ', numbers[1], ', Z = ', numbers[2]);
+});
 
 
 
