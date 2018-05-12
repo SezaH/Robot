@@ -111,7 +111,11 @@ export class Robot {
       const promise = this.commandComplete();
       this.sendMessage('M895');
       const coordinates = await promise;
-      return coordinates;
+      const numbers = coordinates.split(',').map((str) => {
+          const num = str.match(/[-+]?[0-9]*\.?[0-9]+/);
+          return (num !== null) ? parseFloat(num[0]) : undefined;
+      });
+      return numbers;
     // todo
   }
 
