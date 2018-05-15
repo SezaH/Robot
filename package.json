@@ -27,6 +27,7 @@
   "author": "Waste Busters",
   "license": "MIT",
   "devDependencies": {
+    "@types/mathjs": "^3.20.0",
     "@types/serialport": "^6.0.1",
     "copyfiles": "^2.0.0",
     "electron": "2.0.0-beta.8",
