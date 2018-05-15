@@ -184,7 +184,7 @@ document.getElementById('calibration-save-btn').addEventListener('click', async 
   config.robotCoordinates.y3 = parseFloat((document.getElementById('calibration-y3-input') as HTMLInputElement).value);
   config.robotCoordinates.z3 = parseFloat((document.getElementById('calibration-z3-input') as HTMLInputElement).value);
 
-  var json = JSON.stringify(config);
+  let json = JSON.stringify(config);
   fs.writeFile(configfile, json, 'utf8');
 });
 

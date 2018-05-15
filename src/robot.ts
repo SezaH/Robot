@@ -28,16 +28,16 @@ export class Robot {
   }
 
   public commandComplete() {
-      return new Promise<string>((resolve) => {
+    return new Promise<string>((resolve) => {
 
-          this.port.once('data', (data: any) => {
+      this.port.once('data', (data: any) => {
 
-              console.log(data);
-              resolve(data.toString());
-
-          });
+        console.log(data);
+        resolve(data.toString());
 
       });
+
+    });
 
 
   }
@@ -108,44 +108,44 @@ export class Robot {
   }
 
   public async getCurrentRobotCoordinate() {
-      const promise = this.commandComplete();
-      this.sendMessage('M895');
-      const coordinates = await promise;
-      const numbers = coordinates.split(',').map((str) => {
-          const num = str.match(/[-+]?[0-9]*\.?[0-9]+/);
-          return (num !== null) ? parseFloat(num[0]) : undefined;
-      });
-      return numbers;
+    const promise = this.commandComplete();
+    this.sendMessage('M895');
+    const coordinates = await promise;
+    const numbers = coordinates.split(',').map((str) => {
+      const num = str.match(/[-+]?[0-9]*\.?[0-9]+/);
+      return (num !== null) ? parseFloat(num[0]) : undefined;
+    });
+    return numbers;
     // todo
   }
 
 
   public async async_moveToRobotCoordinate(x: number, y: number, z: number) {
-      const moveComplete = this.commandComplete();
-      this.moveToRobotCoordinate(x, y, z);
-      await moveComplete;
+    const moveComplete = this.commandComplete();
+    this.moveToRobotCoordinate(x, y, z);
+    await moveComplete;
   }
 
   public async async_moveToBeltCoordinate(x: number, y: number, z: number) {
-      const moveComplete = this.commandComplete();
-      this.moveToBeltCoordinate(x, y, z);
-      await moveComplete;
+    const moveComplete = this.commandComplete();
+    this.moveToBeltCoordinate(x, y, z);
+    await moveComplete;
   }
 
 
   public async pick(x: number, y: number, z: number) {
-      this.openGripper();
-      await this.async_moveToRobotCoordinate(0, 0, -400);
-      await this.async_moveToBeltCoordinate(x, y, z);
-      this.closeGripper();
-      await this.async_moveToRobotCoordinate(0, 0, -400);
+    this.openGripper();
+    await this.async_moveToRobotCoordinate(0, 0, -400);
+    await this.async_moveToBeltCoordinate(x, y, z);
+    this.closeGripper();
+    await this.async_moveToRobotCoordinate(0, 0, -400);
   }
 
   public async place(x: number, y: number, z: number) {
-      await this.async_moveToRobotCoordinate(0, 0, -400);
-      await this.async_moveToRobotCoordinate(x, y, z);
-      this.openGripper();
-      await this.async_moveToRobotCoordinate(0, 0, -400);
+    await this.async_moveToRobotCoordinate(0, 0, -400);
+    await this.async_moveToRobotCoordinate(x, y, z);
+    this.openGripper();
+    await this.async_moveToRobotCoordinate(0, 0, -400);
   }
 
 
@@ -154,14 +154,14 @@ export class Robot {
 
 
   public async testStuff() {
-      while (true) {
-          this.closeGripper();
-          this.moveToRobotCoordinate(0, 0, -400);
-          await this.commandComplete();
-          this.openGripper();
-          this.moveToRobotCoordinate(0, 0, -750);
-          await this.commandComplete();
-      }
+    while (true) {
+      this.closeGripper();
+      this.moveToRobotCoordinate(0, 0, -400);
+      await this.commandComplete();
+      this.openGripper();
+      this.moveToRobotCoordinate(0, 0, -750);
+      await this.commandComplete();
+    }
 
 
   }
