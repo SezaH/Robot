@@ -23,24 +23,22 @@ const robot = new Robot();
 const imageCanvas = document.getElementById('canvas') as HTMLCanvasElement;
 const imageContext = imageCanvas.getContext('2d');
 
-const queue = new ItemQueue();
+// const queue = new ItemQueue();
 
 async function main() {
-    Conveyer.connect('COM5', 9600);
+    Conveyer.connect('COM4', 9600);
     // Conveyer.sendMessage('@\n');
 
 
     // Code here runs on page load.
     DataController.capture(unlabeledImageFile, cameraID);
-
-    const queue = new ItemQueue();
-    queue.insert({ x: 10, y: 10, z: 10, encoderValue: 10, classID: 1, className: 'cup' });
-    queue.insert({ x: 11, y: 11, z: 11, encoderValue: 10, classID: 1, className: 'cup' });
-    queue.insert({ x: 40, y: 40, z: 40, encoderValue: 40, classID: 1, className: 'cup' });
-
-    queue.display();
-    const removeItem = queue.remove();
-    queue.display();
+    // const queue = new ItemQueue();
+    // queue.insert({ x: 10, y: 10, z: 10, encoderValue: 10, classID: 1, className: 'cup' });
+    // queue.insert({ x: 11, y: 11, z: 11, encoderValue: 10, classID: 1, className: 'cup' });
+    // queue.insert({ x: 40, y: 40, z: 40, encoderValue: 40, classID: 1, className: 'cup' });
+    // queue.display();
+    // const removeItem = queue.remove();
+    // queue.display();
 
     // Watch for new data and load into the itemQueue and draw the image to screen.
     // Remove the data files when complete.

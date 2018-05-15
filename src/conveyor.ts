@@ -9,7 +9,12 @@ export namespace Conveyer {
         port = new SerialPort(portName, { baudRate }, err => console.error(err));
         isConnected = true;
         port.on('data', (data: any) => {
-            console.log(data.toString());
+            const encoder = parseInt(data.toString(), 10);
+            console.log(encoder);
+            return encoder;
+            // console.log(data);
+            //   return data;
+            // console.log(data.tostring() as number);
         });
     }
 
