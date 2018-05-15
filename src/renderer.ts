@@ -26,9 +26,9 @@ const imageContext = imageCanvas.getContext('2d');
 const queue = new ItemQueue();
 
 async function main() {
-    Conveyer.connect('COM4', 9600);
-    Conveyer.sendMessage('@\n');
-  
+    Conveyer.connect('COM5', 9600);
+    // Conveyer.sendMessage('@\n');
+
 
     // Code here runs on page load.
     DataController.capture(unlabeledImageFile, cameraID);
@@ -67,7 +67,7 @@ async function main() {
 }
 
 
-
+document.getElementById('encoder-btn').addEventListener('click', () => Conveyer.sendMessage('\n'));
 
 
 // connect
