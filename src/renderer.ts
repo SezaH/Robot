@@ -7,13 +7,13 @@ import { Robot } from './robot';
 import { Util } from './utils';
 
 /** Object bounding boxes returned from CV. */
-const datafile = '../models/research/object_detection/sample/output.json';
+const datafile = '../models/research/object_detection/io/output.json';
 
 /** Image returned from CV with bounding boxes. */
-const labeledImageFile = '../models/research/object_detection/sample/output.jpg';
+const labeledImageFile = '../models/research/object_detection/io/output.jpg';
 
 /** Unlabeled image sent to CV. */
-const unlabeledImageFile = '../models/research/object_detection/sample/input.jpg';
+const unlabeledImageFile = '../models/research/object_detection/io/input.jpg';
 
 /** If multiple cameras are present, specify which. */
 const cameraID = 0;
@@ -29,7 +29,9 @@ const queue = new ItemQueue();
 
 async function main() {
   // Code here runs on page load.
-  DataController.capture(unlabeledImageFile, cameraID);
+  Camera.init();
+  await Util.delay(2000);
+  Camera.capture(unlabeledImageFile);
 
   // Watch for new data and load into the itemQueue and draw the image to screen.
   // Remove the data files when complete.
@@ -56,7 +58,7 @@ async function main() {
 
     await Util.delay(100);
 
-    DataController.capture(unlabeledImageFile, cameraID);
+    Camera.capture(unlabeledImageFile);
   });
 }
 

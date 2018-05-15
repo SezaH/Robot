@@ -71,7 +71,7 @@ export namespace DataController {
    * @param imageFile File to save the image to.
    * @param camera CameraID to capture from.
    */
-  export function capture(imageFile: string, camera: number) {
-    spawn('python3', ['./src/capture.py', imageFile, camera.toString()]);
-  }
+  // export function capture(imageFile: string, camera: number) {
+  //   spawn('python3', ['./src/capture.py', imageFile, camera.toString()]);
+  // }
 }
