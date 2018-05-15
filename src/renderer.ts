@@ -30,15 +30,6 @@ async function main() {
   // Code here runs on page load.
   DataController.capture(unlabeledImageFile, cameraID);
 
-
-  // queue.insert({ x: 10, y: 10, z: 10, encoderValue: 10, classID: 1, className: 'cup' });
-  // queue.insert({ x: 11, y: 11, z: 11, encoderValue: 10, classID: 1, className: 'cup' });
-  // queue.insert({ x: 40, y: 40, z: 40, encoderValue: 40, classID: 1, className: 'cup' });
-
-  // queue.display();
-  // const removeItem = queue.remove();
-  // queue.display();
-
   // Watch for new data and load into the itemQueue and draw the image to screen.
   // Remove the data files when complete.
   DataController.newData(datafile, labeledImageFile).subscribe(async ({ objects, bitmap }) => {
@@ -83,6 +74,11 @@ class Doc {
 
   public static addClickListener(id: string, fn: (e: Event) => any) {
     document.getElementById(id).addEventListener('click', fn);
+  }
+
+  public static setInputValue(id: string, val: string | number) {
+    const value = (val === 'string') ? val : val.toString();
+    Doc.getInputEl(id).value = value;
   }
 
   private static inputs = new Map<string, HTMLInputElement>();
@@ -166,17 +162,17 @@ Doc.addClickListener('calibration-load-btn', async () => {
   const rawData = await fs.readFile(configfile, 'utf8');
   const coords = (JSON.parse(rawData) as IConfigObject).robotCoordinates;
 
-  Doc.getInputEl('calibration-x1-input').value = coords.x1.toString();
-  Doc.getInputEl('calibration-y1-input').value = coords.y1.toString();
-  Doc.getInputEl('calibration-z1-input').value = coords.z1.toString();
+  Doc.setInputValue('calibration-x1-input', coords.x1);
+  Doc.setInputValue('calibration-y1-input', coords.y1);
+  Doc.setInputValue('calibration-z1-input', coords.z1);
 
-  Doc.getInputEl('calibration-x2-input').value = coords.x2.toString();
-  Doc.getInputEl('calibration-y2-input').value = coords.y2.toString();
-  Doc.getInputEl('calibration-z2-input').value = coords.z2.toString();
+  Doc.setInputValue('calibration-x2-input', coords.x2);
+  Doc.setInputValue('calibration-y2-input', coords.y2);
+  Doc.setInputValue('calibration-z2-input', coords.z2);
 
-  Doc.getInputEl('calibration-x3-input').value = coords.x3.toString();
-  Doc.getInputEl('calibration-y3-input').value = coords.y3.toString();
-  Doc.getInputEl('calibration-z3-input').value = coords.z3.toString();
+  Doc.setInputValue('calibration-x3-input', coords.x3);
+  Doc.setInputValue('calibration-y3-input', coords.y3);
+  Doc.setInputValue('calibration-z3-input', coords.z3);
 });
 
 Doc.addClickListener('calibration-save-btn', async () => {
@@ -223,17 +219,17 @@ Doc.addClickListener('test-stuff-btn', () => { robot.testStuff(); });
 
 
 Doc.addClickListener('pick-btn', () => {
-  const x = Number(Doc.getInputEl('pick_x_input').value);
-  const y = Number(Doc.getInputEl('pick_y_input').value);
-  const z = Number(Doc.getInputEl('pick_z_input').value);
+  const x = parseFloat(Doc.getInputEl('pick_x_input').value);
+  const y = parseFloat(Doc.getInputEl('pick_y_input').value);
+  const z = parseFloat(Doc.getInputEl('pick_z_input').value);
   console.log('x: ', x, ', y: ', y, ', z: ', z);
   robot.pick(x, y, z);
 });
 
 Doc.addClickListener('place-btn', () => {
-  const x = Number(Doc.getInputEl('place_x_input').value);
-  const y = Number(Doc.getInputEl('place_y_input').value);
-  const z = Number(Doc.getInputEl('place_z_input').value);
+  const x = parseFloat(Doc.getInputEl('place_x_input').value);
+  const y = parseFloat(Doc.getInputEl('place_y_input').value);
+  const z = parseFloat(Doc.getInputEl('place_z_input').value);
   console.log('x: ', x, ', y: ', y, ', z: ', z);
   robot.place(x, y, z);
 });
@@ -253,29 +249,30 @@ Doc.addClickListener('pick-place-queue-btn', () => {
 
 Doc.addClickListener('point1-capture-btn', async () => {
   const coordinates = await robot.getCurrentRobotCoordinate();
-  document.getElementById('calibration-x1-input').setAttribute('value', (coordinates[0]).toString());
-  document.getElementById('calibration-y1-input').setAttribute('value', (coordinates[1]).toString());
-  document.getElementById('calibration-z1-input').setAttribute('value', (coordinates[2]).toString());
+  Doc.setInputValue('calibration-x1-input', coordinates[0]);
+  Doc.setInputValue('calibration-y1-input', coordinates[1]);
+  Doc.setInputValue('calibration-z1-input', coordinates[2]);
 });
 
 Doc.addClickListener('point2-capture-btn', async () => {
   const coordinates = await robot.getCurrentRobotCoordinate();
-  document.getElementById('calibration-x2-input').setAttribute('value', (coordinates[0]).toString());
-  document.getElementById('calibration-y2-input').setAttribute('value', (coordinates[1]).toString());
-  document.getElementById('calibration-z2-input').setAttribute('value', (coordinates[2]).toString());
+  Doc.setInputValue('calibration-x2-input', coordinates[0]);
+  Doc.setInputValue('calibration-y2-input', coordinates[1]);
+  Doc.setInputValue('calibration-z2-input', coordinates[2]);
 });
 
 Doc.addClickListener('point3-capture-btn', async () => {
   const coordinates = await robot.getCurrentRobotCoordinate();
-  document.getElementById('calibration-x3-input').setAttribute('value', (coordinates[0]).toString());
-  document.getElementById('calibration-y3-input').setAttribute('value', (coordinates[1]).toString());
-  document.getElementById('calibration-z3-input').setAttribute('value', (coordinates[2]).toString());
+  Doc.setInputValue('calibration-x3-input', coordinates[0]);
+  Doc.setInputValue('calibration-y3-input', coordinates[1]);
+  Doc.setInputValue('calibration-z3-input', coordinates[2]);
 });
 
 
 Doc.addClickListener('capture-coordinate-btn', async () => {
   const output = await robot.getCurrentRobotCoordinate();
-  document.getElementById('current-coordinate-output').innerHTML = 'x: ' + output[0] + ', y: ' + output[1] + ', z: ' + output[2];
+  document.getElementById('current-coordinate-output')
+    .innerHTML = 'x: ' + output[0] + ', y: ' + output[1] + ', z: ' + output[2];
 });
 
 
