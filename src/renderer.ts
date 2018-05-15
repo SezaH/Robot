@@ -4,6 +4,7 @@ import { DataController } from './data-io';
 import { Item, ItemQueue } from './item_queue';
 import { Robot } from './robot';
 import { Util } from './utils';
+import { camera_calibration } from './camera';
 
 /** Object bounding boxes returned from CV. */
 const datafile = '../models/research/object_detection/sample/output.json';
@@ -298,6 +299,10 @@ Doc.addClickListener('belt-coordinate-move-btn', () => {
   const z = parseFloat((configFrm.elements[2] as HTMLInputElement).value);
 
   robot.moveToBeltCoordinate(x, y, z);
+});
+
+document.getElementById('origin-camera').addEventListener('click', () => {
+  camera_calibration.origin();
 });
 
 main();
