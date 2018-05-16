@@ -32,7 +32,7 @@ async function main() {
   // Code here runs on page load.
   Camera.init();
   await Util.delay(2000);
-  Camera.capture(unlabeledImageFile);
+  await Camera.capture(unlabeledImageFile);
 
   // Watch for new data and load into the itemQueue and draw the image to screen.
   // Remove the data files when complete.
@@ -51,6 +51,8 @@ async function main() {
     }
     queue.display();
 
+    imageCanvas.width = bitmap.width;
+    imageCanvas.height = bitmap.height;
     imageContext.drawImage(bitmap, 0, 0);
 
     await Promise.all([
@@ -60,7 +62,7 @@ async function main() {
 
     await Util.delay(100);
 
-    Camera.capture(unlabeledImageFile);
+    await Camera.capture(unlabeledImageFile);
   });
 }
 
@@ -152,7 +154,6 @@ Doc.addClickListener('calibrate-btn', () => {
   ];
 
   robot.calibrate([robot1Vector, robot2Vector, robot3Vector], [belt1Vector, belt2Vector, belt3Vector]);
-
 });
 
 interface IConfigObject {
@@ -254,7 +255,6 @@ Doc.addClickListener('pick-place-queue-btn', () => {
   } else {
     console.log('error in not find item!!!');
   }
-
 });
 
 
@@ -285,7 +285,6 @@ Doc.addClickListener('capture-coordinate-btn', async () => {
   const output = await robot.getCurrentRobotCoordinate();
   document.getElementById('current-coordinate-output')
     .innerHTML = 'x: ' + output[0] + ', y: ' + output[1] + ', z: ' + output[2];
-
 });
 
 
@@ -293,25 +292,24 @@ Doc.addClickListener('capture-coordinate-btn', async () => {
 Doc.addClickListener('robot-coordinate-move-btn', () => {
   const robotPoints = document.getElementById('robot-coordinate-move-frm') as HTMLFormElement;
 
+  const x = parseFloat((robotPoints.elements[0] as HTMLInputElement).value);
+  const y = parseFloat((robotPoints.elements[1] as HTMLInputElement).value);
+  const z = parseFloat((robotPoints.elements[2] as HTMLInputElement).value);
 
-    const x = parseFloat((robotPoints.elements[0] as HTMLInputElement).value);
-    const y = parseFloat((robotPoints.elements[1] as HTMLInputElement).value);
-    const z = parseFloat((robotPoints.elements[2] as HTMLInputElement).value);
-
-    robot.moveToRobotCoordinate(x, y, z);
+  robot.moveToRobotCoordinate(x, y, z);
 });
 
 Doc.addClickListener('belt-coordinate-move-btn', () => {
 
-    const beltPoints = document.getElementById('belt-coordinate-move-frm') as HTMLFormElement;
+  const beltPoints = document.getElementById('belt-coordinate-move-frm') as HTMLFormElement;
 
-    const x = parseFloat((beltPoints.elements[0] as HTMLInputElement).value);
-    const y = parseFloat((beltPoints.elements[1] as HTMLInputElement).value);
+  const x = parseFloat((beltPoints.elements[0] as HTMLInputElement).value);
+  const y = parseFloat((beltPoints.elements[1] as HTMLInputElement).value);
 
-    const configFrm = document.getElementById('configuration-frm') as HTMLFormElement;
-    const z = parseFloat((configFrm.elements[2] as HTMLInputElement).value);
+  const configFrm = document.getElementById('configuration-frm') as HTMLFormElement;
+  const z = parseFloat((configFrm.elements[2] as HTMLInputElement).value);
 
-    robot.moveToBeltCoordinate(x, y, z);
+  robot.moveToBeltCoordinate(x, y, z);
 });
 
 Doc.addClickListener('origin-camera', () => Camera.origin());
