@@ -1,6 +1,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Camera } from './camera';
+import { Conveyer } from './conveyor';
 import { DataController } from './data-io';
 import { Item, ItemQueue } from './item_queue';
 import { Robot } from './robot';
@@ -25,7 +26,7 @@ const robot = new Robot();
 const imageCanvas = document.getElementById('canvas') as HTMLCanvasElement;
 const imageContext = imageCanvas.getContext('2d');
 
-const queue = new ItemQueue();
+// const queue = new ItemQueue();
 
 async function main() {
   // Code here runs on page load.
@@ -37,26 +38,27 @@ async function main() {
   // Remove the data files when complete.
   DataController.newData(datafile, labeledImageFile).subscribe(async ({ objects, bitmap }) => {
     console.log('New data detected: ', objects);
+    Conveyer.connect('COM4', 9600);
 
-    if (objects === undefined) return;
+    // Watch for new data and load into the itemQueue and draw the image to screen.
+    // Remove the data files when complete.
+    // DataController.newData(datafile, labeledImageFile).subscribe(async ({ objects, bitmap }) => {
+    //   console.log('New data detected: ', objects);
 
-    for (const object of objects) {
-      // insert into itemQueue
-      const x = (object.bndbox.xmax + object.bndbox.xmin) / 2;
-      const y = (object.bndbox.ymax + object.bndbox.ymin) / 2;
+    //   if (objects === undefined) return;
 
-      queue.insert({ x, y, z: 1, encoderValue: 0, classID: object.id, className: object.name });
-    }
-    queue.display();
+    //   for (const object of objects) {
+    //     // insert into itemQueue
+    //   }
 
-    imageContext.drawImage(bitmap, 0, 0);
+    //   imageContext.drawImage(bitmap, 0, 0);
 
-    await Promise.all([
-      fs.remove(datafile),
-      fs.remove(labeledImageFile),
-    ]);
+    //   await Promise.all([
+    //     fs.remove(datafile),
+    //     fs.remove(labeledImageFile),
+    //   ]);
 
-    await Util.delay(100);
+    //   await Util.delay(100);
 
     Camera.capture(unlabeledImageFile);
   });
@@ -101,7 +103,12 @@ Doc.addClickListener('connect-btn', async () => {
 Doc.addClickListener('send-btn', async () => {
   const command = Doc.getInputEl('input-command').value;
   robot.sendMessage(command);
+
 });
+
+
+document.getElementById('encoder-btn').addEventListener('click', () => Conveyer.sendMessage('\n'));
+
 
 
 // calibrate
@@ -145,6 +152,7 @@ Doc.addClickListener('calibrate-btn', () => {
   ];
 
   robot.calibrate([robot1Vector, robot2Vector, robot3Vector], [belt1Vector, belt2Vector, belt3Vector]);
+
 });
 
 interface IConfigObject {
@@ -246,6 +254,7 @@ Doc.addClickListener('pick-place-queue-btn', () => {
   } else {
     console.log('error in not find item!!!');
   }
+
 });
 
 
@@ -276,6 +285,7 @@ Doc.addClickListener('capture-coordinate-btn', async () => {
   const output = await robot.getCurrentRobotCoordinate();
   document.getElementById('current-coordinate-output')
     .innerHTML = 'x: ' + output[0] + ', y: ' + output[1] + ', z: ' + output[2];
+
 });
 
 
@@ -283,24 +293,25 @@ Doc.addClickListener('capture-coordinate-btn', async () => {
 Doc.addClickListener('robot-coordinate-move-btn', () => {
   const robotPoints = document.getElementById('robot-coordinate-move-frm') as HTMLFormElement;
 
-  const x = parseFloat((robotPoints.elements[0] as HTMLInputElement).value);
-  const y = parseFloat((robotPoints.elements[1] as HTMLInputElement).value);
-  const z = parseFloat((robotPoints.elements[2] as HTMLInputElement).value);
 
-  robot.moveToRobotCoordinate(x, y, z);
+    const x = parseFloat((robotPoints.elements[0] as HTMLInputElement).value);
+    const y = parseFloat((robotPoints.elements[1] as HTMLInputElement).value);
+    const z = parseFloat((robotPoints.elements[2] as HTMLInputElement).value);
+
+    robot.moveToRobotCoordinate(x, y, z);
 });
 
 Doc.addClickListener('belt-coordinate-move-btn', () => {
 
-  const beltPoints = document.getElementById('belt-coordinate-move-frm') as HTMLFormElement;
+    const beltPoints = document.getElementById('belt-coordinate-move-frm') as HTMLFormElement;
 
-  const x = parseFloat((beltPoints.elements[0] as HTMLInputElement).value);
-  const y = parseFloat((beltPoints.elements[1] as HTMLInputElement).value);
+    const x = parseFloat((beltPoints.elements[0] as HTMLInputElement).value);
+    const y = parseFloat((beltPoints.elements[1] as HTMLInputElement).value);
 
-  const configFrm = document.getElementById('configuration-frm') as HTMLFormElement;
-  const z = parseFloat((configFrm.elements[2] as HTMLInputElement).value);
+    const configFrm = document.getElementById('configuration-frm') as HTMLFormElement;
+    const z = parseFloat((configFrm.elements[2] as HTMLInputElement).value);
 
-  robot.moveToBeltCoordinate(x, y, z);
+    robot.moveToBeltCoordinate(x, y, z);
 });
 
 Doc.addClickListener('origin-camera', () => Camera.origin());
