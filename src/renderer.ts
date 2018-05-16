@@ -31,6 +31,7 @@ const queue = new ItemQueue();
 async function main() {
   // Code here runs on page load.
   Camera.init();
+  Conveyer.connect('/dev/ttyACM1', 9600);
   await Util.delay(2000);
   await Camera.capture(unlabeledImageFile);
 
@@ -38,7 +39,7 @@ async function main() {
   // Remove the data files when complete.
   DataController.newData(datafile, labeledImageFile).subscribe(async ({ objects, bitmap }) => {
     console.log('New data detected: ', objects);
-    Conveyer.connect('COM4', 9600);
+    
 
     if (objects === undefined) return;
 
