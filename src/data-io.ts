@@ -2,6 +2,7 @@ import { spawn } from 'child_process';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Observable } from 'rxjs';
+import { Util } from './utils';
 
 export namespace DataController {
 
@@ -50,12 +51,14 @@ export namespace DataController {
         fileRenamed(imageFile))
       .concatMap(async () => {
         try {
+          await Util.delay(20);
           const [rawData, rawImage] = await Promise.all([
             fs.readFile(dataFile, 'utf8'),
             fs.readFile(imageFile),
           ]);
 
           const objects = JSON.parse(rawData) as IObject[];
+          // if (objects === undefined) return { objects: undefined, bitmap: undefined };
           const bitmap = await createImageBitmap(new Blob([rawImage]));
           return { objects, bitmap };
         } catch {

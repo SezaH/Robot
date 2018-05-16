@@ -31,7 +31,7 @@ async function main() {
   // Code here runs on page load.
   Camera.init();
   await Util.delay(2000);
-  Camera.capture(unlabeledImageFile);
+  await Camera.capture(unlabeledImageFile);
 
   // Watch for new data and load into the itemQueue and draw the image to screen.
   // Remove the data files when complete.
@@ -49,6 +49,8 @@ async function main() {
     }
     queue.display();
 
+    imageCanvas.width = bitmap.width;
+    imageCanvas.height = bitmap.height;
     imageContext.drawImage(bitmap, 0, 0);
 
     await Promise.all([
@@ -58,7 +60,7 @@ async function main() {
 
     await Util.delay(100);
 
-    Camera.capture(unlabeledImageFile);
+    await Camera.capture(unlabeledImageFile);
   });
 }
 
