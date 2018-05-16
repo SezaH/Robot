@@ -26,7 +26,7 @@ const robot = new Robot();
 const imageCanvas = document.getElementById('canvas') as HTMLCanvasElement;
 const imageContext = imageCanvas.getContext('2d');
 
-// const queue = new ItemQueue();
+const queue = new ItemQueue();
 
 async function main() {
   // Code here runs on page load.
@@ -40,25 +40,25 @@ async function main() {
     console.log('New data detected: ', objects);
     Conveyer.connect('COM4', 9600);
 
-    // Watch for new data and load into the itemQueue and draw the image to screen.
-    // Remove the data files when complete.
-    // DataController.newData(datafile, labeledImageFile).subscribe(async ({ objects, bitmap }) => {
-    //   console.log('New data detected: ', objects);
+    if (objects === undefined) return;
 
-    //   if (objects === undefined) return;
+    for (const object of objects) {
+      // insert into itemQueue
+      const x = (object.bndbox.xmax + object.bndbox.xmin) / 2;
+      const y = (object.bndbox.ymax + object.bndbox.ymin) / 2;
 
-    //   for (const object of objects) {
-    //     // insert into itemQueue
-    //   }
+      queue.insert({ x, y, z: 1, encoderValue: 0, classID: object.id, className: object.name });
+    }
+    queue.display();
 
-    //   imageContext.drawImage(bitmap, 0, 0);
+    imageContext.drawImage(bitmap, 0, 0);
 
-    //   await Promise.all([
-    //     fs.remove(datafile),
-    //     fs.remove(labeledImageFile),
-    //   ]);
+    await Promise.all([
+      fs.remove(datafile),
+      fs.remove(labeledImageFile),
+    ]);
 
-    //   await Util.delay(100);
+    await Util.delay(100);
 
     Camera.capture(unlabeledImageFile);
   });
