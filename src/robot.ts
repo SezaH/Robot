@@ -1,6 +1,5 @@
 import * as SerialPort from 'serialport';
 
-
 export class Robot {
   private isConnected = false;
   private isCalibrated = false;
@@ -122,8 +121,6 @@ export class Robot {
     await this.openGripper();
     await this.moveToRobotCoordinate(0, 0, -400);
   }
-
-
 
   public async testStuff() {
     while (true) {
