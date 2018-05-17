@@ -247,6 +247,14 @@ Doc.addClickListener('pick-place-queue-btn', () => {
   }
 });
 
+Doc.addClickListener('dynamic-grab-btn', () => {
+  const item = queue.remove();
+  if (item === undefined) { console.log('No items in queue!'); return; }
+
+  console.log(`Attempting dynamic grab of item:\n${item}\n`);
+  robot.dynamicGrab(item);
+});
+
 Doc.addClickListener('point1-capture-btn', async () => {
   const coordinates = await robot.getCurrentRobotCoordinate();
   Doc.setInputValue('calibration-x1-input', coordinates[0]);

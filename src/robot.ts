@@ -1,4 +1,6 @@
+// import { Observable, Subject } from 'rxjs';
 import * as SerialPort from 'serialport';
+import { Item } from './item';
 
 export class Robot {
   private isConnected = false;
@@ -6,6 +8,7 @@ export class Robot {
   private port: SerialPort;
   private transform: number[][];
   private newData = 0;
+  // private stopItemTracking = new Subject<void>();
 
   public connect(portName: string, baudRate: number) {
     this.port = new SerialPort(portName, { baudRate }, err => console.error(err));
@@ -120,6 +123,19 @@ export class Robot {
     await this.moveToRobotCoordinate(x, y, z);
     await this.openGripper();
     await this.moveToRobotCoordinate(0, 0, -400);
+  }
+
+  public async dynamicGrab(item: Item) {
+    // TODO
+    // move to y,z here
+    while (true) {
+      const coords = await item.update();
+      // if in range
+      // move to X ahead of item
+      // Grab
+      // Place
+      // exit
+    }
   }
 
   public async testStuff() {

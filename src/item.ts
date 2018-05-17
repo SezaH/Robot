@@ -1,12 +1,12 @@
-import { Observable } from 'rxjs';
+// import { Observable } from 'rxjs';
 import { Conveyer } from './conveyor';
 import { Coord2, Coord3, Coord4, Vector } from './utils';
 
 export class Item {
 
-  public static track(item: Item, rateHz: number) {
-    return Observable.interval(1000 / rateHz).concatMap(() => item.update());
-  }
+  // public static track(item: Item, rateHz: number) {
+  //   return Observable.interval(1000 / rateHz).concatMap(() => item.update());
+  // }
 
   private _coords: Coord4;
   private _classID: number;
