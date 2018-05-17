@@ -50,7 +50,7 @@ export class ItemQueue {
 
   private isDuplicate(coords: Coord4, classID: number) {
     for (const item of this.items) {
-      const t = Conveyer.resolveEncoder(item.t, coords.t);
+      const t = Conveyer.calcDeltaT(item.t, coords.t);
 
       const deltas: Coord3 = {
         x: coords.x - (item.x + (t - item.t)),
