@@ -8,6 +8,7 @@ export namespace Conveyer {
 
   /** Emits everytime a new encoder count is received */
   export const countUpdated = new Subject<number>();
+  export const positionUpdated = new Subject<{ deltaX: number, deltaT: number }>();
 
   /** The last received encoder count. */
   let prevT = 0;
@@ -17,11 +18,11 @@ export namespace Conveyer {
    * Emits evertime a new encoder count is received.
    * Calculates the delta counts and delta X of belt.
    */
-  export const positionUpdated = countUpdated.map(t => {
-    const t2 = calcDeltaT(prevT, t);
-    const deltaT = t2 - t;
+  countUpdated.subscribe(t => {
+    const deltaT = calcDeltaT(prevT, t);
+    const deltaX = countToDist(deltaT);
     prevT = t;
-    return { deltaX: countToDist(deltaT), deltaT };
+    positionUpdated.next({ deltaX, deltaT });
   });
 
   let port: SerialPort;
@@ -56,7 +57,7 @@ export namespace Conveyer {
    * @param deltaT The change in encoder counts
    */
   export function countToDist(deltaT: number) {
-    return deltaT * 2.5; // very roughly 500mm/s when mocking
+    return deltaT * 2; // very roughly 400mm/s when mocking
   }
 
   /**
@@ -66,7 +67,8 @@ export namespace Conveyer {
    * @param newT The new encoder count
    */
   export function calcDeltaT(oldT: number, newT: number) {
-    return (newT < oldT) ? newT + encoderLimit - oldT : newT;
+    newT = (newT < oldT) ? newT + encoderLimit - oldT : newT;
+    return newT - oldT;
   }
 
   /**

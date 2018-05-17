@@ -1,4 +1,4 @@
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { Conveyer } from './conveyor';
 import { Coord2, Coord3, Coord4, Vector } from './utils';
 
@@ -14,6 +14,7 @@ export class Item {
   private _numDetections = 1;
   private _deviation: Coord3 = { x: 0, y: 0, z: 0 };
   private _coordsUpdated = new Subject<Coord3>();
+  private _subscription: Subscription;
 
   constructor(
     coords: Coord4,
@@ -62,6 +63,10 @@ export class Item {
   public set deviation(d) { this._deviation = d; }
 
   public get coordsUpdated() { return this._coordsUpdated.asObservable(); }
+
+  public destroy() {
+    this._subscription.unsubscribe();
+  }
 
   public toString() {
     return `x: ${this.x}, y: ${this.y}, z: ${this.z}, encoderValue: ${this.t},

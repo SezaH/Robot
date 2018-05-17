@@ -126,16 +126,18 @@ export class Robot {
   }
 
   public async dynamicGrab(item: Item) {
+    item.coordsUpdated.subscribe(coords => console.log(coords));
     // TODO
     // move to y,z here
-    while (true) {
-      await item.coordsUpdated.toPromise();
-      // if in range
-      // move to X ahead of item
-      // Grab
-      // Place
-      // exit
-    }
+    // while (true) {
+    // await item.coordsUpdated.toPromise();
+    // if in range
+    // move to X ahead of item
+    // Grab
+    // Place
+    // item.destroy()
+    // exit
+    // }
   }
 
   public async testStuff() {

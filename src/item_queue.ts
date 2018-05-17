@@ -5,7 +5,7 @@ import { Coord2, Coord3, Coord4, Vector } from './utils';
 export class ItemQueue {
   private _items: Item[] = [];
   private deviationThreshold = 10; // 10 mm radius
-  private xLimit = 1500; // 1.5m TODO verifiy
+  private xLimit = 5000; // 5m TODO determine actual
 
   constructor() {
     // Purge out of range items.
@@ -37,6 +37,7 @@ export class ItemQueue {
    * @param index index of item to delete
    */
   public delete(index: number) {
+    console.log(`Item removed from queue\n${this._items[index]}\n`);
     this._items.splice(index, 1);
   }
 

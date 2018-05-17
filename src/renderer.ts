@@ -35,7 +35,8 @@ async function main() {
   // Conveyer.connect('/dev/ttyACM1', 9600); // Real connection
   Conveyer.connect('/dev/ttyACM1', 9600, true); // Mock connection
 
-  // Conveyer.countUpdated.subscribe(tt => console.log(tt)); // Print counts
+  queue.insert(new Item({ x: 0, y: 0, z: 1, t: 0 }, 1, 'cup'));
+  // Conveyer.positionUpdated.subscribe(tt => console.log(tt)); // Print counts
 
   await Util.delay(2000);
 
