@@ -1,7 +1,6 @@
+import { Conveyer } from './conveyor';
 import { Item } from './item';
 import { Coord2, Coord3, Coord4, Vector } from './utils';
-
-const limit = Math.pow(2, 20);
 
 export class ItemQueue {
   private _items: Item[] = [];
@@ -41,7 +40,7 @@ export class ItemQueue {
 
   private isDuplicate(coords: Coord4, classID: number) {
     for (const item of this.items) {
-      const t = (coords.t < item.t) ? coords.t + limit - item.t : coords.t;
+      const t = Conveyer.resolveEncoder(item.t, coords.t);
 
       const deltas: Coord3 = {
         x: coords.x - (item.x + (t - item.t)),

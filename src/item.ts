@@ -1,10 +1,11 @@
 import { Observable } from 'rxjs';
+import { Conveyer } from './conveyor';
 import { Coord2, Coord3, Coord4, Vector } from './utils';
 
 export class Item {
 
   public static track(item: Item, rateHz: number) {
-    return Observable.interval(1000 / rateHz);
+    return Observable.interval(1000 / rateHz).concatMap(() => item.update());
   }
 
   private _coords: Coord4;
@@ -54,6 +55,13 @@ export class Item {
 
   public get deviation() { return this._deviation; }
   public set deviation(d) { this._deviation = d; }
+
+  public async update() {
+    const { deltaX, deltaT } = await Conveyer.getDeltas(this.t);
+    this.x += deltaX;
+    this.t += deltaT;
+    return this._coords as Coord3;
+  }
 
   public toString() {
     return `x: ${this.x}, y: ${this.y}, z: ${this.z}, encoderValue: ${this.t},
