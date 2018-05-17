@@ -31,7 +31,7 @@ async function main() {
   // Code here runs on page load.
   Camera.init();
   await Util.delay(2000);
-  await Camera.capture(unlabeledImageFile);
+  //await Camera.capture(unlabeledImageFile);
 
   // Watch for new data and load into the itemQueue and draw the image to screen.
   // Remove the data files when complete.
@@ -60,7 +60,7 @@ async function main() {
 
     await Util.delay(100);
 
-    await Camera.capture(unlabeledImageFile);
+    //await Camera.capture(unlabeledImageFile);
   });
 }
 
@@ -306,5 +306,7 @@ Doc.addClickListener('belt-coordinate-move-btn', () => {
 });
 
 Doc.addClickListener('origin-camera', () => Camera.origin());
+
+Doc.addClickListener('run-model', () => Camera.runModel());
 
 main();

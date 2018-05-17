@@ -6,8 +6,40 @@ export namespace Camera {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
 
+  export function runModel() {
+    const mol = spawn('python3', ['io_object_detection.py'], { cwd: '../models/research/object_detection' });
+    console.log("running");
+
+    mol.stdout.on('data', (data) => {
+      console.log(`stdout: ${data}`);
+    });
+
+    mol.stderr.on('data', (data) => {
+      console.log(`stderr: ${data}`);
+    });
+
+    mol.on('exit', function(code) {
+      if (code != 0) {
+        console.log('Failed: ' + code);
+      }
+    });
+    //mol.kill();
+  }
+
   export function origin() {
-    spawn('python3', ['./src/calibration.py']);
+    const cal = spawn('python3', ['calibration.py'], { cwd: '../models/research/object_detection' });
+    cal.on('exit', function(code) {
+        if (code != 0) {
+            console.log('Failed: ' + code);
+        }
+        fs.exists("../models/research/object_detection/origin.xml", (exist) => {
+          if (exist) {
+            return console.log("Good pic, origin ready!");
+          } else {
+            return console.log("Try again...");
+          }
+        });
+    });
   }
 
   export function init() {
