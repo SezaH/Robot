@@ -31,9 +31,20 @@ const queue = new ItemQueue();
 async function main() {
   // Code here runs on page load.
   Camera.init();
-  Conveyer.connect('/dev/ttyACM1', 9600);
+
+  // Conveyer.connect('/dev/ttyACM1', 9600); // Real connection
+  Conveyer.connect('/dev/ttyACM1', 9600, true); // Mock connection
+
+  // Conveyer.countUpdated.subscribe(tt => console.log(tt)); // Print counts
+
   await Util.delay(2000);
-  await Camera.capture(unlabeledImageFile);
+
+  DataController.countRecorded.next(
+    (await Promise.all([
+      Conveyer.fetchCount(),
+      Camera.capture(unlabeledImageFile),
+    ]))[0],
+  );
 
   // Watch for new data and load into the itemQueue and draw the image to screen.
   // Remove the data files when complete.

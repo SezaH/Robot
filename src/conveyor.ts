@@ -11,6 +11,7 @@ export namespace Conveyer {
 
   /** The last received encoder count. */
   let prevT = 0;
+  let mockT = 0;
 
   /**
    * Emits evertime a new encoder count is received.
@@ -28,18 +29,26 @@ export namespace Conveyer {
 
   const fetchCounts = new Subject<void>();
 
-  // Limit the encoder fetches to a rate of 1000Hz max.
-  fetchCounts.debounceTime(1).subscribe(() => port.write('\n'));
+  export function connect(portName: string, baudRate: number, mock = false) {
 
-  // Fetch new encoder counts at least 10 times a second.
-  Observable.interval(100).subscribe(() => fetchCount());
+    // Fetch new encoder counts at least 10 times a second.
+    Observable.interval(100).subscribe(() => fetchCount());
 
-  export function connect(portName: string, baudRate: number) {
+    if (mock) {
+      Observable.interval(1).subscribe(t => mockT = t);
+      fetchCounts.debounceTime(1).subscribe(() => countUpdated.next(mockT));
+      return;
+    }
+
     port = new SerialPort(portName, { baudRate }, err => console.error(err));
     isConnected = true;
+
     port.on('data', (data: any) => {
       countUpdated.next(parseInt(data.toString(), 10));
     });
+
+    // Limit the encoder fetches to a rate of 1000Hz max.
+    fetchCounts.debounceTime(1).subscribe(() => port.write('\n'));
   }
 
   /**
@@ -47,8 +56,7 @@ export namespace Conveyer {
    * @param deltaT The change in encoder counts
    */
   export function countToDist(deltaT: number) {
-    const distance = deltaT * Math.PI; // (* diameter of the roller)
-    return distance;
+    return deltaT * 2.5; // very roughly 500mm/s when mocking
   }
 
   /**
