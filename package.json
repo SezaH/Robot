@@ -4,12 +4,12 @@
   "description": "A robot control panel",
   "scripts": {
     "install": "electron-rebuild",
-    "build": "tsc && copyfiles -f src/index.html src/style.css dist",
+    "build": "npm run format && tsc && copyfiles -f src/index.html src/style.css dist",
     "watch": "npm-watch",
-    "lint": "tslint -c tslint.json -p tsconfig.json",
+    "lint": "tsfmt --verify && tslint --project .",
+    "format": "tsfmt -r && tslint --fix --project .",
     "start": "npm run build && electron --serve --console ./dist/main.js",
-    "electron": "electron --serve --console ./dist/main.js",
-    "format": "tslint --fix --project ."
+    "electron": "electron --serve --console ./dist/main.js"
   },
   "watch": {
     "build": {
@@ -35,7 +35,8 @@
     "electron-reload": "^1.2.2",
     "npm-watch": "^0.3.0",
     "tslint": "^5.9.1",
-    "typescript": "^2.8.1"
+    "typescript": "^2.8.1",
+    "typescript-formatter": "^7.2.0"
   },
   "dependencies": {
     "@types/fs-extra": "^5.0.1",

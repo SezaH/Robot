@@ -19,7 +19,6 @@ export namespace DataController {
     score: number;
   }
 
-
   /**
    * @returns An observable that emits whenever the file appears
    *  or disappears in the directory.
@@ -36,7 +35,6 @@ export namespace DataController {
       });
     });
   }
-
 
   /**
    * @returns An observable that emits whenever both the data file and image file are created.
@@ -67,7 +65,6 @@ export namespace DataController {
         }
       });
   }
-
 
   /**
    * Triggers a python script to capture a image from the webcam and save it to a directory.

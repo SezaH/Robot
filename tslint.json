@@ -11,6 +11,7 @@
     "no-bitwise": true,
     "no-conditional-assignment": true,
     "no-consecutive-blank-lines": false,
+    "interface-name": [false, "always-prefix"],
     "no-empty": [
       true,
       "allow-empty-catch"
