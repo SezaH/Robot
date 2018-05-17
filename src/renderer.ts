@@ -3,7 +3,8 @@ import * as path from 'path';
 import { Camera } from './camera';
 import { Conveyer } from './conveyor';
 import { DataController } from './data-io';
-import { Item, ItemQueue } from './item_queue';
+import { Item } from './item';
+import { ItemQueue } from './item_queue';
 import { Robot } from './robot';
 import { Util } from './utils';
 
@@ -46,7 +47,8 @@ async function main() {
       const x = (object.bndbox.xmax + object.bndbox.xmin) / 2;
       const y = (object.bndbox.ymax + object.bndbox.ymin) / 2;
 
-      queue.insert({ x, y, z: 1, encoderValue: 0, classID: object.id, className: object.name });
+      // TODO encoder count.
+      queue.insert(new Item({ x, y, z: 1, t: 0 }, object.id, object.name));
     }
     queue.display();
 
