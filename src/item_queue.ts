@@ -4,7 +4,17 @@ import { Coord2, Coord3, Coord4, Vector } from './utils';
 
 export class ItemQueue {
   private _items: Item[] = [];
-  private threshold = 100; // 10 mm off each side
+  private deviationThreshold = 10; // 10 mm radius
+  private xLimit = 1500; // 1.5m TODO verifiy
+
+  constructor() {
+    // Purge out of range items.
+    Conveyer.positionUpdated.subscribe(() => {
+      for (let i = this.items.length - 1; i >= 0; i--) {
+        if (this.items[i].x > this.xLimit) this.delete(i);
+      }
+    });
+  }
 
   /**
    * Insert an intem in the end of the queue
@@ -48,7 +58,7 @@ export class ItemQueue {
         z: coords.z - item.z,
       };
 
-      if (Vector.magnitude(deltas) < this.threshold && item.classID === classID) {
+      if (Vector.magnitude(deltas) < this.deviationThreshold && item.classID === classID) {
         item.deviation = deltas;
         item.xyzt = coords;
         item.numDetections++;
