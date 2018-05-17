@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 export namespace DataController {
 
@@ -17,6 +17,8 @@ export namespace DataController {
     id: number;
     score: number;
   }
+
+  export const countRecorded = new Subject<number>();
 
   /**
    * @returns An observable that emits whenever the file appears
@@ -45,8 +47,10 @@ export namespace DataController {
     return Observable
       .zip(
         fileRenamed(dataFile),
-        fileRenamed(imageFile))
-      .concatMap(async () => {
+        fileRenamed(imageFile),
+        countRecorded,
+    )
+      .concatMap(async ([, , t]) => {
         try {
           const [rawData, rawImage] = await Promise.all([
             fs.readFile(dataFile, 'utf8'),
@@ -55,10 +59,10 @@ export namespace DataController {
 
           const objects = JSON.parse(rawData) as IObject[];
           const bitmap = await createImageBitmap(new Blob([rawImage]));
-          return { objects, bitmap };
+          return { objects, bitmap, t };
         } catch {
 
-          return { objects: undefined, bitmap: undefined };
+          return { objects: undefined, bitmap: undefined, t: undefined };
         }
       });
   }

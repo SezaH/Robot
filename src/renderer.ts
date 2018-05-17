@@ -63,7 +63,14 @@ async function main() {
 
     await Util.delay(100);
 
-    await Camera.capture(unlabeledImageFile);
+    const count = await Conveyer.fetchCount();
+
+    const [t] = await Promise.all([
+      Conveyer.fetchCount(),
+      Camera.capture(unlabeledImageFile),
+    ]);
+
+    DataController.countRecorded.next(t);
   });
 }
 
