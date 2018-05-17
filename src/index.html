@@ -181,7 +181,19 @@
   <button id="test-stuff-btn">Test</button> <br>
 
   <h2>Calibration on Camera</h2>
+  <button id="reset-pics">Reset</button>
+  <button id="take pic">Take picture</button>
+  <output name="counter_pics">0</output>
+  <button id="calibrate_camera">calibrate</button> <br> <br>
   <button id="origin-camera">Setting Origin</button>
+  <output name="result">not ready</output> <br>
+
+  <h2> Start Model</h2> <br>
+  model: <input type="text" id="model"> <br>
+  pbtxt: <input type="text" id="pbtxt"> <br>
+  percentage: <input type="number" id="percentage"> <br>
+  <button id="run-model">Start Model</button> <br>
+  <br>
 
   <script>var exports = {};</script>
   <script type="text/javascript"

@@ -388,4 +388,6 @@ Doc.addClickListener('belt-coordinate-move-btn', () => {
 
 Doc.addClickListener('origin-camera', () => Camera.origin());
 
+Doc.addClickListener('run-model', () => Camera.runModel());
+
 main();
