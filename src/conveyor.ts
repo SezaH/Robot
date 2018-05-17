@@ -46,8 +46,8 @@ export namespace Conveyer {
    * Converts from encoder counts to mm
    * @param deltaT The change in encoder counts
    */
-  function countToDist(deltaT: number) {
-    const distance = deltaT * Math.PI ; // (* dimeter of the roller)
+  export function countToDist(deltaT: number) {
+    const distance = deltaT * Math.PI; // (* diameter of the roller)
     return distance;
   }
 
