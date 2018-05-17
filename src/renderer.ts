@@ -107,7 +107,7 @@ Doc.addClickListener('send-btn', async () => {
 
 });
 
-document.getElementById('encoder-btn').addEventListener('click', () => Conveyer.sendMessage('\n'));
+document.getElementById('encoder-btn').addEventListener('click', async () => console.log(await Conveyer.fetchCount()));
 
 // calibrate
 Doc.addClickListener('calibrate-btn', () => {

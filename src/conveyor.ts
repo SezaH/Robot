@@ -1,38 +1,44 @@
+import { Observable, Subject } from 'rxjs';
 import * as SerialPort from 'serialport';
 
 // var SerialPort = require('serialport');
 export namespace Conveyer {
   export const encoderLimit = Math.pow(2, 20);
+  export const countUpdated = new Subject<number>();
 
+  const fetchCounts = new Subject<void>();
   let port: SerialPort;
   let isConnected = false;
+  fetchCounts.debounceTime(1).subscribe(() => port.write('\n'));
+  Observable.interval(100).subscribe(() => fetchCount());
+  let prevT = 0;
 
   export function connect(portName: string, baudRate: number) {
     port = new SerialPort(portName, { baudRate }, err => console.error(err));
     isConnected = true;
     port.on('data', (data: any) => {
-      const encoder = parseInt(data.toString(), 10);
-      console.log(encoder);
-      return encoder;
-      // console.log(data);
-      //   return data;
-      // console.log(data.tostring() as number);
+      countUpdated.next(parseInt(data.toString(), 10));
     });
   }
+
+  function countToDist(deltaT: number) {
+    // TODO
+    return 0;
+  }
+
+  export const positionUpdated = countUpdated.map(t => {
+    const t2 = resolveEncoder(prevT, t);
+    const deltaT = t2 - t;
+    prevT = t;
+    return { deltaX: countToDist(deltaT), deltaT };
+  });
 
   export function resolveEncoder(oldVal: number, newVal: number) {
     return (newVal < oldVal) ? newVal + encoderLimit - oldVal : newVal;
   }
 
-  export async function getDeltas(t1: number) {
-    // get encoder count
-    // t2 = resolve encoder
-    // deltaT = t2 -t1
-    // return { deltaT, deltaX: count to mm deltaT }
-    return { deltaX: 0, deltaT: 0 }; // temp
-  }
-
-  export function sendMessage(message: string) {
-    port.write(message + '\r\n');
+  export function fetchCount() {
+    fetchCounts.next();
+    return countUpdated.asObservable().toPromise();
   }
 }
