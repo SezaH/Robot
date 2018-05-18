@@ -21,7 +21,7 @@
   <canvas id="canvas"></canvas>
   <h2>Connection</h2>
   <form id="serial-frm">
-    Port: <input type="text" name="port" style="width: 20em;" value="/dev/tty.usbmodem1421">
+    Port: <input type="text" name="port" style="width: 20em;" value="/dev/tty.usbmodem1411">
     Baud Rate: <input type="nuber" name="baudRate" value="115200">
   </form>
   <br>
@@ -52,11 +52,11 @@
   <form id="belt-coordinates-frm">
     <br>
     <p>belt coordinate points</p><br>
-    x1: <input type="number" value="-200">
+    x1: <input type="number" value="1800">
     y1: <input type="number" value="125"><br>
-    x2: <input type="number" value="-200">
+    x2: <input type="number" value="1800">
     y2: <input type="number" value="-125"><br>
-    x3: <input type="number" value="200">
+    x3: <input type="number" value="2200">
     y3: <input type="number" value="-125"><br>
   </form>
   <br>
@@ -121,11 +121,13 @@
 <br>
 
   Dynamic Grab Test Parameters: <br>
-  hover_zOffset: <input type="number" id="dg-hover_zOffset-input" value="100"> <br>
-  pick_zOffset: <input type="number" id="dg-pick_zOffset-input" value="0"> <br>
-  pick_xOffset: <input type="number" id="dg-pick_xOffset-input" value="0"> <br>
-  pick_xMax: <input type="number" id="dg-pick_xMax-input" value="100"> <br>
-  pick_xMin: <input type="number" id="dg-pick_xMin-input" value="-100"> <br>
+  item_intital_x: <input type="number" id="dg-item-initial-x-input" value="0"> <br>
+  item_initial_y: <input type="number" id="dg-item-initial-y-input" value="0"> <br>
+  hover_zOffset: <input type="number" id="dg-hover-zOffset-input" value="100"> <br>
+  pick_zOffset: <input type="number" id="dg-pick-zOffset-input" value="0"> <br>
+  pick_xOffset: <input type="number" id="dg-pick-xOffset-input" value="0"> <br>
+  pick_xMax: <input type="number" id="dg-pick-xMax-input" value="100"> <br>
+  pick_xMin: <input type="number" id="dg-pick-xMin-input" value="-100"> <br>
   place_x: <input type="number" id="dg-place-x-input" value="0"> <br>
   place_y: <input type="number" id="dg-place-y-input" value="650"> <br>
   place_z: <input type="number" id="dg-place-z-input" value="-400"> <br>

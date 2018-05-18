@@ -1,6 +1,7 @@
 // import { Observable, Subject } from 'rxjs';
 import * as SerialPort from 'serialport';
 import { Item } from './item';
+import { Util } from './utils';
 
 export class Robot {
   private isConnected = false;
@@ -125,6 +126,10 @@ export class Robot {
   public async dynamicGrab(item: Item, zOffsetHover: number, zOffsetPick: number,
                            xOffsetPick: number, xMaxPick: number, xMinPick: number,
                            placeX: number, placeY: number, placeZ: number) {
+
+    // makes sense to open gripper before doing stuff
+    this.openGripper();
+
     item.coordsUpdated.subscribe(coords => console.log(coords));
 
     // if item already moved out of range, cannot pick cup
@@ -138,6 +143,7 @@ export class Robot {
       // move to most forward place on belt
       const itemRobotY = this.belt2robotCoordinates(item.x, item.y)[1];
       const itemRobotZ = this.belt2robotCoordinates(item.x, item.y)[2];
+      // since the conveyor is a bit skewed with respect to the robot, need to adjust for that.
       await this.moveToRobotCoordinate(xMaxPick, itemRobotY, itemRobotZ + zOffsetHover);
 
       // while
@@ -162,9 +168,11 @@ export class Robot {
 
     // now since in range, try to pick item
     // xOffsetPick in belt coordinates currently, which is not what we want
-    this.pick(item.x + xOffsetPick, item.y, zOffsetPick);
+    await this.pick(item.x + xOffsetPick, item.y, zOffsetPick);
     // now place it at intended target
-    this.place(placeX, placeX, placeZ);
+    await this.place(placeX, placeY, placeZ);
+    // want to wait after picking
+    await Util.delay(200);
     // return to home
     await this.moveToRobotCoordinate(0, 0, -400);
 
