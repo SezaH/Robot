@@ -67,9 +67,9 @@ export class Robot {
     return cmdComplete;
   }
 
-  public moveToBeltCoordinate(x: number, y: number, zOffset: number) {
+  public async moveToBeltCoordinate(x: number, y: number, zOffset: number) {
     const coordinates = this.belt2robotCoordinates(x, y);
-    this.moveToRobotCoordinate(coordinates[0], coordinates[1], coordinates[2] + zOffset);
+    await this.moveToRobotCoordinate(coordinates[0], coordinates[1], coordinates[2] + zOffset);
   }
 
   public openGripper() {
@@ -122,6 +122,8 @@ export class Robot {
     await this.openGripper();
   }
 
+
+
   public async dynamicGrab(item: Item, zOffsetHover: number, zOffsetPick: number,
                            xOffsetPick: number, xMaxPick: number, xMinPick: number,
                            placeX: number, placeY: number, placeZ: number) {
@@ -132,13 +134,15 @@ export class Robot {
     if (itemRobotX < xMinPick) {
       console.log('itemInRange reject with initial itemRobotX: ', itemRobotX);
       console.log('Item initially past pickable range');
+      item.destroy()
       return;
     } else if (itemRobotX > xMaxPick) {
       // move to most forward place on belt
       const itemRobotY = this.belt2robotCoordinates(item.x, item.y)[1];
       const itemRobotZ = this.belt2robotCoordinates(item.x, item.y)[2];
-      this.moveToRobotCoordinate(xMaxPick, itemRobotY, itemRobotZ + zOffsetHover);
+      await this.moveToRobotCoordinate(xMaxPick, itemRobotY, itemRobotZ + zOffsetHover);
 
+      // while 
       while (true) {
         await item.coordsUpdated.first().toPromise();
         itemRobotX = this.belt2robotCoordinates(item.x, item.y)[0];
@@ -146,6 +150,7 @@ export class Robot {
         if (itemRobotX < xMinPick) {
           console.log('itemInRange reject with initial itemRobotX: ', itemRobotX);
           console.log('Item never detected in pickable range');
+          item.destroy();
           return;
         } else if (itemRobotX < xMaxPick) {
           break;
@@ -154,7 +159,7 @@ export class Robot {
 
     } else {
       await item.coordsUpdated.first().toPromise();
-      this.moveToBeltCoordinate(item.x, item.y, zOffsetHover);
+      await this.moveToBeltCoordinate(item.x, item.y, zOffsetHover);
     }
 
     // now since in range, try to pick item
@@ -163,7 +168,7 @@ export class Robot {
     // now place it at intended target
     this.place(placeX, placeX, placeZ);
     // return to home
-    this.moveToRobotCoordinate(0, 0, -400);
+    await this.moveToRobotCoordinate(0, 0, -400);
 
     // destroy item for some reason
     item.destroy();

@@ -24,7 +24,7 @@ export class Item {
     this._coords = coords;
     this._classID = classID;
     this._className = className;
-    Conveyer.positionUpdated.subscribe(({ deltaX, deltaT }) => {
+    this._subscription = Conveyer.positionUpdated.subscribe(({ deltaX, deltaT }) => {
       this.x += deltaX;
       this.t += deltaT;
     });

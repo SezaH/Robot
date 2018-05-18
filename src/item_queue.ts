@@ -38,6 +38,7 @@ export class ItemQueue {
    */
   public delete(index: number) {
     console.log(`Item removed from queue\n${this._items[index]}\n`);
+    this._items[index].destroy();
     this._items.splice(index, 1);
   }
 
