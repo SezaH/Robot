@@ -130,7 +130,7 @@ export class Robot {
     // TODO
     // move to y,z here
     // while (true) {
-    // await item.coordsUpdated.toPromise();
+    // await item.coordsUpdated.fisrt().toPromise();
     // if in range
     // move to X ahead of item
     // Grab

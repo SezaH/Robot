@@ -32,11 +32,14 @@ async function main() {
   // Code here runs on page load.
   Camera.init();
 
-  // Conveyer.connect('/dev/ttyACM1', 9600); // Real connection
-  Conveyer.connect('/dev/ttyACM1', 9600, true); // Mock connection
+  await Conveyer.connect('COM5', 9600); // Real connection
+  // await Conveyer.connect('/dev/ttyACM1', 9600, true); // Mock connection
 
-  queue.insert(new Item({ x: 0, y: 0, z: 1, t: 0 }, 1, 'cup'));
-  // Conveyer.positionUpdated.subscribe(tt => console.log(tt)); // Print counts
+  queue.insert(new Item({ x: 0, y: 0, z: 1, t: await Conveyer.fetchCount() }, 1, 'cup'));
+
+  // queue.remove().coordsUpdated.subscribe(coords => console.log(coords));
+
+  // Conveyer.countUpdated.subscribe(tt => console.log(tt)); // Print counts
 
   await Util.delay(2000);
 
@@ -74,8 +77,6 @@ async function main() {
     ]);
 
     await Util.delay(100);
-
-    const count = await Conveyer.fetchCount();
 
     const [t] = await Promise.all([
       Conveyer.fetchCount(),

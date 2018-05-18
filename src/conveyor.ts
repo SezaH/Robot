@@ -30,7 +30,7 @@ export namespace Conveyer {
 
   const fetchCounts = new Subject<void>();
 
-  export function connect(portName: string, baudRate: number, mock = false) {
+  export async function connect(portName: string, baudRate: number, mock = false) {
 
     // Fetch new encoder counts at least 10 times a second.
     Observable.interval(100).subscribe(() => fetchCount());
@@ -50,6 +50,7 @@ export namespace Conveyer {
 
     // Limit the encoder fetches to a rate of 1000Hz max.
     fetchCounts.debounceTime(1).subscribe(() => port.write('\n'));
+    await fetchCounts.next();
   }
 
   /**
@@ -57,7 +58,8 @@ export namespace Conveyer {
    * @param deltaT The change in encoder counts
    */
   export function countToDist(deltaT: number) {
-    return deltaT * 2; // very roughly 400mm/s when mocking
+    // return deltaT * 2; // very roughly 400mm/s when mocking
+    return deltaT * .05; // very rough estimate of real belt
   }
 
   /**
@@ -76,6 +78,6 @@ export namespace Conveyer {
    */
   export function fetchCount() {
     fetchCounts.next();
-    return countUpdated.asObservable().toPromise();
+    return countUpdated.asObservable().first().toPromise();
   }
 }
