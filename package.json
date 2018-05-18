@@ -4,7 +4,7 @@
   "description": "A robot control panel",
   "scripts": {
     "install": "electron-rebuild",
-    "build": "npm run format && tsc && copyfiles -f src/index.html src/style.css dist",
+    "build": "npm run format && tsc && copyfiles -f src/index.html src/calibration.html src/style.css dist",
     "watch": "npm-watch",
     "lint": "tsfmt --verify && tslint --project .",
     "format": "tsfmt -r && tslint --fix --project .",
