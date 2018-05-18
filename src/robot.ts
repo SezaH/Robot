@@ -122,8 +122,6 @@ export class Robot {
     await this.openGripper();
   }
 
-
-
   public async dynamicGrab(item: Item, zOffsetHover: number, zOffsetPick: number,
                            xOffsetPick: number, xMaxPick: number, xMinPick: number,
                            placeX: number, placeY: number, placeZ: number) {
@@ -134,7 +132,7 @@ export class Robot {
     if (itemRobotX < xMinPick) {
       console.log('itemInRange reject with initial itemRobotX: ', itemRobotX);
       console.log('Item initially past pickable range');
-      item.destroy()
+      item.destroy();
       return;
     } else if (itemRobotX > xMaxPick) {
       // move to most forward place on belt
@@ -142,7 +140,7 @@ export class Robot {
       const itemRobotZ = this.belt2robotCoordinates(item.x, item.y)[2];
       await this.moveToRobotCoordinate(xMaxPick, itemRobotY, itemRobotZ + zOffsetHover);
 
-      // while 
+      // while
       while (true) {
         await item.coordsUpdated.first().toPromise();
         itemRobotX = this.belt2robotCoordinates(item.x, item.y)[0];
