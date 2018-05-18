@@ -272,7 +272,17 @@ Doc.addClickListener('dynamic-grab-btn', () => {
   if (item === undefined) { console.log('No items in queue!'); return; }
 
   console.log(`Attempting dynamic grab of item:\n${item}\n`);
-  robot.dynamicGrab(item);
+
+  const hoverZOffset = parseFloat(Doc.getInputEl('dg-hover_zOffset-input').value);
+  const pickZOffset = parseFloat(Doc.getInputEl('dg--pick_zOffset-input').value);
+  const pickXOffset = parseFloat(Doc.getInputEl('dg-pick_xOffset-input').value);
+  const pickXMax = parseFloat(Doc.getInputEl('dg-pick_xMax-input').value);
+  const pickXMin = parseFloat(Doc.getInputEl('dg-pick_xMin-input').value);
+  const placeX = parseFloat(Doc.getInputEl('dg-place-x-input').value);
+  const placeY = parseFloat(Doc.getInputEl('dg-place-y-input').value);
+  const placeZ = parseFloat(Doc.getInputEl('dg-place-z-input').value);
+
+  robot.dynamicGrab(item, hoverZOffset, pickZOffset, pickXOffset, pickXMax, pickXMin, placeX, placeY, placeZ);
 });
 
 Doc.addClickListener('point1-capture-btn', async () => {
