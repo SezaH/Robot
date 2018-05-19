@@ -17,6 +17,7 @@
   autoplay
   id="video"></video>
   <button id="encoder-btn">Encoder</button>
+
   <button id="browse-btn">Browse</button>
   <canvas id="canvas"></canvas>
   <h2>Connection</h2>
@@ -52,34 +53,42 @@
   <form id="belt-coordinates-frm">
     <br>
     <p>belt coordinate points</p><br>
-    x1: <input type="number" value="-200">
-    y1: <input type="number" value="125"><br>
-    x2: <input type="number" value="-200">
-    y2: <input type="number" value="-125"><br>
-    x3: <input type="number" value="200">
-    y3: <input type="number" value="-125"><br>
+    x1: <input id="origin-x1-input" type="number" value="-200">
+    y1: <input id="origin-y1-input" type="number" value="125"><br>
+    x2: <input id="origin-x2-input" type="number" value="-200">
+    y2: <input id="origin-y2-input" type="number" value="-125"><br>
+    x3: <input id="origin-x3-input" type="number" value="200">
+    y3: <input id="origin-y4-input" type="number" value="-125"><br>
   </form>
   <br>
 
+   <p>dynamic cordinate</p>
+  cameraEncoder: <input id="camera-encoder-input" type="number" value="0">
+   <button id="encoder1-btn">Encoder1</button><br>
+
+   robotEncoder: <input id="robot-encoder-input" type="number" value="0">
+   <button id="encoder2-btn">Encoder2</button>
+
+ <br>
   <p>robot coordinate points</p><br> <br>
-  x1: <input id="calibration-x1-input" type="number" value="262"> 
-  y1: <input id="calibration-y1-input" type="number" value="-108"> 
-  z1: <input id="calibration-z1-input" type="number" value="-685"> 
+  x1: <input id="calibration-x1-input" type="number" value="262">
+  y1: <input id="calibration-y1-input" type="number" value="-108">
+  z1: <input id="calibration-z1-input" type="number" value="-685">
   <button id="point1-capture-btn">capture</button> <br>
-  
-  x2: <input id="calibration-x2-input" type="number" value="272"> 
-  y2: <input id="calibration-y2-input" type="number" value="142"> 
-  z2: <input id="calibration-z2-input" type="number" value="-686"> 
+
+  x2: <input id="calibration-x2-input" type="number" value="272">
+  y2: <input id="calibration-y2-input" type="number" value="142">
+  z2: <input id="calibration-z2-input" type="number" value="-686">
   <button id="point2-capture-btn">capture</button> <br>
-  
-  x3: <input id="calibration-x3-input" type="number" value="-207"> 
-  y3: <input id="calibration-y3-input" type="number" value="146"> 
-  z3: <input id="calibration-z3-input" type="number" value="-703"> 
+
+  x3: <input id="calibration-x3-input" type="number" value="-207">
+  y3: <input id="calibration-y3-input" type="number" value="146">
+  z3: <input id="calibration-z3-input" type="number" value="-703">
   <button id="point3-capture-btn">capture</button> <br>
 
 
-  
-  
+
+
   <br>
   <button id="calibration-save-btn">Save</button>
   <button id="calibration-load-btn">Load</button>
@@ -88,7 +97,7 @@
     input belt coordinates:<br>
     x: <input type="number">
     y: <input type="number">
-   
+
   </form>
    <button id="test-calibration-btn">Compute</button>
   output robot coordinates:<br>
@@ -136,7 +145,7 @@
 <br>
 <br>
 
-  Gripper: 
+  Gripper:
   <button id="open-gripper-btn">Open</button>
   <button id="close-gripper-btn">Close</button>
   <br>
@@ -170,7 +179,7 @@
     <p>belt coordinate points</p>
     x1: <input type="number" value="0">
     y1: <input type="number" value="0">
-  
+
   </form>
   <button id="belt-coordinate-move-btn">Move</button> <br>
   <button id="test-stuff-btn">Test</button> <br>

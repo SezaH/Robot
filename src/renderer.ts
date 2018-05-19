@@ -128,26 +128,34 @@ Doc.addClickListener('send-btn', async () => {
 });
 
 document.getElementById('encoder-btn').addEventListener('click', async () => console.log(await Conveyer.fetchCount()));
+document.getElementById('encoder1-btn').addEventListener('click', async () => {
+  Doc.setInputValue('camera-encoder-input', await Conveyer.fetchCount());
+});
+document.getElementById('encoder2-btn').addEventListener('click', async () => {
+  Doc.setInputValue('robot-encoder-input', await Conveyer.fetchCount());
+});
+
+const cameraEncoder = parseFloat(Doc.getInputEl('camera-encoder-input').value);
+const robotEncoder = parseFloat(Doc.getInputEl('robot-encoder-input').value);
+const deltaEncoder = (robotEncoder - cameraEncoder) * 0.0711;
 
 // calibrate
 Doc.addClickListener('calibrate-btn', () => {
 
   // get data
-  const beltPoints = document.getElementById('belt-coordinates-frm') as HTMLFormElement;
-
   const belt1Vector = [
-    parseFloat((beltPoints.elements[0] as HTMLInputElement).value),
-    parseFloat((beltPoints.elements[1] as HTMLInputElement).value),
+    parseFloat(Doc.getInputEl('origin-x1-input').value),
+    parseFloat(Doc.getInputEl('origin-y1-input').value),
   ];
 
   const belt2Vector = [
-    parseFloat((beltPoints.elements[2] as HTMLInputElement).value),
-    parseFloat((beltPoints.elements[3] as HTMLInputElement).value),
+    parseFloat(Doc.getInputEl('origin-x2-input').value),
+    parseFloat(Doc.getInputEl('origin-y2-input').value),
   ];
 
   const belt3Vector = [
-    parseFloat((beltPoints.elements[4] as HTMLInputElement).value),
-    parseFloat((beltPoints.elements[5] as HTMLInputElement).value),
+    parseFloat(Doc.getInputEl('origin-x3-input').value),
+    parseFloat(Doc.getInputEl('origin-y3-input').value),
   ];
 
   const robot1Vector = [
@@ -167,6 +175,10 @@ Doc.addClickListener('calibrate-btn', () => {
     parseFloat(Doc.getInputEl('calibration-y3-input').value),
     parseFloat(Doc.getInputEl('calibration-z3-input').value),
   ];
+
+  belt1Vector[0] += deltaEncoder;
+  belt2Vector[0] += deltaEncoder;
+  belt3Vector[0] += deltaEncoder;
 
   robot.calibrate([robot1Vector, robot2Vector, robot3Vector], [belt1Vector, belt2Vector, belt3Vector]);
 });
