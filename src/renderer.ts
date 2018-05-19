@@ -32,8 +32,8 @@ async function main() {
   // Code here runs on page load.
   Camera.init();
 
-  // await Conveyer.connect('COM5', 9600); // Real connection
-  await Conveyer.connect('/dev/ttyACM1', 9600, true); // Mock connection
+  await Conveyer.connect('/dev/ttyACM1', 9600); // Real connection
+  // await Conveyer.connect('/dev/ttyACM1', 9600, true); // Mock connection
 
   queue.insert(new Item({ x: 0, y: 0, z: 1, t: await Conveyer.fetchCount() }, 1, 'cup'));
 
