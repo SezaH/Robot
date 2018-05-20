@@ -8,6 +8,10 @@ import { ItemQueue } from './item_queue';
 import { Robot } from './robot';
 import { Util } from './utils';
 
+/** Value of  Encoder at camera position */
+let cameraEncoder: number;
+cameraEncoder = 123;
+
 /** Object bounding boxes returned from CV. */
 const datafile = '../models/research/object_detection/io/output.json';
 
@@ -35,8 +39,8 @@ async function main() {
   // Code here runs on page load.
   Camera.init();
 
-  // await Conveyer.connect('/dev/ttyACM1', 9600); // Real connection
-  await Conveyer.connect('/dev/ttyACM1', 9600, true); // Mock connection
+   await Conveyer.connect('/dev/ttyACM1', 9600); // Real connection
+  // await Conveyer.connect('/dev/ttyACM1', 9600, true); // Mock connection
 
   // queue.insert(new Item({ x: 0, y: 0, z: 1, t: await Conveyer.fetchCount() }, 1, 'cup'));
 
@@ -131,19 +135,17 @@ Doc.addClickListener('send-btn', async () => {
 });
 
 document.getElementById('encoder-btn').addEventListener('click', async () => console.log(await Conveyer.fetchCount()));
-document.getElementById('encoder1-btn').addEventListener('click', async () => {
-  Doc.setInputValue('camera-encoder-input', await Conveyer.fetchCount());
-});
-document.getElementById('encoder2-btn').addEventListener('click', async () => {
-  Doc.setInputValue('robot-encoder-input', await Conveyer.fetchCount());
-});
-
-const cameraEncoder = parseFloat(Doc.getInputEl('camera-encoder-input').value);
-const robotEncoder = parseFloat(Doc.getInputEl('robot-encoder-input').value);
-const deltaEncoder = (robotEncoder - cameraEncoder) * 0.0711;
 
 // calibrate
-Doc.addClickListener('calibrate-btn', () => {
+Doc.addClickListener('calibrate-btn', async () => {
+  if (cameraEncoder === undefined) {
+    console.log('Error: you should callibrate the camera first');
+    return;
+  }
+
+  const robotEncoder = await Conveyer.fetchCount();
+  const deltaEncoder = Conveyer.calcDeltaT(cameraEncoder, robotEncoder);
+  const mmDistance = Conveyer.countToDist(deltaEncoder);
 
   // get data
   const belt1Vector = [
