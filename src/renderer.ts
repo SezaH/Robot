@@ -17,6 +17,9 @@ const labeledImageFile = '../models/research/object_detection/io/output.jpg';
 /** Unlabeled image sent to CV. */
 const unlabeledImageFile = '../models/research/object_detection/io/input.jpg';
 
+/** Checkerboard centered image sent to calibration.py to set origin. */
+const originImageFile = '../models/research/object_detection/io/origin.jpg';
+
 /** If multiple cameras are present, specify which. */
 const cameraID = 0;
 
@@ -353,7 +356,10 @@ Doc.addClickListener('belt-coordinate-move-btn', () => {
   robot.moveToBeltCoordinate(x, y, z);
 });
 
-Doc.addClickListener('origin-camera', () => Camera.origin());
+Doc.addClickListener('origin-camera', () => {
+  Camera.capture(originImageFile);
+  Camera.origin();
+});
 
 Doc.addClickListener('run-model', () => Camera.runModel());
 

@@ -32,13 +32,6 @@ export namespace Camera {
       if (code !== 0) {
         console.log('Failed: ' + code);
       }
-      fs.exists('../models/research/object_detection/origin.xml', (exist) => {
-        if (exist) {
-          return console.log('Good pic, origin ready!');
-        } else {
-          return console.log('Try again...');
-        }
-      });
     });
   }
 
