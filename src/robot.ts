@@ -169,10 +169,12 @@ export class Robot {
     // now since in range, try to pick item
     // xOffsetPick in belt coordinates currently, which is not what we want
     await this.pick(item.x + xOffsetPick, item.y, zOffsetPick);
+    // now wait a tiny bit for better pickup
+    await Util.delay(100);
     // now place it at intended target
     await this.place(placeX, placeY, placeZ);
     // want to wait after picking
-    await Util.delay(200);
+    await Util.delay(300);
     // return to home
     await this.moveToRobotCoordinate(0, 0, -400);
 

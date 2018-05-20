@@ -58,9 +58,9 @@ export namespace Conveyer {
    * @param deltaT The change in encoder counts
    */
   export function countToDist(deltaT: number) {
-    // return deltaT * 2; // very roughly 400mm/s when mocking
+    return deltaT * 2; // very roughly 400mm/s when mocking
     // return deltaT * .05; // very rough estimate of real belt
-    return deltaT * 0.0711; // 0.0711 mm/count belt move pre count
+    // return deltaT * 0.0711; // 0.0711 mm/count belt move pre count
   }
 
   /**

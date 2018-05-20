@@ -20,6 +20,9 @@ const unlabeledImageFile = '../models/research/object_detection/io/input.jpg';
 /** If multiple cameras are present, specify which. */
 const cameraID = 0;
 
+// for dynamic grab loop
+let dynamicGrabRunning = false;
+
 const configfile = 'config.json';
 const robot = new Robot();
 
@@ -32,10 +35,10 @@ async function main() {
   // Code here runs on page load.
   Camera.init();
 
-  await Conveyer.connect('/dev/ttyACM1', 9600); // Real connection
-  // await Conveyer.connect('/dev/ttyACM1', 9600, true); // Mock connection
+  // await Conveyer.connect('/dev/ttyACM1', 9600); // Real connection
+  await Conveyer.connect('/dev/ttyACM1', 9600, true); // Mock connection
 
-  queue.insert(new Item({ x: 0, y: 0, z: 1, t: await Conveyer.fetchCount() }, 1, 'cup'));
+  // queue.insert(new Item({ x: 0, y: 0, z: 1, t: await Conveyer.fetchCount() }, 1, 'cup'));
 
   // queue.remove().coordsUpdated.subscribe(coords => console.log(coords));
 
@@ -279,14 +282,19 @@ Doc.addClickListener('pick-place-queue-btn', () => {
   }
 });
 
-Doc.addClickListener('dynamic-grab-btn', async () => {
+Doc.addClickListener('one-dynamic-grab-btn', async () => {
 
-  // put item in queue for testing
-  const x = parseFloat(Doc.getInputEl('dg-item-initial-x-input').value);
-  const y = parseFloat(Doc.getInputEl('dg-item-initial-y-input').value);
-  queue.insert(new Item({ x, y, z: 1, t: await Conveyer.fetchCount() }, 1, 'cup'));
+  await dynamicGrabFromInput();
 
-  const item = queue.remove();
+});
+
+async function dynamicGrabFromInput() {
+
+  let item = queue.remove();
+  while (item === undefined) {
+    await Util.delay(10);
+    item = queue.remove();
+  }
   if (item === undefined) { console.log('No items in queue!'); return; }
 
   console.log(`Attempting dynamic grab of item:\n${item}\n`);
@@ -301,6 +309,29 @@ Doc.addClickListener('dynamic-grab-btn', async () => {
   const placeZ = parseFloat(Doc.getInputEl('dg-place-z-input').value);
 
   await robot.dynamicGrab(item, hoverZOffset, pickZOffset, pickXOffset, pickXMax, pickXMin, placeX, placeY, placeZ);
+
+}
+
+Doc.addClickListener('start-dynamic-grab-btn', async () => {
+  dynamicGrabRunning = true;
+  while (dynamicGrabRunning === true) {
+    await dynamicGrabFromInput();
+  }
+
+});
+
+Doc.addClickListener('stop-dynamic-grab-btn', () => {
+  dynamicGrabRunning = false;
+
+});
+
+Doc.addClickListener('enqueue-item-btn', async () => {
+
+  // put item in queue for testing
+  const x = parseFloat(Doc.getInputEl('dg-item-initial-x-input').value);
+  const y = parseFloat(Doc.getInputEl('dg-item-initial-y-input').value);
+  queue.insert(new Item({ x, y, z: 1, t: await Conveyer.fetchCount() }, 1, 'cup'));
+
 });
 
 Doc.addClickListener('point1-capture-btn', async () => {
