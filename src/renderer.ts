@@ -8,8 +8,9 @@ import { ItemQueue } from './item_queue';
 import { Robot } from './robot';
 import { Util } from './utils';
 
-/**value of camera Encoder1*/
+/** Value of  Encoder at camera position */
 let cameraEncoder: number;
+cameraEncoder = 123;
 
 /** Object bounding boxes returned from CV. */
 const datafile = '../models/research/object_detection/io/output.json';
@@ -35,8 +36,8 @@ async function main() {
   // Code here runs on page load.
   Camera.init();
 
-  await Conveyer.connect('/dev/ttyACM1', 9600); // Real connection
-  // await Conveyer.connect('/dev/ttyACM1', 9600, true); // Mock connection
+  // await Conveyer.connect('/dev/ttyACM1', 9600); // Real connection
+  await Conveyer.connect('/dev/ttyACM1', 9600, true); // Mock connection
 
   queue.insert(new Item({ x: 0, y: 0, z: 1, t: await Conveyer.fetchCount() }, 1, 'cup'));
 
