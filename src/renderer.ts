@@ -31,9 +31,24 @@ const queue = new ItemQueue();
 async function main() {
   // Code here runs on page load.
   Camera.init();
-  Conveyer.connect('/dev/ttyACM1', 9600);
+
+  await Conveyer.connect('/dev/ttyACM1', 9600); // Real connection
+  // await Conveyer.connect('/dev/ttyACM1', 9600, true); // Mock connection
+
+  queue.insert(new Item({ x: 0, y: 0, z: 1, t: await Conveyer.fetchCount() }, 1, 'cup'));
+
+  // queue.remove().coordsUpdated.subscribe(coords => console.log(coords));
+
+  // Conveyer.countUpdated.subscribe(tt => console.log(tt)); // Print counts
+
   await Util.delay(2000);
-  await Camera.capture(unlabeledImageFile);
+
+  DataController.countRecorded.next(
+    (await Promise.all([
+      Conveyer.fetchCount(),
+      Camera.capture(unlabeledImageFile),
+    ]))[0],
+  );
 
   // Watch for new data and load into the itemQueue and draw the image to screen.
   // Remove the data files when complete.
@@ -63,7 +78,12 @@ async function main() {
 
     await Util.delay(100);
 
-    await Camera.capture(unlabeledImageFile);
+    const [t] = await Promise.all([
+      Conveyer.fetchCount(),
+      Camera.capture(unlabeledImageFile),
+    ]);
+
+    DataController.countRecorded.next(t);
   });
 }
 
@@ -108,26 +128,34 @@ Doc.addClickListener('send-btn', async () => {
 });
 
 document.getElementById('encoder-btn').addEventListener('click', async () => console.log(await Conveyer.fetchCount()));
+document.getElementById('encoder1-btn').addEventListener('click', async () => {
+  Doc.setInputValue('camera-encoder-input', await Conveyer.fetchCount());
+});
+document.getElementById('encoder2-btn').addEventListener('click', async () => {
+  Doc.setInputValue('robot-encoder-input', await Conveyer.fetchCount());
+});
+
+const cameraEncoder = parseFloat(Doc.getInputEl('camera-encoder-input').value);
+const robotEncoder = parseFloat(Doc.getInputEl('robot-encoder-input').value);
+const deltaEncoder = (robotEncoder - cameraEncoder) * 0.0711;
 
 // calibrate
 Doc.addClickListener('calibrate-btn', () => {
 
   // get data
-  const beltPoints = document.getElementById('belt-coordinates-frm') as HTMLFormElement;
-
   const belt1Vector = [
-    parseFloat((beltPoints.elements[0] as HTMLInputElement).value),
-    parseFloat((beltPoints.elements[1] as HTMLInputElement).value),
+    parseFloat(Doc.getInputEl('origin-x1-input').value),
+    parseFloat(Doc.getInputEl('origin-y1-input').value),
   ];
 
   const belt2Vector = [
-    parseFloat((beltPoints.elements[2] as HTMLInputElement).value),
-    parseFloat((beltPoints.elements[3] as HTMLInputElement).value),
+    parseFloat(Doc.getInputEl('origin-x2-input').value),
+    parseFloat(Doc.getInputEl('origin-y2-input').value),
   ];
 
   const belt3Vector = [
-    parseFloat((beltPoints.elements[4] as HTMLInputElement).value),
-    parseFloat((beltPoints.elements[5] as HTMLInputElement).value),
+    parseFloat(Doc.getInputEl('origin-x3-input').value),
+    parseFloat(Doc.getInputEl('origin-y3-input').value),
   ];
 
   const robot1Vector = [
@@ -147,6 +175,10 @@ Doc.addClickListener('calibrate-btn', () => {
     parseFloat(Doc.getInputEl('calibration-y3-input').value),
     parseFloat(Doc.getInputEl('calibration-z3-input').value),
   ];
+
+  belt1Vector[0] += deltaEncoder;
+  belt2Vector[0] += deltaEncoder;
+  belt3Vector[0] += deltaEncoder;
 
   robot.calibrate([robot1Vector, robot2Vector, robot3Vector], [belt1Vector, belt2Vector, belt3Vector]);
 });
@@ -247,12 +279,28 @@ Doc.addClickListener('pick-place-queue-btn', () => {
   }
 });
 
-Doc.addClickListener('dynamic-grab-btn', () => {
+Doc.addClickListener('dynamic-grab-btn', async () => {
+
+  // put item in queue for testing
+  const x = parseFloat(Doc.getInputEl('dg-item-initial-x-input').value);
+  const y = parseFloat(Doc.getInputEl('dg-item-initial-y-input').value);
+  queue.insert(new Item({ x, y, z: 1, t: await Conveyer.fetchCount() }, 1, 'cup'));
+
   const item = queue.remove();
   if (item === undefined) { console.log('No items in queue!'); return; }
 
   console.log(`Attempting dynamic grab of item:\n${item}\n`);
-  robot.dynamicGrab(item);
+
+  const hoverZOffset = parseFloat(Doc.getInputEl('dg-hover-zOffset-input').value);
+  const pickZOffset = parseFloat(Doc.getInputEl('dg-pick-zOffset-input').value);
+  const pickXOffset = parseFloat(Doc.getInputEl('dg-pick-xOffset-input').value);
+  const pickXMax = parseFloat(Doc.getInputEl('dg-pick-xMax-input').value);
+  const pickXMin = parseFloat(Doc.getInputEl('dg-pick-xMin-input').value);
+  const placeX = parseFloat(Doc.getInputEl('dg-place-x-input').value);
+  const placeY = parseFloat(Doc.getInputEl('dg-place-y-input').value);
+  const placeZ = parseFloat(Doc.getInputEl('dg-place-z-input').value);
+
+  await robot.dynamicGrab(item, hoverZOffset, pickZOffset, pickXOffset, pickXMax, pickXMin, placeX, placeY, placeZ);
 });
 
 Doc.addClickListener('point1-capture-btn', async () => {

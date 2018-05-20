@@ -8,19 +8,21 @@ export namespace Conveyer {
 
   /** Emits everytime a new encoder count is received */
   export const countUpdated = new Subject<number>();
+  export const positionUpdated = new Subject<{ deltaX: number, deltaT: number }>();
 
   /** The last received encoder count. */
   let prevT = 0;
+  let mockT = 0;
 
   /**
    * Emits evertime a new encoder count is received.
    * Calculates the delta counts and delta X of belt.
    */
-  export const positionUpdated = countUpdated.map(t => {
-    const t2 = calcDeltaT(prevT, t);
-    const deltaT = t2 - t;
+  countUpdated.subscribe(t => {
+    const deltaT = calcDeltaT(prevT, t);
+    const deltaX = countToDist(deltaT);
     prevT = t;
-    return { deltaX: countToDist(deltaT), deltaT };
+    positionUpdated.next({ deltaX, deltaT });
   });
 
   let port: SerialPort;
@@ -28,27 +30,37 @@ export namespace Conveyer {
 
   const fetchCounts = new Subject<void>();
 
-  // Limit the encoder fetches to a rate of 1000Hz max.
-  fetchCounts.debounceTime(1).subscribe(() => port.write('\n'));
+  export async function connect(portName: string, baudRate: number, mock = false) {
 
-  // Fetch new encoder counts at least 10 times a second.
-  Observable.interval(100).subscribe(() => fetchCount());
+    // Fetch new encoder counts at least 10 times a second.
+    Observable.interval(100).subscribe(() => fetchCount());
 
-  export function connect(portName: string, baudRate: number) {
+    if (mock) {
+      Observable.interval(1).subscribe(t => mockT = t);
+      fetchCounts.debounceTime(1).subscribe(() => countUpdated.next(mockT));
+      return;
+    }
+
     port = new SerialPort(portName, { baudRate }, err => console.error(err));
     isConnected = true;
+
     port.on('data', (data: any) => {
       countUpdated.next(parseInt(data.toString(), 10));
     });
+
+    // Limit the encoder fetches to a rate of 1000Hz max.
+    fetchCounts.debounceTime(1).subscribe(() => port.write('\n'));
+    await fetchCounts.next();
   }
 
   /**
    * Converts from encoder counts to mm
    * @param deltaT The change in encoder counts
    */
-  function countToDist(deltaT: number) {
-    const distance = deltaT * Math.PI; // (* dimeter of the roller)
-    return distance;
+  export function countToDist(deltaT: number) {
+    // return deltaT * 2; // very roughly 400mm/s when mocking
+    // return deltaT * .05; // very rough estimate of real belt
+    return deltaT * 0.0711; // 0.0711 mm/count belt move pre count
   }
 
   /**
@@ -58,7 +70,8 @@ export namespace Conveyer {
    * @param newT The new encoder count
    */
   export function calcDeltaT(oldT: number, newT: number) {
-    return (newT < oldT) ? newT + encoderLimit - oldT : newT;
+    newT = (newT < oldT) ? newT + encoderLimit - oldT : newT;
+    return newT - oldT;
   }
 
   /**
@@ -66,6 +79,6 @@ export namespace Conveyer {
    */
   export function fetchCount() {
     fetchCounts.next();
-    return countUpdated.asObservable().toPromise();
+    return countUpdated.asObservable().first().toPromise();
   }
 }
