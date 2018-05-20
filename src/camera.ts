@@ -8,7 +8,7 @@ export namespace Camera {
 
   export function runModel() {
     const mol = spawn('python3', ['io_object_detection.py'], { cwd: '../models/research/object_detection' });
-    console.log("running");
+    console.log('running');
 
     mol.stdout.on('data', (data) => {
       console.log(`stdout: ${data}`);
@@ -28,17 +28,18 @@ export namespace Camera {
 
   export function origin() {
     const cal = spawn('python3', ['calibration.py'], { cwd: '../models/research/object_detection' });
-    cal.on('exit', function(code) {
-        if (code != 0) {
-            console.log('Failed: ' + code);
-        }
-        fs.exists("../models/research/object_detection/origin.xml", (exist) => {
-          if (exist) {
-            return console.log("Good pic, origin ready!");
-          } else {
-            return console.log("Try again...");
-          }
-        });
+    cal.stdout.on('data', (data) => {
+      console.log(`stdout: ${data}`);
+    });
+
+    cal.stderr.on('data', (data) => {
+      console.log(`stderr: ${data}`);
+    });
+
+    cal.on('exit', (code) => {
+      if (code !== 0) {
+        console.log('Failed: ' + code);
+      }
     });
   }
 
