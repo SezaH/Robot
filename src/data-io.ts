@@ -49,7 +49,7 @@ export namespace DataController {
       .zip(
         fileRenamed(dataFile),
         fileRenamed(imageFile),
-        countRecorded,
+        countRecorded.asObservable(),
     )
       .concatMap(async ([, , t]) => {
         try {

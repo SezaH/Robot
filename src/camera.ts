@@ -1,12 +1,17 @@
 import { spawn } from 'child_process';
 import * as fs from 'fs-extra';
+import { Conveyer } from './conveyor';
 
 export namespace Camera {
   const video = document.getElementById('video') as HTMLVideoElement;
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
 
+  /** Checkerboard centered image sent to calibration.py to set origin. */
+  const originImageFile = '../models/research/object_detection/io/origin.jpg';
+
   export function runModel() {
+    console.log('model');
     const mol = spawn('python3', ['io_object_detection.py'], { cwd: '../models/research/object_detection' });
     console.log('running');
 
@@ -27,7 +32,10 @@ export namespace Camera {
   }
 
   export function origin() {
+    capture(originImageFile);
+    console.log('here');
     const cal = spawn('python3', ['calibration.py'], { cwd: '../models/research/object_detection' });
+
     cal.stdout.on('data', (data) => {
       console.log(`stdout: ${data}`);
     });
@@ -41,11 +49,17 @@ export namespace Camera {
         console.log('Failed: ' + code);
       }
     });
+    return Conveyer.fetchCount();
   }
 
   export function init() {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+      navigator.mediaDevices.getUserMedia({
+        video: {
+          height: 1080,
+          width: 1920,
+        },
+      }).then(stream => {
         video.src = window.URL.createObjectURL(stream);
         video.play();
       });
