@@ -60,7 +60,7 @@ export namespace Conveyer {
   export function countToDist(deltaT: number) {
     // return deltaT * 2; // very roughly 400mm/s when mocking
     // return deltaT * .05; // very rough estimate of real belt
-    return deltaT * 0.0681; // 0.0681 mm/count belt move pre count
+    return deltaT * 0.05082719995; // 0.0681 mm/count belt move pre count
   }
 
   /**

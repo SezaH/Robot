@@ -23,12 +23,12 @@ export namespace Camera {
       console.log(`stderr: ${data}`);
     });
 
-    mol.on('exit', function(code) {
-      if (code != 0) {
+    mol.on('exit', code => {
+      if (code !== 0) {
         console.log('Failed: ' + code);
       }
     });
-    //mol.kill();
+    // mol.kill();
   }
 
   export function origin() {
@@ -44,7 +44,7 @@ export namespace Camera {
       console.log(`stderr: ${data}`);
     });
 
-    cal.on('exit', (code) => {
+    cal.on('exit', code => {
       if (code !== 0) {
         console.log('Failed: ' + code);
       }

@@ -5,7 +5,7 @@ import { Coord2, Coord3, Coord4, Vector } from './utils';
 export class ItemQueue {
   private _items: Item[] = [];
   private deviationThreshold = 10; // 10 mm radius
-  private xLimit = 5000; // 5m TODO determine actual
+  private xLimit = 1000; // 5m TODO determine actual
 
   constructor() {
     // Purge out of range items.
@@ -21,6 +21,7 @@ export class ItemQueue {
    */
   public insert(item: Item) {
     if (!this.isDuplicate(item.xyzt, item.classID)) this._items.push(item);
+    console.log(`Item added to queue\n${item}\n`);
   }
 
   /**

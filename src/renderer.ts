@@ -10,7 +10,7 @@ import { Util } from './utils';
 
 /** Value of  Encoder at camera position */
 let cameraEncoder: number;
-cameraEncoder = 123;
+let robotEncoder: number;
 
 /** Object bounding boxes returned from CV. */
 const datafile = '../models/research/object_detection/io/output.json';
@@ -39,40 +39,41 @@ async function main() {
   // Code here runs on page load.
   Camera.init();
 
-  await Conveyer.connect('/dev/ttyACM1', 9600); // Real connection
+  await Conveyer.connect('/dev/ttyACM0', 9600); // Real connection
   // await Conveyer.connect('/dev/ttyACM1', 9600, true); // Mock connection
 
   // queue.insert(new Item({ x: 0, y: 0, z: 1, t: await Conveyer.fetchCount() }, 1, 'cup'));
 
   // queue.remove().coordsUpdated.subscribe(coords => console.log(coords));
 
-  // Conveyer.countUpdated.subscribe(tt => console.log(tt)); // Print counts
+  // Conveyer.positionUpdated.subscribe(tt => console.log(tt)); // Print counts
 
   await Util.delay(2000);
 
-  DataController.countRecorded.next(
+  DataController.cameraT =
     (await Promise.all([
       Conveyer.fetchCount(),
       Camera.capture(unlabeledImageFile),
-    ]))[0],
-  );
+    ]))[0];
 
   // Watch for new data and load into the itemQueue and draw the image to screen.
   // Remove the data files when complete.
-  DataController.newData(datafile, labeledImageFile).subscribe(async ({ objects, bitmap }) => {
-    console.log('New data detected: ', objects);
+  DataController.newData(datafile, labeledImageFile).subscribe(async ({ objects, bitmap, t }) => {
+    // console.log('New data detected: ', objects);
 
     if (objects === undefined) return;
 
+    const newT = await Conveyer.fetchCount();
+    const deltaX = Conveyer.countToDist(Conveyer.calcDeltaT(t, newT));
+
     for (const object of objects) {
       // insert into itemQueue
-      const x = (object.bndbox.xmax + object.bndbox.xmin) / 2;
+      const x = (object.bndbox.xmax + object.bndbox.xmin) / 2 + deltaX;
       const y = (object.bndbox.ymax + object.bndbox.ymin) / 2;
 
       // TODO encoder count.
-      queue.insert(new Item({ x, y, z: 1, t: 0 }, object.id, object.name));
+      queue.insert(new Item({ x, y, z: 1, t: newT }, object.id, object.name));
     }
-    queue.display();
 
     imageCanvas.width = bitmap.width;
     imageCanvas.height = bitmap.height;
@@ -85,12 +86,12 @@ async function main() {
 
     await Util.delay(100);
 
-    const [t] = await Promise.all([
-      Conveyer.fetchCount(),
-      Camera.capture(unlabeledImageFile),
-    ]);
+    DataController.cameraT =
+      (await Promise.all([
+        Conveyer.fetchCount(),
+        Camera.capture(unlabeledImageFile),
+      ]))[0];
 
-    DataController.countRecorded.next(t);
   });
 }
 
@@ -134,7 +135,16 @@ Doc.addClickListener('send-btn', async () => {
 
 });
 
-document.getElementById('encoder-btn').addEventListener('click', async () => console.log(await Conveyer.fetchCount()));
+let lastT = 0;
+Conveyer.fetchCount().then(t => lastT = t);
+
+document.getElementById('encoder-btn').addEventListener('click', async () => {
+  const newT = await Conveyer.fetchCount();
+  const deltaT = Conveyer.calcDeltaT(lastT, newT);
+  const deltaX = Conveyer.countToDist(deltaT);
+  console.log(`new ${newT}, old ${lastT}, delta: ${deltaT}, deltaX ${deltaX}`);
+  lastT = newT;
+});
 
 // calibrate
 Doc.addClickListener('calibrate-btn', async () => {
@@ -142,8 +152,7 @@ Doc.addClickListener('calibrate-btn', async () => {
     console.log('Error: you should callibrate the camera first');
     return;
   }
-
-  const robotEncoder = await Conveyer.fetchCount();
+  // TODO turn whole calibration into a function that can be called with different encpder values
   const deltaEncoder = Conveyer.calcDeltaT(cameraEncoder, robotEncoder);
   const mmDistance = Conveyer.countToDist(deltaEncoder);
 
@@ -181,14 +190,16 @@ Doc.addClickListener('calibrate-btn', async () => {
     parseFloat(Doc.getInputEl('calibration-z3-input').value),
   ];
 
-  belt1Vector[0] += deltaEncoder;
-  belt2Vector[0] += deltaEncoder;
-  belt3Vector[0] += deltaEncoder;
+  belt1Vector[0] += mmDistance;
+  belt2Vector[0] += mmDistance;
+  belt3Vector[0] += mmDistance;
 
   robot.calibrate([robot1Vector, robot2Vector, robot3Vector], [belt1Vector, belt2Vector, belt3Vector]);
 });
 
 interface IConfigObject {
+  cameraEncoder: number;
+  robotEncoder: number;
   robotCoordinates: {
     x1: number,
     y1: number,
@@ -204,25 +215,47 @@ interface IConfigObject {
 
 Doc.addClickListener('calibration-load-btn', async () => {
   const rawData = await fs.readFile(configfile, 'utf8');
-  const coords = (JSON.parse(rawData) as IConfigObject).robotCoordinates;
+  const config = (JSON.parse(rawData) as IConfigObject);
 
-  Doc.setInputValue('calibration-x1-input', coords.x1);
-  Doc.setInputValue('calibration-y1-input', coords.y1);
-  Doc.setInputValue('calibration-z1-input', coords.z1);
+  Doc.setInputValue('calibration-x1-input', config.robotCoordinates.x1);
+  Doc.setInputValue('calibration-y1-input', config.robotCoordinates.y1);
+  Doc.setInputValue('calibration-z1-input', config.robotCoordinates.z1);
 
-  Doc.setInputValue('calibration-x2-input', coords.x2);
-  Doc.setInputValue('calibration-y2-input', coords.y2);
-  Doc.setInputValue('calibration-z2-input', coords.z2);
+  Doc.setInputValue('calibration-x2-input', config.robotCoordinates.x2);
+  Doc.setInputValue('calibration-y2-input', config.robotCoordinates.y2);
+  Doc.setInputValue('calibration-z2-input', config.robotCoordinates.z2);
 
-  Doc.setInputValue('calibration-x3-input', coords.x3);
-  Doc.setInputValue('calibration-y3-input', coords.y3);
-  Doc.setInputValue('calibration-z3-input', coords.z3);
+  Doc.setInputValue('calibration-x3-input', config.robotCoordinates.x3);
+  Doc.setInputValue('calibration-y3-input', config.robotCoordinates.y3);
+  Doc.setInputValue('calibration-z3-input', config.robotCoordinates.z3);
+
+  cameraEncoder = config.cameraEncoder;
+  robotEncoder = config.robotEncoder;
 });
 
 Doc.addClickListener('calibration-save-btn', async () => {
-
-  const rawData = await fs.readFile(configfile, 'utf8');
-  const config = JSON.parse(rawData) as IConfigObject;
+  let config: IConfigObject;
+  try {
+    const rawData = await fs.readFile(configfile, 'utf8');
+    config = JSON.parse(rawData) as IConfigObject;
+  } catch {
+    console.log('No config file');
+    config = {
+      cameraEncoder: 0,
+      robotCoordinates: {
+        x1: 0,
+        x2: 0,
+        x3: 0,
+        y1: 0,
+        y2: 0,
+        y3: 0,
+        z1: 0,
+        z2: 0,
+        z3: 0,
+      },
+      robotEncoder: 0,
+    };
+  }
 
   config.robotCoordinates.x1 = parseFloat(Doc.getInputEl('calibration-x1-input').value);
   config.robotCoordinates.y1 = parseFloat(Doc.getInputEl('calibration-y1-input').value);
@@ -233,9 +266,10 @@ Doc.addClickListener('calibration-save-btn', async () => {
   config.robotCoordinates.x3 = parseFloat(Doc.getInputEl('calibration-x3-input').value);
   config.robotCoordinates.y3 = parseFloat(Doc.getInputEl('calibration-y3-input').value);
   config.robotCoordinates.z3 = parseFloat(Doc.getInputEl('calibration-z3-input').value);
-
+  config.cameraEncoder = cameraEncoder;
+  config.robotEncoder = robotEncoder;
   const json = JSON.stringify(config);
-  fs.writeFile(configfile, json, 'utf8');
+  fs.outputFile(configfile, json, 'utf8');
 });
 
 // test calibration
@@ -355,6 +389,7 @@ Doc.addClickListener('point3-capture-btn', async () => {
   Doc.setInputValue('calibration-x3-input', coordinates[0]);
   Doc.setInputValue('calibration-y3-input', coordinates[1]);
   Doc.setInputValue('calibration-z3-input', coordinates[2]);
+  robotEncoder = await Conveyer.fetchCount();
 });
 
 Doc.addClickListener('capture-coordinate-btn', async () => {
@@ -386,7 +421,10 @@ Doc.addClickListener('belt-coordinate-move-btn', () => {
   robot.moveToBeltCoordinate(x, y, z);
 });
 
-Doc.addClickListener('origin-camera', () => Camera.origin());
+Doc.addClickListener('origin-camera', async () => {
+  Camera.origin();
+  cameraEncoder = await Conveyer.fetchCount();
+});
 
 Doc.addClickListener('run-model', () => Camera.runModel());
 
