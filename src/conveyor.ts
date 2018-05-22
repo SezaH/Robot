@@ -10,6 +10,7 @@ export namespace Conveyer {
   export const countUpdated = new Subject<number>();
   export const positionUpdated = new Subject<{ deltaX: number, deltaT: number }>();
 
+  /** Belt's velocity in mm/s */
   export let beltV = 0;
 
   /** The last received encoder count. */

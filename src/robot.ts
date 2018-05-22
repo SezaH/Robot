@@ -13,6 +13,7 @@ export class Robot {
   private xMinPick: number; // IN BCS
   private speed = 5000;
   private zOffset = 100;
+  private _coords: BCoord;
 
   public connect(portName: string, baudRate: number) {
     this.port = new SerialPort(portName, { baudRate }, err => console.error(err));
@@ -58,18 +59,26 @@ export class Robot {
     console.log('transform: ', this.transform);
   }
 
-  public belt2robotCoordinates(coord: BCoord): RCoord {
-    const inputVector = [coord.x, coord.y, 1];
+  public belt2RobotCoords(coords: BCoord): RCoord {
+    const inputVector = [coords.x, coords.y, 1];
     const math = require('mathjs');
     const [x, y] = math.multiply(inputVector, this.transform) as number[];
-    return { type: CoordType.RCS, x, y, z: coord.z };
+    return { type: CoordType.RCS, x, y, z: coords.z };
   }
 
-  public async moveTo(coord: BCoord | RCoord) {
-    if (coord.type === CoordType.BCS) coord = this.belt2robotCoordinates(coord);
+  public robot2BeltCoords(coords: RCoord): BCoord {
+    const inputVector = [coords.x, coords.y, 1];
+    const math = require('mathjs');
+    const [x, y] = math.multiply(inputVector, math.inv(this.transform)) as number[];
+    return { type: CoordType.BCS, x, y, z: coords.z };
+  }
 
+  public async moveTo(coords: BCoord | RCoord) {
+    if (coords.type === CoordType.BCS) coords = this.belt2RobotCoords(coords);
+
+    this._coords = this.robot2BeltCoords(coords);
     const cmdComplete = this.commandComplete();
-    this.sendMessage(`G0 X${coord.x} Y${coord.y} Z${coord.z} F${this.speed}`);
+    this.sendMessage(`G0 X${coords.x} Y${coords.y} Z${coords.z} F${this.speed}`);
     return cmdComplete;
   }
 
@@ -136,7 +145,7 @@ export class Robot {
     zOffsetPick: number,
   ) {
     // makes sense to open gripper before doing stuff
-    this.openGripper();
+    await this.openGripper();
 
     // item.coordsUpdated.subscribe(coords => console.log(coords));
 

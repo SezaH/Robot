@@ -281,7 +281,7 @@ Doc.addClickListener('test-calibration-btn', () => {
   const itemPoints = document.getElementById('item-location') as HTMLFormElement;
   const x = parseFloat((itemPoints.elements[0] as HTMLInputElement).value);
   const y = parseFloat((itemPoints.elements[1] as HTMLInputElement).value);
-  const coord = robot.belt2robotCoordinates({ type: CoordType.BCS, x, y, z: 0 });
+  const coord = robot.belt2RobotCoords({ type: CoordType.BCS, x, y, z: 0 });
   console.log(`output: {x: ${coord.x}, y: ${coord.y}, z: ${coord.z}}`);
 });
 

@@ -1,6 +1,6 @@
 import { Subject, Subscription } from 'rxjs';
 import { Conveyer } from './conveyor';
-import { Coord2, Coord3, Coord4, Vector } from './utils';
+import { BCoord, Coord2, Coord3, Coord4, CoordType, Vector } from './utils';
 
 export class Item {
 
@@ -63,6 +63,15 @@ export class Item {
   public set deviation(d) { this._deviation = d; }
 
   public get coordsUpdated() { return this._coordsUpdated.asObservable(); }
+
+  public projectCoords(seconds = 0): BCoord {
+    return {
+      type: CoordType.BCS,
+      x: this._coords.x + Conveyer.beltV * seconds,
+      y: this._coords.y,
+      z: this._coords.z,
+    };
+  }
 
   public destroy() {
     this._subscription.unsubscribe();
