@@ -6,7 +6,7 @@ import { DataController } from './data-io';
 import { Item } from './item';
 import { ItemQueue } from './item_queue';
 import { Robot } from './robot';
-import { Util } from './utils';
+import { Coord3, CoordType, RCoord, Util } from './utils';
 
 /** Value of  Encoder at camera position */
 let cameraEncoder: number;
@@ -281,52 +281,34 @@ Doc.addClickListener('test-calibration-btn', () => {
   const itemPoints = document.getElementById('item-location') as HTMLFormElement;
   const x = parseFloat((itemPoints.elements[0] as HTMLInputElement).value);
   const y = parseFloat((itemPoints.elements[1] as HTMLInputElement).value);
-  const outputVector = robot.belt2robotCoordinates(x, y);
-  const output = document.getElementById('belt-location-p') as HTMLParagraphElement;
-  const outputString = 'x: ' + outputVector[0] + ', y: ' + outputVector[1] + ', z: ' + outputVector[2];
-  console.log('output:', outputString);
-  // output.appendChild(document.createTextNode("x: " +  outputVector[0] + ",
-  // y: " + outputVector[1] + ", z: " + outputVector[2]));
+  const coord = robot.belt2robotCoordinates({ type: CoordType.BCS, x, y, z: 0 });
+  console.log(`output: {x: ${coord.x}, y: ${coord.y}, z: ${coord.z}}`);
 });
 
 Doc.addClickListener('open-gripper-btn', () => { robot.openGripper(); });
 Doc.addClickListener('close-gripper-btn', () => { robot.closeGripper(); });
 Doc.addClickListener('motor-on-btn', () => { robot.motorsOn(); });
 Doc.addClickListener('motor-off-btn', () => { robot.motorsOff(); });
-Doc.addClickListener('test-stuff-btn', () => { robot.testStuff(); });
 
 Doc.addClickListener('pick-btn', () => {
-  const x = Doc.getInputFloat('pick_x_input');
-  const y = Doc.getInputFloat('pick_y_input');
-  const z = Doc.getInputFloat('pick_z_input');
-  console.log('x: ', x, ', y: ', y, ', z: ', z);
-  robot.pick(x, y, z);
+  robot.pick({
+    type: CoordType.BCS,
+    x: Doc.getInputFloat('pick_x_input'),
+    y: Doc.getInputFloat('pick_y_input'),
+    z: Doc.getInputFloat('pick_z_input'),
+  });
 });
 
 Doc.addClickListener('place-btn', () => {
-  const x = Doc.getInputFloat('place_x_input');
-  const y = Doc.getInputFloat('place_y_input');
-  const z = Doc.getInputFloat('place_z_input');
-  console.log('x: ', x, ', y: ', y, ', z: ', z);
-  robot.place(x, y, z);
+  robot.place({
+    type: CoordType.RCS,
+    x: Doc.getInputFloat('place_x_input'),
+    y: Doc.getInputFloat('place_y_input'),
+    z: Doc.getInputFloat('place_z_input'),
+  });
 });
 
-Doc.addClickListener('pick-place-queue-btn', () => {
-  const item = queue.remove();
-  if (item !== undefined) {
-    robot.pick(item.x, item.y, 50);
-    console.log('Moving to item', item);
-
-  } else {
-    console.log('error in not find item!!!');
-  }
-});
-
-Doc.addClickListener('one-dynamic-grab-btn', async () => {
-
-  await dynamicGrabFromInput();
-
-});
+Doc.addClickListener('one-dynamic-grab-btn', () => dynamicGrabFromInput());
 
 async function dynamicGrabFromInput() {
 
@@ -341,7 +323,8 @@ async function dynamicGrabFromInput() {
 
   const hoverZOffset = Doc.getInputFloat('dg-hover-zOffset-input');
   const pickZOffset = Doc.getInputFloat('dg-pick-zOffset-input');
-  const place: Coord3 = {
+  const place: RCoord = {
+    type: CoordType.RCS,
     x: Doc.getInputFloat('dg-place-x-input'),
     y: Doc.getInputFloat('dg-place-y-input'),
     z: Doc.getInputFloat('dg-place-z-input'),
@@ -352,24 +335,16 @@ async function dynamicGrabFromInput() {
 
 Doc.addClickListener('start-dynamic-grab-btn', async () => {
   dynamicGrabRunning = true;
-  while (dynamicGrabRunning === true) {
-    await dynamicGrabFromInput();
-  }
-
+  while (dynamicGrabRunning) await dynamicGrabFromInput();
 });
 
-Doc.addClickListener('stop-dynamic-grab-btn', () => {
-  dynamicGrabRunning = false;
-
-});
+Doc.addClickListener('stop-dynamic-grab-btn', () => dynamicGrabRunning = false);
 
 Doc.addClickListener('enqueue-item-btn', async () => {
-
   // put item in queue for testing
   const x = Doc.getInputFloat('dg-item-initial-x-input');
   const y = Doc.getInputFloat('dg-item-initial-y-input');
   queue.insert(new Item({ x, y, z: 1, t: await Conveyer.fetchCount() }, 1, 'cup'));
-
 });
 
 Doc.addClickListener('point1-capture-btn', async () => {
@@ -407,7 +382,7 @@ Doc.addClickListener('robot-coordinate-move-btn', () => {
   const y = parseFloat((robotPoints.elements[1] as HTMLInputElement).value);
   const z = parseFloat((robotPoints.elements[2] as HTMLInputElement).value);
 
-  robot.moveToRobotCoordinate(x, y, z);
+  robot.moveTo({ type: CoordType.RCS, x, y, z });
 });
 
 Doc.addClickListener('belt-coordinate-move-btn', () => {
@@ -420,7 +395,7 @@ Doc.addClickListener('belt-coordinate-move-btn', () => {
   const configFrm = document.getElementById('configuration-frm') as HTMLFormElement;
   const z = parseFloat((configFrm.elements[2] as HTMLInputElement).value);
 
-  robot.moveToBeltCoordinate(x, y, z);
+  robot.moveTo({ type: CoordType.BCS, x, y, z });
 });
 
 Doc.addClickListener('origin-camera', async () => {
