@@ -9,7 +9,8 @@ export class Robot {
   private port: SerialPort;
   private transform: number[][];
   private newData = 0;
-  // private stopItemTracking = new Subject<void>();
+  private xMaxPick: number;
+  private xMinPick: number;
 
   public connect(portName: string, baudRate: number) {
     this.port = new SerialPort(portName, { baudRate }, err => console.error(err));
@@ -125,46 +126,40 @@ export class Robot {
 
   public async dynamicGrab(
     item: Item,
+    place: Coord3,
     zOffsetHover: number,
     zOffsetPick: number,
-    xOffsetPick: number,
-    xMaxPick: number,
-    xMinPick: number,
-    placeX: number,
-    placeY: number,
-    placeZ: number,
   ) {
-
     // makes sense to open gripper before doing stuff
     this.openGripper();
 
-    item.coordsUpdated.subscribe(coords => console.log(coords));
+    // item.coordsUpdated.subscribe(coords => console.log(coords));
 
     // if item already moved out of range, cannot pick cup
     let itemRobotX = this.belt2robotCoordinates(item.x, item.y)[0];
-    if (itemRobotX < xMinPick) {
+    if (itemRobotX < this.xMinPick) {
       console.log('itemInRange reject with initial itemRobotX: ', itemRobotX);
       console.log('Item initially past pickable range');
       item.destroy();
       return;
-    } else if (itemRobotX > xMaxPick) {
+    } else if (itemRobotX > this.xMaxPick) {
       // move to most forward place on belt
       const itemRobotY = this.belt2robotCoordinates(item.x, item.y)[1];
       const itemRobotZ = this.belt2robotCoordinates(item.x, item.y)[2];
       // since the conveyor is a bit skewed with respect to the robot, need to adjust for that.
-      await this.moveToRobotCoordinate(xMaxPick, itemRobotY, itemRobotZ + zOffsetHover);
+      await this.moveToRobotCoordinate(this.xMaxPick, itemRobotY, itemRobotZ + zOffsetHover);
 
       // while
       while (true) {
         await item.coordsUpdated.first().toPromise();
         itemRobotX = this.belt2robotCoordinates(item.x, item.y)[0];
         // if passed range, somehow went through range without notice, return error
-        if (itemRobotX < xMinPick) {
+        if (itemRobotX < this.xMinPick) {
           console.log('itemInRange reject with initial itemRobotX: ', itemRobotX);
           console.log('Item never detected in pickable range');
           item.destroy();
           return;
-        } else if (itemRobotX < xMaxPick) {
+        } else if (itemRobotX < this.xMaxPick) {
           break;
         }
       }
