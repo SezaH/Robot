@@ -123,9 +123,17 @@ export class Robot {
     await this.openGripper();
   }
 
-  public async dynamicGrab(item: Item, zOffsetHover: number, zOffsetPick: number,
-                           xOffsetPick: number, xMaxPick: number, xMinPick: number,
-                           placeX: number, placeY: number, placeZ: number) {
+  public async dynamicGrab(
+    item: Item,
+    zOffsetHover: number,
+    zOffsetPick: number,
+    xOffsetPick: number,
+    xMaxPick: number,
+    xMinPick: number,
+    placeX: number,
+    placeY: number,
+    placeZ: number,
+  ) {
 
     // makes sense to open gripper before doing stuff
     this.openGripper();
