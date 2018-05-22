@@ -49,6 +49,12 @@ export class Robot {
     const math = require('mathjs');
 
     this.transform = math.multiply(math.inv(beltCoordinates), robotCoordinates);
+
+    // could be better if we had a RCS to BCS function
+    // Take the calibration points as x min/max for picking
+    // because it is guaranteed the robot could reach it.
+    this.xMaxPick = beltCoordinates[2][0];
+    this.xMinPick = beltCoordinates[0][0];
     console.log('transform: ', this.transform);
   }
 
