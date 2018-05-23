@@ -134,33 +134,39 @@ export class Robot {
     zOffsetPick: number,
   ) {
 
-    const estTimeToGrab = async () => {
-      const distance = Vector.distance(item.xyz, await this.getCoordsBCS());
-      return distance / this.speed * 60 /* min/s */;
+    const predictTarget = (self: BCoord, iterations = 10) => {
+      let secs = 0;
+      for (let i = 0; i < iterations; i++) {
+        secs = Vector.distance(item.projectCoords(secs), self) / this.speed * 60;
+      }
+      return item.projectCoords(secs);
     };
 
     // makes sense to open gripper before doing stuff
     await this.openGripper();
 
-    let secs = await estTimeToGrab();
+    await item.coordsUpdated.first().toPromise();
+
+    let target = predictTarget(await this.getCoordsBCS());
 
     // if item already moved out of range, cannot pick cup
-    if (item.projectCoords(secs).x > this.xMaxPick) {
+    if (target.x > this.xMaxPick) {
       console.log('itemInRange reject with initial itemRobotX: ', item.x);
       console.log('Item initially past pickable range');
       item.destroy();
       return;
-    } else if (item.projectCoords(secs).x < this.xMinPick) {
+    } else if (target.x < this.xMinPick) {
       // move to most forward place on belt
       // since the conveyor is a bit skewed with respect to the robot, need to adjust for that.
-      await this.moveTo({ type: CoordType.BCS, x: this.xMaxPick, y: item.y, z: item.z + zOffsetHover });
+      const idlePos: BCoord = { type: CoordType.BCS, x: this.xMaxPick, y: item.y, z: item.z + zOffsetHover };
+      await this.moveTo(idlePos);
 
-      while (item.projectCoords(secs).x < this.xMinPick) {
+      while (target.x < this.xMinPick) {
         await item.coordsUpdated.first().toPromise();
-        secs = await estTimeToGrab();
+        target = predictTarget(idlePos);
 
         // if passed range, somehow went through range without notice, return error
-        if (item.projectCoords(secs).x > this.xMaxPick) {
+        if (target.x > this.xMaxPick) {
           console.log('itemInRange reject with initial itemRobotX: ', item.x);
           console.log('Item never detected in pickable range');
           item.destroy();
@@ -168,13 +174,12 @@ export class Robot {
         }
       }
     } else {
-      await item.coordsUpdated.first().toPromise();
-      await this.moveTo({ type: CoordType.BCS, x: item.projectCoords(secs).x, y: item.y, z: item.z + zOffsetHover });
+      await this.moveTo({ type: CoordType.BCS, x: target.x, y: item.y, z: item.z + zOffsetHover });
     }
 
-    secs = await estTimeToGrab();
+    target = await predictTarget(await this.getCoordsBCS(), 20);
     // now since in range, try to pick item
-    await this.pick(item.projectCoords(secs));
+    await this.pick(target);
     // now wait a tiny bit for better pickup
     await Util.delay(100);
     // now place it at intended target
