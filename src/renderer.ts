@@ -348,31 +348,31 @@ Doc.addClickListener('enqueue-item-btn', async () => {
 });
 
 Doc.addClickListener('point1-capture-btn', async () => {
-  const coordinates = await robot.getCurrentRobotCoordinate();
-  Doc.setInputValue('calibration-x1-input', coordinates[0]);
-  Doc.setInputValue('calibration-y1-input', coordinates[1]);
-  Doc.setInputValue('calibration-z1-input', coordinates[2]);
+  const coords = await robot.getCoordsRCS();
+  Doc.setInputValue('calibration-x1-input', coords.x);
+  Doc.setInputValue('calibration-y1-input', coords.y);
+  Doc.setInputValue('calibration-z1-input', coords.z);
 });
 
 Doc.addClickListener('point2-capture-btn', async () => {
-  const coordinates = await robot.getCurrentRobotCoordinate();
-  Doc.setInputValue('calibration-x2-input', coordinates[0]);
-  Doc.setInputValue('calibration-y2-input', coordinates[1]);
-  Doc.setInputValue('calibration-z2-input', coordinates[2]);
+  const coords = await robot.getCoordsRCS();
+  Doc.setInputValue('calibration-x2-input', coords.x);
+  Doc.setInputValue('calibration-y2-input', coords.y);
+  Doc.setInputValue('calibration-z2-input', coords.z);
 });
 
 Doc.addClickListener('point3-capture-btn', async () => {
-  const coordinates = await robot.getCurrentRobotCoordinate();
-  Doc.setInputValue('calibration-x3-input', coordinates[0]);
-  Doc.setInputValue('calibration-y3-input', coordinates[1]);
-  Doc.setInputValue('calibration-z3-input', coordinates[2]);
+  const coords = await robot.getCoordsRCS();
+  Doc.setInputValue('calibration-x3-input', coords.x);
+  Doc.setInputValue('calibration-y3-input', coords.y);
+  Doc.setInputValue('calibration-z3-input', coords.z);
   robotEncoder = await Conveyer.fetchCount();
 });
 
 Doc.addClickListener('capture-coordinate-btn', async () => {
-  const output = await robot.getCurrentRobotCoordinate();
+  const output = await robot.getCoordsRCS();
   document.getElementById('current-coordinate-output')
-    .innerHTML = 'x: ' + output[0] + ', y: ' + output[1] + ', z: ' + output[2];
+    .innerHTML = 'x: ' + output.x + ', y: ' + output.y + ', z: ' + output.z;
 });
 
 Doc.addClickListener('robot-coordinate-move-btn', () => {

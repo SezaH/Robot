@@ -4,10 +4,6 @@ import { BCoord, Coord2, Coord3, Coord4, CoordType, Vector } from './utils';
 
 export class Item {
 
-  // public static track(item: Item, rateHz: number) {
-  //   return Observable.interval(1000 / rateHz).concatMap(() => item.update());
-  // }
-
   private _coords: Coord4;
   private _classID: number;
   private _className: string;

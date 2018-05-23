@@ -39,4 +39,8 @@ export namespace Vector {
 
     return Math.sqrt(v.reduce((acc, val) => acc + Math.pow(val, 2), 0));
   }
+
+  export function distance(v1: Coord3, v2: Coord3) {
+    return magnitude({ x: v2.x - v1.x, y: v2.y - v1.y, z: v2.z - v1.z });
+  }
 }
