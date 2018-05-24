@@ -1,5 +1,7 @@
+// import { Observable, Subject } from 'rxjs';
 import * as SerialPort from 'serialport';
-
+import { Item } from './item';
+import { Util } from './utils';
 
 export class Robot {
   private isConnected = false;
@@ -7,6 +9,7 @@ export class Robot {
   private port: SerialPort;
   private transform: number[][];
   private newData = 0;
+  // private stopItemTracking = new Subject<void>();
 
   public connect(portName: string, baudRate: number) {
     this.port = new SerialPort(portName, { baudRate }, err => console.error(err));
@@ -46,7 +49,7 @@ export class Robot {
     console.log('transform: ', this.transform);
   }
 
-  public belt2robotCoordinates(x: number, y: number) {
+  public belt2robotCoordinates(x: number, y: number): number[] {
 
     const inputVector = [x, y, 1];
     const math = require('mathjs');
@@ -65,9 +68,9 @@ export class Robot {
     return cmdComplete;
   }
 
-  public moveToBeltCoordinate(x: number, y: number, zOffset: number) {
+  public async moveToBeltCoordinate(x: number, y: number, zOffset: number) {
     const coordinates = this.belt2robotCoordinates(x, y);
-    this.moveToRobotCoordinate(coordinates[0], coordinates[1], coordinates[2] + zOffset);
+    await this.moveToRobotCoordinate(coordinates[0], coordinates[1], coordinates[2] + zOffset);
   }
 
   public openGripper() {
@@ -108,22 +111,85 @@ export class Robot {
     // todo
   }
 
-  public async pick(x: number, y: number, z: number) {
+  public async pick(x: number, y: number, zOffset: number) {
     this.openGripper();
-    await this.moveToRobotCoordinate(0, 0, -400);
-    await this.moveToBeltCoordinate(x, y, z);
+    await this.moveToBeltCoordinate(x, y, zOffset);
     await this.closeGripper();
     await this.moveToRobotCoordinate(0, 0, -400);
   }
 
   public async place(x: number, y: number, z: number) {
-    await this.moveToRobotCoordinate(0, 0, -400);
     await this.moveToRobotCoordinate(x, y, z);
     await this.openGripper();
-    await this.moveToRobotCoordinate(0, 0, -400);
   }
 
+  public async dynamicGrab(
+    item: Item,
+    zOffsetHover: number,
+    zOffsetPick: number,
+    xOffsetPick: number,
+    xMaxPick: number,
+    xMinPick: number,
+    placeX: number,
+    placeY: number,
+    placeZ: number,
+  ) {
 
+    // makes sense to open gripper before doing stuff
+    this.openGripper();
+
+    item.coordsUpdated.subscribe(coords => console.log(coords));
+
+    // if item already moved out of range, cannot pick cup
+    let itemRobotX = this.belt2robotCoordinates(item.x, item.y)[0];
+    if (itemRobotX < xMinPick) {
+      console.log('itemInRange reject with initial itemRobotX: ', itemRobotX);
+      console.log('Item initially past pickable range');
+      item.destroy();
+      return;
+    } else if (itemRobotX > xMaxPick) {
+      // move to most forward place on belt
+      const itemRobotY = this.belt2robotCoordinates(item.x, item.y)[1];
+      const itemRobotZ = this.belt2robotCoordinates(item.x, item.y)[2];
+      // since the conveyor is a bit skewed with respect to the robot, need to adjust for that.
+      await this.moveToRobotCoordinate(xMaxPick, itemRobotY, itemRobotZ + zOffsetHover);
+
+      // while
+      while (true) {
+        await item.coordsUpdated.first().toPromise();
+        itemRobotX = this.belt2robotCoordinates(item.x, item.y)[0];
+        // if passed range, somehow went through range without notice, return error
+        if (itemRobotX < xMinPick) {
+          console.log('itemInRange reject with initial itemRobotX: ', itemRobotX);
+          console.log('Item never detected in pickable range');
+          item.destroy();
+          return;
+        } else if (itemRobotX < xMaxPick) {
+          break;
+        }
+      }
+
+    } else {
+      await item.coordsUpdated.first().toPromise();
+      await this.moveToBeltCoordinate(item.x, item.y, zOffsetHover);
+    }
+
+    // now since in range, try to pick item
+    // xOffsetPick in belt coordinates currently, which is not what we want
+    await this.pick(item.x + xOffsetPick, item.y, zOffsetPick);
+    // now wait a tiny bit for better pickup
+    await Util.delay(100);
+    // now place it at intended target
+    await this.place(placeX, placeY, placeZ);
+    // want to wait after picking
+    await Util.delay(300);
+    // return to home
+    await this.moveToRobotCoordinate(0, 0, -400);
+
+    // destroy item for some reason
+    item.destroy();
+
+  }
 
   public async testStuff() {
     while (true) {

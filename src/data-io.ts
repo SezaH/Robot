@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { Util } from './utils';
 
 export namespace DataController {
@@ -19,6 +19,7 @@ export namespace DataController {
     score: number;
   }
 
+  export const countRecorded = new Subject<number>();
 
   /**
    * @returns An observable that emits whenever the file appears
@@ -37,6 +38,7 @@ export namespace DataController {
     });
   }
 
+  export let cameraT = 0;
 
   /**
    * @returns An observable that emits whenever both the data file and image file are created.
@@ -48,7 +50,8 @@ export namespace DataController {
     return Observable
       .zip(
         fileRenamed(dataFile),
-        fileRenamed(imageFile))
+        fileRenamed(imageFile),
+    )
       .concatMap(async () => {
         try {
           await Util.delay(20);
@@ -60,14 +63,13 @@ export namespace DataController {
           const objects = JSON.parse(rawData) as IObject[];
           // if (objects === undefined) return { objects: undefined, bitmap: undefined };
           const bitmap = await createImageBitmap(new Blob([rawImage]));
-          return { objects, bitmap };
+          return { objects, bitmap, t: cameraT };
         } catch {
 
-          return { objects: undefined, bitmap: undefined };
+          return { objects: undefined, bitmap: undefined, t: undefined };
         }
       });
   }
-
 
   /**
    * Triggers a python script to capture a image from the webcam and save it to a directory.
