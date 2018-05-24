@@ -1,7 +1,8 @@
 // import { Observable, Subject } from 'rxjs';
+import { throttleTime } from 'rxjs/operator/throttleTime';
 import * as SerialPort from 'serialport';
 import { Item } from './item';
-import { Util } from './utils';
+import { BCoord, Coord3, CoordType, RCoord, Util, Vector } from './utils';
 
 export class Robot {
   private isConnected = false;
@@ -9,7 +10,10 @@ export class Robot {
   private port: SerialPort;
   private transform: number[][];
   private newData = 0;
-  // private stopItemTracking = new Subject<void>();
+  private xMaxPick: number; // IN BCS
+  private xMinPick: number; // IN BCS
+  private speed = 5000;
+  private zOffset = 100;
 
   public connect(portName: string, baudRate: number) {
     this.port = new SerialPort(portName, { baudRate }, err => console.error(err));
@@ -23,17 +27,15 @@ export class Robot {
     });
   }
 
-  public commandComplete() {
-    return new Promise<string>(resolve => {
+  public sendMessage(message: string) {
+    const retval = new Promise<string>(resolve => {
       this.port.once('data', data => {
         console.log(data);
         resolve(data.toString());
       });
     });
-  }
-
-  public sendMessage(message: string) {
     this.port.write(message + '\r\n');
+    return retval;
   }
 
   public calibrate(robotCoordinates: number[][], beltCoordinates: number[][]) {
@@ -46,157 +48,147 @@ export class Robot {
     const math = require('mathjs');
 
     this.transform = math.multiply(math.inv(beltCoordinates), robotCoordinates);
+
+    // Take the calibration points as x min/max for picking
+    // because it is guaranteed the robot could reach it.
+    this.xMaxPick = beltCoordinates[2][0];
+    this.xMinPick = beltCoordinates[0][0];
     console.log('transform: ', this.transform);
   }
 
-  public belt2robotCoordinates(x: number, y: number): number[] {
-
-    const inputVector = [x, y, 1];
+  public belt2RobotCoords(coords: BCoord): RCoord {
+    const inputVector = [coords.x, coords.y, 1];
     const math = require('mathjs');
-    const output = math.multiply(inputVector, this.transform);
-    // console.log("output: ", output);
-    return output;
+    const [x, y] = math.multiply(inputVector, this.transform) as number[];
+    return { type: CoordType.RCS, x, y, z: coords.z };
   }
 
-  public async moveToRobotCoordinate(x: number, y: number, z: number) {
-    const configFrm = document.getElementById('configuration-frm') as HTMLFormElement;
-    const speed = Number((configFrm.elements[1] as HTMLInputElement).value);
-    const message = 'G0 X' + x + ' Y' + y + ' Z' + z + ' F' + speed;
-    console.log(message);
-    const cmdComplete = this.commandComplete();
-    this.sendMessage('G0 X' + x + ' Y' + y + ' Z' + z + ' F' + speed);
-    return cmdComplete;
+  public robot2BeltCoords(coords: RCoord): BCoord {
+    const inputVector = [coords.x, coords.y, 1];
+    const math = require('mathjs');
+    const [x, y] = math.multiply(inputVector, math.inv(this.transform)) as number[];
+    return { type: CoordType.BCS, x, y, z: coords.z };
   }
 
-  public async moveToBeltCoordinate(x: number, y: number, zOffset: number) {
-    const coordinates = this.belt2robotCoordinates(x, y);
-    await this.moveToRobotCoordinate(coordinates[0], coordinates[1], coordinates[2] + zOffset);
+  public async moveTo(coords: BCoord | RCoord) {
+    if (coords.type === CoordType.BCS) coords = this.belt2RobotCoords(coords);
+    return this.sendMessage(`G0 X${coords.x} Y${coords.y} Z${coords.z} F${this.speed}`);
   }
 
-  public openGripper() {
-    const cmdComplete = this.commandComplete();
-    this.sendMessage('M801');
-    this.sendMessage('M810');
-    return cmdComplete;
+  public async openGripper() {
+    await this.sendMessage('M801');
+    await this.sendMessage('M810');
   }
 
-  public closeGripper() {
-    const cmdComplete = this.commandComplete();
-    this.sendMessage('M811');
-    this.sendMessage('M800');
-    return cmdComplete;
+  public async closeGripper() {
+    await this.sendMessage('M811');
+    await this.sendMessage('M800');
   }
 
-  public motorsOn() {
-    const cmdComplete = this.commandComplete();
-    this.sendMessage('M17');
-    return cmdComplete;
+  public async motorsOn() {
+    return this.sendMessage('M17');
   }
 
-  public motorsOff() {
-    const cmdComplete = this.commandComplete();
-    this.sendMessage('M18');
-    return cmdComplete;
+  public async motorsOff() {
+    return this.sendMessage('M18');
   }
 
-  public async getCurrentRobotCoordinate() {
-    const promise = this.commandComplete();
-    this.sendMessage('M895');
-    const coordinates = await promise;
-    const numbers = coordinates.split(',').map((str) => {
+  public async getCoordsRCS() {
+    const coordinates = await this.sendMessage('M895');
+
+    const [x, y, z] = coordinates.split(',').map(str => {
       const num = str.match(/[-+]?[0-9]*\.?[0-9]+/);
       return (num !== null) ? parseFloat(num[0]) : undefined;
     });
-    return numbers;
-    // todo
+
+    const coord: RCoord = { type: CoordType.RCS, x, y, z };
+    return coord;
   }
 
-  public async pick(x: number, y: number, zOffset: number) {
-    this.openGripper();
-    await this.moveToBeltCoordinate(x, y, zOffset);
+  public async getCoordsBCS() {
+    return this.robot2BeltCoords(await this.getCoordsRCS());
+  }
+
+  public async pick({ type, x, y, z }: BCoord | RCoord, zOffset = this.zOffset) {
+    await this.openGripper();
+
+    if (type === CoordType.BCS) {
+      await this.moveTo({ type, x, y, z: z + zOffset });
+    } else {
+      await this.moveTo({ type, x, y, z: z + zOffset });
+    }
+
     await this.closeGripper();
-    await this.moveToRobotCoordinate(0, 0, -400);
+    await this.moveTo({ type: CoordType.RCS, x: 0, y: 0, z: -400 });
   }
 
-  public async place(x: number, y: number, z: number) {
-    await this.moveToRobotCoordinate(x, y, z);
+  public async place(coord: BCoord | RCoord) {
+    await this.moveTo(coord);
     await this.openGripper();
   }
 
   public async dynamicGrab(
     item: Item,
+    place: RCoord,
     zOffsetHover: number,
     zOffsetPick: number,
-    xOffsetPick: number,
-    xMaxPick: number,
-    xMinPick: number,
-    placeX: number,
-    placeY: number,
-    placeZ: number,
   ) {
 
-    // makes sense to open gripper before doing stuff
-    this.openGripper();
+    const predictTarget = (self: BCoord, iterations = 10) => {
+      let secs = 0;
+      for (let i = 0; i < iterations; i++) {
+        secs = Vector.distance(item.projectCoords(secs), self) / this.speed * 60;
+      }
+      return item.projectCoords(secs);
+    };
 
-    item.coordsUpdated.subscribe(coords => console.log(coords));
+    // makes sense to open gripper before doing stuff
+    await this.openGripper();
+
+    await item.coordsUpdated.first().toPromise();
+
+    let target = predictTarget(await this.getCoordsBCS());
 
     // if item already moved out of range, cannot pick cup
-    let itemRobotX = this.belt2robotCoordinates(item.x, item.y)[0];
-    if (itemRobotX < xMinPick) {
-      console.log('itemInRange reject with initial itemRobotX: ', itemRobotX);
+    if (target.x > this.xMaxPick) {
+      console.log('itemInRange reject with initial itemRobotX: ', item.x);
       console.log('Item initially past pickable range');
       item.destroy();
       return;
-    } else if (itemRobotX > xMaxPick) {
+    } else if (target.x < this.xMinPick) {
       // move to most forward place on belt
-      const itemRobotY = this.belt2robotCoordinates(item.x, item.y)[1];
-      const itemRobotZ = this.belt2robotCoordinates(item.x, item.y)[2];
       // since the conveyor is a bit skewed with respect to the robot, need to adjust for that.
-      await this.moveToRobotCoordinate(xMaxPick, itemRobotY, itemRobotZ + zOffsetHover);
+      const idlePos: BCoord = { type: CoordType.BCS, x: this.xMaxPick, y: item.y, z: item.z + zOffsetHover };
+      await this.moveTo(idlePos);
 
-      // while
-      while (true) {
+      while (target.x < this.xMinPick) {
         await item.coordsUpdated.first().toPromise();
-        itemRobotX = this.belt2robotCoordinates(item.x, item.y)[0];
+        target = predictTarget(idlePos);
+
         // if passed range, somehow went through range without notice, return error
-        if (itemRobotX < xMinPick) {
-          console.log('itemInRange reject with initial itemRobotX: ', itemRobotX);
+        if (target.x > this.xMaxPick) {
+          console.log('itemInRange reject with initial itemRobotX: ', item.x);
           console.log('Item never detected in pickable range');
           item.destroy();
           return;
-        } else if (itemRobotX < xMaxPick) {
-          break;
         }
       }
-
     } else {
-      await item.coordsUpdated.first().toPromise();
-      await this.moveToBeltCoordinate(item.x, item.y, zOffsetHover);
+      await this.moveTo({ type: CoordType.BCS, x: target.x, y: item.y, z: item.z + zOffsetHover });
     }
 
+    target = await predictTarget(await this.getCoordsBCS(), 20);
     // now since in range, try to pick item
-    // xOffsetPick in belt coordinates currently, which is not what we want
-    await this.pick(item.x + xOffsetPick, item.y, zOffsetPick);
+    await this.pick(target);
     // now wait a tiny bit for better pickup
     await Util.delay(100);
     // now place it at intended target
-    await this.place(placeX, placeY, placeZ);
+    await this.place(place);
     // want to wait after picking
     await Util.delay(300);
     // return to home
-    await this.moveToRobotCoordinate(0, 0, -400);
+    await this.moveTo({ type: CoordType.RCS, x: 0, y: 0, z: -400 });
 
-    // destroy item for some reason
     item.destroy();
-
-  }
-
-  public async testStuff() {
-    while (true) {
-      await this.closeGripper();
-      await this.moveToRobotCoordinate(0, 0, -400);
-      await this.openGripper();
-      await this.moveToRobotCoordinate(0, 0, -750);
-    }
   }
 }

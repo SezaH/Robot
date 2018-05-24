@@ -10,9 +10,14 @@ export namespace Conveyer {
   export const countUpdated = new Subject<number>();
   export const positionUpdated = new Subject<{ deltaX: number, deltaT: number }>();
 
+  /** Belt's velocity in mm/s */
+  export let beltV = 0;
+
   /** The last received encoder count. */
   let prevT = 0;
   let mockT = 0;
+
+  let prevMs = 0;
 
   /**
    * Emits evertime a new encoder count is received.
@@ -21,7 +26,18 @@ export namespace Conveyer {
   countUpdated.subscribe(t => {
     const deltaT = calcDeltaT(prevT, t);
     const deltaX = countToDist(deltaT);
+    const newMs = Date.now();
+
+    // mm / s = mm / ms * 1000ms / 1s
+    const newBeltV = deltaX / (newMs - prevMs) * 1000/* ms/s */;
+
+    // Average the belt velocity over the smoothingDist
+    const smoothingDist = 250/* mm */;
+    const a = Math.max(smoothingDist, deltaX);
+    beltV = ((smoothingDist - a) * beltV + a * newBeltV) / smoothingDist;
+
     prevT = t;
+    prevMs = newMs;
     positionUpdated.next({ deltaX, deltaT });
   });
 
