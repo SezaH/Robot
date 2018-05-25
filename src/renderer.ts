@@ -5,6 +5,7 @@ import { Conveyer } from './conveyor';
 import { DataController } from './data-io';
 import { Item } from './item';
 import { ItemQueue } from './item_queue';
+import { Model } from './model';
 import { Robot } from './robot';
 import { Util } from './utils';
 
@@ -22,6 +23,8 @@ const originImageFile = '../models/research/object_detection/io/origin.jpg';
 
 /** If multiple cameras are present, specify which. */
 const cameraID = 0;
+
+const model = new Model();
 
 const configfile = 'config.json';
 const robot = new Robot();
@@ -361,6 +364,7 @@ Doc.addClickListener('origin-camera', () => {
   Camera.origin();
 });
 
-Doc.addClickListener('run-model', () => Camera.runModel());
+Doc.addClickListener('run-model', () => model.Run());
+Doc.addClickListener('stop-model', () => model.Stop());
 
 main();
