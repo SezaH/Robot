@@ -40,7 +40,19 @@ export class ItemQueue {
   public removeByID(ID: number) {
     for (let index = 0; index < this.items.length; index++) {
       if (this.items[index].itemID === ID) this.delete(index);
+      break;
     }
+  }
+
+  /**
+   * get the closet item to the robot and return it but still keep it in queue
+   */
+  public getClosestItemToRobot() {
+      let closest: Item = this.items[0];
+      for (let index = 1;  index < this.items.length; index++) {
+          if (this.items[index].x > closest.x ) closest = this.items[index];
+      }
+      return closest;
   }
 
   /**
