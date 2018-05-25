@@ -1,19 +1,65 @@
-// import { Observable, Subject } from 'rxjs';
 import { throttleTime } from 'rxjs/operator/throttleTime';
 import * as SerialPort from 'serialport';
+import { Conveyer } from './conveyor';
 import { Item } from './item';
 import { BCoord, Coord3, CoordType, RCoord, Util, Vector } from './utils';
 
+export interface SysConfig {
+  robotConfigs: RobotConfig[];
+  mmPerCount: number;
+  cameraEncoder: number;
+}
+
+export interface RobotConfig {
+  calPoints: {
+    belt: {
+      p1: BCoord,
+      p2: BCoord,
+      p3: BCoord,
+    },
+    robot: {
+      p1: RCoord,
+      p2: RCoord,
+      p3: RCoord,
+    },
+  };
+  encoderCount: number;
+  maxPick: BCoord;
+  minPick: BCoord;
+  port: string;
+  speed: number;
+  valid: boolean;
+  zOffset: number;
+}
+
 export class Robot {
+  public static readonly defaultConfig: RobotConfig = {
+    calPoints: {
+      belt: {
+        p1: { type: CoordType.BCS, x: -196.1589, y: 119.6971, z: 1 },
+        p2: { type: CoordType.BCS, x: -196.1589, y: -130.6002, z: 1 },
+        p3: { type: CoordType.BCS, x: 203.0632, y: -130.6002, z: 1 },
+      },
+      robot: {
+        p1: { type: CoordType.RCS, x: 262, y: -108, z: -685 },
+        p2: { type: CoordType.RCS, x: 272, y: 142, z: -686 },
+        p3: { type: CoordType.RCS, x: -207, y: 146, z: -703 },
+      },
+    },
+    encoderCount: undefined,
+    maxPick: { type: CoordType.BCS, x: 0, y: 0, z: 0 },
+    minPick: { type: CoordType.BCS, x: 0, y: 0, z: 0 },
+    port: '/dev/ACM0',
+    speed: 5000,
+    valid: false,
+    zOffset: 100,
+  };
+
   private isConnected = false;
-  private isCalibrated = false;
   private port: SerialPort;
   private transform: number[][];
   private newData = 0;
-  private xMaxPick: number; // IN BCS
-  private xMinPick: number; // IN BCS
-  private speed = 5000;
-  private zOffset = 100;
+  private config = Robot.defaultConfig;
 
   public connect(portName: string, baudRate: number) {
     this.port = new SerialPort(portName, { baudRate }, err => console.error(err));
@@ -38,21 +84,43 @@ export class Robot {
     return retval;
   }
 
-  public calibrate(robotCoordinates: number[][], beltCoordinates: number[][]) {
+  public setConfig(config: RobotConfig) {
+    this.config = config;
+  }
 
-    // set z values of belt coordinates to 1
-    beltCoordinates[0].push(1);
-    beltCoordinates[1].push(1);
-    beltCoordinates[2].push(1);
+  public calibrate(
+    cameraEncoder: number,
+    robotEncoder = this.config.encoderCount,
+    overrideValid = false,
+    robotPoints = this.config.calPoints.robot,
+    beltPoints = this.config.calPoints.belt,
+  ) {
+    if (!this.config.valid && !overrideValid) return;
 
     const math = require('mathjs');
 
-    this.transform = math.multiply(math.inv(beltCoordinates), robotCoordinates);
+    const xOffset = Conveyer.countToDist(Conveyer.calcDeltaT(cameraEncoder, robotEncoder));
+
+    const robotMatrix = [
+      [robotPoints.p1.x, robotPoints.p1.y, robotPoints.p1.z],
+      [robotPoints.p2.x, robotPoints.p2.y, robotPoints.p2.z],
+      [robotPoints.p3.x, robotPoints.p3.y, robotPoints.p3.z],
+    ];
+
+    const beltMatrix = [
+      [beltPoints.p1.x + xOffset, beltPoints.p1.y, beltPoints.p1.z],
+      [beltPoints.p2.x + xOffset, beltPoints.p2.y, beltPoints.p2.z],
+      [beltPoints.p3.x + xOffset, beltPoints.p3.y, beltPoints.p3.z],
+    ];
+
+    this.transform = math.multiply(math.inv(beltMatrix), robotMatrix);
 
     // Take the calibration points as x min/max for picking
     // because it is guaranteed the robot could reach it.
-    this.xMaxPick = beltCoordinates[2][0];
-    this.xMinPick = beltCoordinates[0][0];
+    this.config.maxPick.x = beltPoints.p3.x;
+    this.config.minPick.x = beltPoints.p1.x;
+
+    this.config.valid = true;
     console.log('transform: ', this.transform);
   }
 
@@ -71,8 +139,9 @@ export class Robot {
   }
 
   public async moveTo(coords: BCoord | RCoord) {
+    if (!this.config.valid) return;
     if (coords.type === CoordType.BCS) coords = this.belt2RobotCoords(coords);
-    return this.sendMessage(`G0 X${coords.x} Y${coords.y} Z${coords.z} F${this.speed}`);
+    return this.sendMessage(`G0 X${coords.x} Y${coords.y} Z${coords.z} F${this.config.speed}`);
   }
 
   public async openGripper() {
@@ -109,7 +178,7 @@ export class Robot {
     return this.robot2BeltCoords(await this.getCoordsRCS());
   }
 
-  public async pick({ type, x, y, z }: BCoord | RCoord, zOffset = this.zOffset) {
+  public async pick({ type, x, y, z }: BCoord | RCoord, zOffset = this.config.zOffset) {
     await this.openGripper();
 
     if (type === CoordType.BCS) {
@@ -137,7 +206,7 @@ export class Robot {
     const predictTarget = (self: BCoord, iterations = 10) => {
       let secs = 0;
       for (let i = 0; i < iterations; i++) {
-        secs = Vector.distance(item.projectCoords(secs), self) / this.speed * 60;
+        secs = Vector.distance(item.projectCoords(secs), self) / this.config.speed * 60;
       }
       return item.projectCoords(secs);
     };
@@ -150,23 +219,23 @@ export class Robot {
     let target = predictTarget(await this.getCoordsBCS());
 
     // if item already moved out of range, cannot pick cup
-    if (target.x > this.xMaxPick) {
+    if (target.x > this.config.maxPick.x) {
       console.log('itemInRange reject with initial itemRobotX: ', item.x);
       console.log('Item initially past pickable range');
       item.destroy();
       return;
-    } else if (target.x < this.xMinPick) {
+    } else if (target.x < this.config.minPick.x) {
       // move to most forward place on belt
       // since the conveyor is a bit skewed with respect to the robot, need to adjust for that.
-      const idlePos: BCoord = { type: CoordType.BCS, x: this.xMaxPick, y: item.y, z: item.z + zOffsetHover };
+      const idlePos: BCoord = { type: CoordType.BCS, x: this.config.maxPick.x, y: item.y, z: item.z + zOffsetHover };
       await this.moveTo(idlePos);
 
-      while (target.x < this.xMinPick) {
+      while (target.x < this.config.minPick.x) {
         await item.coordsUpdated.first().toPromise();
         target = predictTarget(idlePos);
 
         // if passed range, somehow went through range without notice, return error
-        if (target.x > this.xMaxPick) {
+        if (target.x > this.config.maxPick.x) {
           console.log('itemInRange reject with initial itemRobotX: ', item.x);
           console.log('Item never detected in pickable range');
           item.destroy();

@@ -4,7 +4,8 @@
   "description": "A robot control panel",
   "scripts": {
     "install": "electron-rebuild",
-    "build": "npm run format && tsc && copyfiles -f src/index.html src/calibration.html src/style.css dist",
+    "build": "npm run format && tsc && copyfiles -f src/index.html src/style.css src/calibration.html package.json dist && cd dist && npm install --prod && cd ..",
+    "build2": "tsc && copyfiles -f src/index.html src/calibration.html src/style.css dist",
     "watch": "npm-watch",
     "lint": "tsfmt --verify && tslint --project .",
     "format": "tsfmt -r && tslint --fix --project .",
@@ -12,7 +13,7 @@
     "electron": "electron --serve --console ./dist/main.js"
   },
   "watch": {
-    "build": {
+    "build2": {
       "patterns": [
         "src"
       ],
@@ -40,9 +41,12 @@
   },
   "dependencies": {
     "@types/fs-extra": "^5.0.1",
+    "bootstrap": "^4.1.1",
     "fs-extra": "^5.0.0",
     "rxjs": "^5.4.2",
+    "jquery": "^3.3.1",
     "mathjs": "^4.1.2",
+    "popper.js": "^1.14.3",
     "serialport": "^6.2.0"
   }
 }

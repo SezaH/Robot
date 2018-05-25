@@ -12,4 +12,33 @@ body {
     background: #FFF;
     line-height: 1;
     font-family: sans-serif;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
 }
+
+tr {
+    line-height: 1.5;
+}
+
+.table td, .table th {
+    vertical-align: middle;
+    text-align: right;
+    
+}
+
+
+.table td:last-child {
+    width: 3rem;
+}
+
+thead th {
+    line-height: 2;
+}
+
+tr>th:first-child {
+    width: 1rem;
+}
+
