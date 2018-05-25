@@ -170,7 +170,11 @@ Doc.addClickListener('config-load-btn', async () => {
   Doc.setInnerHtml('cal-y3', calPoints.p3.y);
   Doc.setInnerHtml('cal-z3', calPoints.p3.z);
 
-  Doc.setInnerHtml('cal-encoder', sysConfig.mmPerCount);
+  Doc.setInnerHtml('cal-encoder', sysConfig.mmPerCount * 1000);
+
+  Doc.setInnerHtml('robot-encoder', sysConfig.robotConfigs[0].encoder);
+  Doc.setInnerHtml('camera-encoder', sysConfig.cameraEncoder);
+
   Doc.setInputValue('robot-port', sysConfig.robotConfigs[0].port);
   Doc.setInputValue('encoder-port', sysConfig.encoderPort);
 

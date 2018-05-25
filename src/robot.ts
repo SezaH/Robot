@@ -17,7 +17,7 @@ export interface RobotConfig {
       p3: RCoord,
     },
   };
-  encoderCount: number;
+  encoder: number;
   maxPick: BCoord;
   minPick: BCoord;
   port: string;
@@ -40,7 +40,7 @@ export class Robot {
         p3: { type: CoordType.RCS, x: -207, y: 146, z: -703 },
       },
     },
-    encoderCount: undefined,
+    encoder: -1,
     maxPick: { type: CoordType.BCS, x: 0, y: 0, z: 0 },
     minPick: { type: CoordType.BCS, x: 0, y: 0, z: 0 },
     port: '/dev/ACM0',
@@ -84,12 +84,12 @@ export class Robot {
 
   public calibrate(
     cameraEncoder: number,
-    robotEncoder = this.config.encoderCount,
+    robotEncoder = this.config.encoder,
     overrideValid = false,
     robotPoints = this.config.calPoints.robot,
     beltPoints = this.config.calPoints.belt,
   ) {
-    if (!this.config.valid && !overrideValid) return;
+    if (cameraEncoder < 0 || (!this.config.valid && !overrideValid)) return;
 
     const math = require('mathjs');
 

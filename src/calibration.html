@@ -101,7 +101,7 @@
             </div>
           </div>
 
-          <p id="cal-encoder"></p>
+          <p class="card-text">&mu;m/count: <span id="cal-encoder">0</span></p>
 
         </div>
       </div>
@@ -110,8 +110,11 @@
       <div class="card mb-3">
         <h5 class="card-header">Camera</h5>
         <div class="card-body">
+            
+          <p class="card-text">Encoder: <span id="camera-encoder">0</span></p>
+
           <button id="origin-camera"
-                  class="btn btn-primary"
+                  class="btn btn-primary mt-3"
                   type="button">Capture Origin</button>
         </div>
       </div>
@@ -201,8 +204,7 @@
             </tbody>
           </table>
 
-          <p id="robot-encoder"
-             class="card-text">Encoder: 12341234</p>
+          <p class="card-text">Encoder: <span id="robot-encoder">0</span></p>
 
           <button id="calibrate-btn"
                   class="btn btn-primary mt-3"
