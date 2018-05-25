@@ -146,8 +146,8 @@ Doc.addClickListener('encoder-connect-btn', () => Conveyer.connect(Doc.getInputS
 //   lastT = newT;
 // });
 
-Doc.addClickListener('config-load-btn', async () => {
-  const configPath = Doc.getInputString('config-path-input');
+Doc.addClickListener('cal-load-btn', async () => {
+  const configPath = Doc.getInputString('cal-path-input');
 
   try {
     const rawData = await fs.readFile(configPath, 'utf8');
@@ -184,9 +184,9 @@ Doc.addClickListener('config-load-btn', async () => {
   robot.calibrate(sysConfig.cameraEncoder);
 });
 
-Doc.addClickListener('config-save-btn', async () => {
+Doc.addClickListener('cal-save-btn', async () => {
   if (sysConfig.robotConfigs.every(c => c.valid)) {
-    const configPath = Doc.getInputString('config-path-input');
+    const configPath = Doc.getInputString('cal-path-input');
     fs.writeFile(configPath, JSON.stringify(sysConfig));
   }
 });
