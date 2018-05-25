@@ -3,6 +3,7 @@ import { Conveyer } from './conveyor';
 import { BCoord, Coord2, Coord3, Coord4, CoordType, Vector } from './utils';
 
 export class Item {
+  private static uniqueItemID: number = 0;
 
   private _coords: Coord4;
   private _itemID: number;
@@ -15,12 +16,11 @@ export class Item {
 
   constructor(
     coords: Coord4,
-    itemID: number,
     classID: number,
     className: string,
   ) {
     this._coords = coords;
-    this._itemID = itemID;
+    this._itemID = Item.uniqueItemID++;
     this._classID = classID;
     this._className = className;
     this._subscription = Conveyer.positionUpdated.subscribe(({ deltaX, deltaT }) => {

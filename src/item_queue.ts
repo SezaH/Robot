@@ -6,7 +6,6 @@ export class ItemQueue {
   private _items: Item[] = [];
   private deviationThreshold = 10; // 10 mm radius
   private xLimit = 1000; // 5m TODO determine actual
-  private itemIDNumber = 0; // to keep track of unique item ID for each item
 
   constructor() {
     // Purge out of range items.
@@ -16,14 +15,6 @@ export class ItemQueue {
       }
     });
   }
-
-  /**
-   * Return a unique ID number for each item
-   */
-  public uniqueItemID(){
-    return this.itemIDNumber++;
-  }
-
 
   /**
    * Insert an item in the end of the queue
