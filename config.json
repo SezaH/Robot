@@ -1,0 +1,68 @@
+{
+  "cameraEncoder": 0,
+  "encoderPort": "/dev/ttyACM1",
+  "mmPerCount": 0,
+  "robotConfigs": [
+    {
+      "calPoints": {
+        "belt": {
+          "p1": {
+            "type": 0,
+            "x": -196.1589,
+            "y": 119.6971,
+            "z": 1
+          },
+          "p2": {
+            "type": 0,
+            "x": -196.1589,
+            "y": -130.6002,
+            "z": 1
+          },
+          "p3": {
+            "type": 0,
+            "x": 203.0632,
+            "y": -130.6002,
+            "z": 1
+          }
+        },
+        "robot": {
+          "p1": {
+            "type": 1,
+            "x": 262,
+            "y": -108,
+            "z": -685
+          },
+          "p2": {
+            "type": 1,
+            "x": 272,
+            "y": 142,
+            "z": -686
+          },
+          "p3": {
+            "type": 1,
+            "x": -207,
+            "y": 146,
+            "z": -703
+          }
+        }
+      },
+      "maxPick": {
+        "type": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "minPick": {
+        "type": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "encoder": 0,
+      "port": "/dev/ACM0",
+      "speed": 5000,
+      "valid": false,
+      "zOffset": 100
+    }
+  ]
+}
