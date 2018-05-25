@@ -17,7 +17,7 @@ export class ItemQueue {
   }
 
   /**
-   * Insert an intem in the end of the queue
+   * Insert an item in the end of the queue
    */
   public insert(item: Item) {
     if (!this.isDuplicate(item.xyzt, item.classID)) this._items.push(item);
@@ -30,6 +30,16 @@ export class ItemQueue {
   public remove(): Item {
     if (this._items.length > 0) {
       return this._items.pop();
+    }
+  }
+
+  /**
+   * Delete an item from the queue by ID number
+   * @param ID ID of item to remove
+   */
+  public removeByID(ID: number){
+    for(let index = 0; index < this.items.length; index++){
+      if(this.items[index].itemID === ID) this.delete(index);
     }
   }
 

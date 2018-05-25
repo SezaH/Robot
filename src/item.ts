@@ -5,6 +5,7 @@ import { BCoord, Coord2, Coord3, Coord4, CoordType, Vector } from './utils';
 export class Item {
 
   private _coords: Coord4;
+  private _itemID: number;
   private _classID: number;
   private _className: string;
   private _numDetections = 1;
@@ -14,10 +15,12 @@ export class Item {
 
   constructor(
     coords: Coord4,
+    itemID: number,
     classID: number,
     className: string,
   ) {
     this._coords = coords;
+    this._itemID = itemID;
     this._classID = classID;
     this._className = className;
     this._subscription = Conveyer.positionUpdated.subscribe(({ deltaX, deltaT }) => {
@@ -47,6 +50,9 @@ export class Item {
   public get t() { return this._coords.t; }
   public set t(t) { this._coords.t = t; }
 
+  public get itemID() { return this._itemID; }
+  public set itemID(i) { this.itemID = i; }
+
   public get classID() { return this._classID; }
   public get className() { return this._className; }
 
@@ -75,7 +81,7 @@ export class Item {
 
   public toString() {
     return `x: ${this.x}, y: ${this.y}, z: ${this.z}, encoderValue: ${this.t},
-classID: ${this.classID}, className: ${this.className},
+itemID:${this.itemID} classID: ${this.classID}, className: ${this.className},
 numDetections: ${this.numDetections}`;
   }
 }
