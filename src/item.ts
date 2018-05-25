@@ -81,7 +81,7 @@ export class Item {
 
   public toString() {
     return `x: ${this.x}, y: ${this.y}, z: ${this.z}, encoderValue: ${this.t},
-itemID:${this.itemID} classID: ${this.classID}, className: ${this.className},
+itemID: ${this.itemID} classID: ${this.classID}, className: ${this.className},
 numDetections: ${this.numDetections}`;
   }
 }

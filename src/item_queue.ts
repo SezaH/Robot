@@ -6,6 +6,7 @@ export class ItemQueue {
   private _items: Item[] = [];
   private deviationThreshold = 10; // 10 mm radius
   private xLimit = 1000; // 5m TODO determine actual
+  private itemIDNumber = 0; // to keep track of unique item ID for each item
 
   constructor() {
     // Purge out of range items.
@@ -15,6 +16,14 @@ export class ItemQueue {
       }
     });
   }
+
+  /**
+   * Return a unique ID number for each item
+   */
+  public uniqueItemID(){
+    return this.itemIDNumber++;
+  }
+
 
   /**
    * Insert an item in the end of the queue
@@ -37,9 +46,9 @@ export class ItemQueue {
    * Delete an item from the queue by ID number
    * @param ID ID of item to remove
    */
-  public removeByID(ID: number){
-    for(let index = 0; index < this.items.length; index++){
-      if(this.items[index].itemID === ID) this.delete(index);
+  public removeByID(ID: number) {
+    for (let index = 0; index < this.items.length; index++) {
+      if (this.items[index].itemID === ID) this.delete(index);
     }
   }
 
