@@ -1,5 +1,13 @@
 import { Observable, Subject } from 'rxjs';
 import * as SerialPort from 'serialport';
+import { RobotConfig } from './robot';
+
+export interface SysConfig {
+  cameraEncoder: number;
+  encoderPort: string;
+  mmPerCount: number;
+  robotConfigs: RobotConfig[];
+}
 
 // var SerialPort = require('serialport');
 export namespace Conveyer {

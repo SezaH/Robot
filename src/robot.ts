@@ -4,12 +4,6 @@ import { Conveyer } from './conveyor';
 import { Item } from './item';
 import { BCoord, Coord3, CoordType, RCoord, Util, Vector } from './utils';
 
-export interface SysConfig {
-  robotConfigs: RobotConfig[];
-  mmPerCount: number;
-  cameraEncoder: number;
-}
-
 export interface RobotConfig {
   calPoints: {
     belt: {
@@ -138,10 +132,10 @@ export class Robot {
     return { type: CoordType.BCS, x, y, z: coords.z };
   }
 
-  public async moveTo(coords: BCoord | RCoord) {
+  public async moveTo(coords: BCoord | RCoord, speed = this.config.speed) {
     if (!this.config.valid) return;
     if (coords.type === CoordType.BCS) coords = this.belt2RobotCoords(coords);
-    return this.sendMessage(`G0 X${coords.x} Y${coords.y} Z${coords.z} F${this.config.speed}`);
+    return this.sendMessage(`G0 X${coords.x} Y${coords.y} Z${coords.z} F${speed}`);
   }
 
   public async openGripper() {

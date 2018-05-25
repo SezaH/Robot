@@ -1,16 +1,12 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Camera } from './camera';
-import { Conveyer } from './conveyor';
+import { Conveyer, SysConfig } from './conveyor';
 import { DataController } from './data-io';
 import { Item } from './item';
 import { ItemQueue } from './item_queue';
-import { Robot, RobotConfig, SysConfig } from './robot';
+import { Robot, RobotConfig } from './robot';
 import { Coord3, CoordType, RCoord, Util } from './utils';
-
-/** Value of  Encoder at camera position */
-let cameraEncoder: number;
-let robotEncoder: number;
 
 /** Object bounding boxes returned from CV. */
 const datafile = '../models/research/object_detection/io/output.json';
@@ -34,6 +30,7 @@ const configfile = './config.json';
 const robot = new Robot();
 let sysConfig: SysConfig = {
   cameraEncoder: 0,
+  encoderPort: '/dev/ttyACM1',
   mmPerCount: 0,
   robotConfigs: [Robot.defaultConfig],
 };
@@ -47,7 +44,7 @@ Camera.init();
 async function main() {
   // Code here runs on page load.
 
-  await Conveyer.connect('/dev/ttyACM0', 9600); // Real connection
+  // await Conveyer.connect('/dev/ttyACM0', 9600); // Real connection
   // await Conveyer.connect('/dev/ttyACM1', 9600, true); // Mock connection
 
   await Util.delay(2000);
@@ -135,7 +132,8 @@ class Doc {
 }
 
 // connect
-Doc.addClickListener('connect-btn', () => robot.connect(Doc.getInputString('serial-port'), 115200));
+Doc.addClickListener('robot-connect-btn', () => robot.connect(Doc.getInputString('robot-port'), 115200));
+Doc.addClickListener('encoder-connect-btn', () => Conveyer.connect(Doc.getInputString('encoder-port'), 9600));
 
 // send message to robot
 // Doc.addClickListener('send-btn', async () => robot.sendMessage(Doc.getInputString('input-command')));
@@ -147,8 +145,6 @@ Doc.addClickListener('connect-btn', () => robot.connect(Doc.getInputString('seri
 //   console.log(`new ${newT}, old ${lastT}, delta: ${deltaT}, deltaX ${deltaX}`);
 //   lastT = newT;
 // });
-
-
 
 Doc.addClickListener('config-load-btn', async () => {
   const configPath = Doc.getInputString('config-path-input');
@@ -175,7 +171,8 @@ Doc.addClickListener('config-load-btn', async () => {
   Doc.setInnerHtml('cal-z3', calPoints.p3.z);
 
   Doc.setInnerHtml('cal-encoder', sysConfig.mmPerCount);
-  Doc.setInputValue('serial-port', sysConfig.robotConfigs[0].port);
+  Doc.setInputValue('robot-port', sysConfig.robotConfigs[0].port);
+  Doc.setInputValue('encoder-port', sysConfig.encoderPort);
 
   isPointCaptured = [false, false, false];
 
@@ -184,8 +181,10 @@ Doc.addClickListener('config-load-btn', async () => {
 });
 
 Doc.addClickListener('config-save-btn', async () => {
-  const configPath = Doc.getInputString('config-path-input');
-  fs.writeFile(configPath, JSON.stringify(sysConfig));
+  if (sysConfig.robotConfigs.every(c => c.valid)) {
+    const configPath = Doc.getInputString('config-path-input');
+    fs.writeFile(configPath, JSON.stringify(sysConfig));
+  }
 });
 
 Doc.addClickListener('point1-capture-btn', async () => {
@@ -209,13 +208,12 @@ Doc.addClickListener('point3-capture-btn', async () => {
   Doc.setInnerHtml('cal-x3-input', coords.x);
   Doc.setInnerHtml('cal-y3-input', coords.y);
   Doc.setInnerHtml('cal-z3-input', coords.z);
-  robotEncoder = await Conveyer.fetchCount();
   isPointCaptured[2] = true;
 });
 
 // calibrate
 Doc.addClickListener('calibrate-btn', async () => {
-  if (cameraEncoder === undefined) {
+  if (sysConfig.cameraEncoder === undefined) {
     console.log('Error: you should callibrate the camera first');
     return;
   }
@@ -264,10 +262,11 @@ Doc.addClickListener('calibrate-btn', async () => {
 //   console.log(`output: {x: ${coord.x}, y: ${coord.y}, z: ${coord.z}}`);
 // });
 
-// Doc.addClickListener('open-gripper-btn', () => { robot.openGripper(); });
-// Doc.addClickListener('close-gripper-btn', () => { robot.closeGripper(); });
-// Doc.addClickListener('motor-on-btn', () => { robot.motorsOn(); });
-// Doc.addClickListener('motor-off-btn', () => { robot.motorsOff(); });
+Doc.addClickListener('home-btn', () => robot.moveTo({ type: CoordType.RCS, x: 0, y: 0, z: -500 }, 5000));
+Doc.addClickListener('open-gripper-btn', () => robot.openGripper());
+Doc.addClickListener('close-gripper-btn', () => robot.closeGripper());
+Doc.addClickListener('motor-on-btn', () => robot.motorsOn());
+Doc.addClickListener('motor-off-btn', () => robot.motorsOff());
 
 // Doc.addClickListener('pick-btn', () => {
 //   robot.pick({
@@ -326,8 +325,6 @@ Doc.addClickListener('calibrate-btn', async () => {
 //   queue.insert(new Item({ x, y, z: 1, t: await Conveyer.fetchCount() }, 1, 'cup'));
 // });
 
-
-
 // Doc.addClickListener('capture-coordinate-btn', async () => {
 //   const output = await robot.getCoordsRCS();
 //   document.getElementById('current-coordinate-output')
@@ -359,7 +356,7 @@ Doc.addClickListener('calibrate-btn', async () => {
 
 Doc.addClickListener('origin-camera', async () => {
   Camera.origin();
-  cameraEncoder = await Conveyer.fetchCount();
+  sysConfig.cameraEncoder = await Conveyer.fetchCount();
 });
 
 // Doc.addClickListener('run-model', () => Camera.runModel());

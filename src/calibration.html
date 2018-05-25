@@ -56,7 +56,7 @@
   <div class="tab-content">
 
     <!-- Calibration Tab -->
-    <div class="tab-pane fade container"
+    <div class="tab-pane fade show active container"
          id="pills-calibration"
          role="tabpanel"
          aria-labelledby="pills-calibration-tab">
@@ -88,7 +88,21 @@
       <div class="card mb-3">
         <h5 class="card-header">Encoder</h5>
         <div class="card-body">
+
+          <div class="input-group mb-3">
+            <input id='encoder-port'
+                   type="text"
+                   class="form-control"
+                   placeholder="Serial Port">
+            <div class="input-group-append">
+              <button id="encoder-connect-btn"
+                      class="btn btn-outline-secondary"
+                      type="button">Connect</button>
+            </div>
+          </div>
+
           <p id="cal-encoder"></p>
+
         </div>
       </div>
 
@@ -108,16 +122,37 @@
         <div class="card-body">
 
           <div class="input-group mb-3">
-            <input id='serial-port'
+            <input id='robot-port'
                    type="text"
                    class="form-control"
                    placeholder="Serial Port">
             <div class="input-group-append">
-              <button id="connect-btn"
+              <button id="robot-connect-btn"
                       class="btn btn-outline-secondary"
                       type="button">Connect</button>
             </div>
           </div>
+
+          
+          <button id="home-btn"
+                  class="btn btn-outline-secondary mb-3"
+                  type="button">Home</button>
+
+          <button id="open-gripper-btn"
+                  class="btn btn-outline-secondary mb-3"
+                  type="button">Open Gripper</button>
+
+          <button id="close-gripper-btn"
+                  class="btn btn-outline-secondary mb-3"
+                  type="button">Close Gripper</button>
+
+          <button id="motor-on-btn"
+                  class="btn btn-outline-secondary mb-3"
+                  type="button">Motors On</button>
+
+          <button id="motor-off-btn"
+                  class="btn btn-outline-secondary mb-3"
+                  type="button">Motors Off</button>
 
           <table class="table table-sm table-bordered">
             <thead>
@@ -166,21 +201,22 @@
             </tbody>
           </table>
 
-          <p>Encoder: 12341234</p>
+          <p id="robot-encoder"
+             class="card-text">Encoder: 12341234</p>
 
           <button id="calibrate-btn"
-                  class="btn btn-primary"
+                  class="btn btn-primary mt-3"
                   type="button">Calibrate</button>
 
         </div>
       </div>
 
       <button id="config-save-btn"
-              class="btn btn-primary w-100 btn-lg">Save</button>
+              class="btn btn-primary w-100 btn-lg mb-3">Save</button>
     </div>
 
     <!-- Run Tab -->
-    <div class="tab-pane fade show active container-fluid"
+    <div class="tab-pane fade container-fluid"
          id="pills-run"
          role="tabpanel"
          aria-labelledby="pills-run-tab">
