@@ -104,8 +104,8 @@ export class Robot {
 
     // Take the calibration points as x min/max for picking
     // because it is guaranteed the robot could reach it.
-    this.config.maxPick.x = beltPoints.p3.x + xOffset;
-    this.config.minPick.x = beltPoints.p1.x + xOffset;
+    this.config.maxPick.x = xOffset + 100;
+    this.config.minPick.x = xOffset - 100;
 
     this.config.calPoints.robot = robotPoints;
     this.config.encoder = robotEncoder;
@@ -117,15 +117,15 @@ export class Robot {
   public belt2RobotCoords(coords: BCoord): RCoord {
     const inputVector = [coords.x, coords.y, 1];
     const math = require('mathjs');
-    const [x, y] = math.multiply(inputVector, this.transform) as number[];
-    return { type: CoordType.RCS, x, y, z: coords.z };
+    const [x, y, z] = math.multiply(inputVector, this.transform) as number[];
+    return { type: CoordType.RCS, x, y, z};
   }
 
   public robot2BeltCoords(coords: RCoord): BCoord {
     const inputVector = [coords.x, coords.y, 1];
     const math = require('mathjs');
-    const [x, y] = math.multiply(inputVector, math.inv(this.transform)) as number[];
-    return { type: CoordType.BCS, x, y, z: coords.z };
+    const [x, y, z] = math.multiply(inputVector, math.inv(this.transform)) as number[];
+    return { type: CoordType.BCS, x, y, z };
   }
 
   public async moveTo(coords: BCoord | RCoord, speed = this.config.speed) {
@@ -194,7 +194,7 @@ export class Robot {
     zOffsetPick: number,
   ) {
 
-    const predictTarget = (self: BCoord, iterations = 10) => {
+    const predictTarget = (self: BCoord, iterations = 1) => {
       let secs = 0;
       for (let i = 0; i < iterations; i++) {
         secs = Vector.distance(item.projectCoords(secs), self) / this.config.speed * 60;
@@ -224,6 +224,7 @@ export class Robot {
       while (target.x < this.config.minPick.x) {
         await item.coordsUpdated.first().toPromise();
         target = predictTarget(idlePos);
+        console.log(target, item.xyz);
 
         // if passed range, somehow went through range without notice, return error
         if (target.x > this.config.maxPick.x) {
@@ -237,7 +238,7 @@ export class Robot {
       await this.moveTo({ type: CoordType.BCS, x: target.x, y: item.y, z: item.z + zOffsetHover });
     }
 
-    target = await predictTarget(await this.getCoordsBCS(), 20);
+    target = await predictTarget(await this.getCoordsBCS());
     // now since in range, try to pick item
     await this.pick(target);
     // now wait a tiny bit for better pickup
