@@ -1,4 +1,4 @@
-import { Conveyer } from './conveyor';
+import { Conveyor } from './conveyor';
 import { Item } from './item';
 import { Coord2, Coord3, Coord4, Vector } from './utils';
 
@@ -9,7 +9,7 @@ export class ItemQueue {
 
   constructor() {
     // Purge out of range items.
-    Conveyer.positionUpdated.subscribe(() => {
+    Conveyor.positionUpdated.subscribe(() => {
       for (let i = this.items.length - 1; i >= 0; i--) {
         if (this.items[i].x > this.xLimit) this.delete(i);
       }
@@ -53,7 +53,7 @@ export class ItemQueue {
 
   private isDuplicate(coords: Coord4, classID: number) {
     for (const item of this.items) {
-      const t = Conveyer.calcDeltaT(item.t, coords.t);
+      const t = Conveyor.calcDeltaT(item.t, coords.t);
 
       const deltas: Coord3 = {
         x: coords.x - (item.x + (t - item.t)),

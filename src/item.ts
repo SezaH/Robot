@@ -1,5 +1,5 @@
 import { Subject, Subscription } from 'rxjs';
-import { Conveyer } from './conveyor';
+import { Conveyor } from './conveyor';
 import { BCoord, Coord2, Coord3, Coord4, CoordType, Vector } from './utils';
 
 export class Item {
@@ -20,7 +20,7 @@ export class Item {
     this._coords = coords;
     this._classID = classID;
     this._className = className;
-    this._subscription = Conveyer.positionUpdated.subscribe(({ deltaX, deltaT }) => {
+    this._subscription = Conveyor.positionUpdated.subscribe(({ deltaX, deltaT }) => {
       this.x += deltaX;
       this.t += deltaT;
     });
@@ -63,7 +63,7 @@ export class Item {
   public projectCoords(seconds = 0): BCoord {
     return {
       type: CoordType.BCS,
-      x: this._coords.x + Conveyer.beltV * seconds,
+      x: this._coords.x + Conveyor.beltV * seconds,
       y: this._coords.y,
       z: this._coords.z,
     };

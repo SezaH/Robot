@@ -1,6 +1,6 @@
 import { throttleTime } from 'rxjs/operator/throttleTime';
 import * as SerialPort from 'serialport';
-import { Conveyer } from './conveyor';
+import { Conveyor } from './conveyor';
 import { Item } from './item';
 import { BCoord, Coord3, CoordType, RCoord, Util, Vector } from './utils';
 
@@ -58,19 +58,12 @@ export class Robot {
   public connect(portName: string, baudRate: number) {
     this.port = new SerialPort(portName, { baudRate }, err => console.error(err));
     this.isConnected = true;
-    this.port.on('data', (data: any) => {
-      const terminal = document.getElementById('oputput-p');
-      terminal.innerHTML += data.toString();
-      terminal.innerHTML += '<br>';
-
-      this.newData++;
-    });
   }
 
   public sendMessage(message: string) {
     const retval = new Promise<string>(resolve => {
       this.port.once('data', data => {
-        console.log(data);
+        console.log(data.toString());
         resolve(data.toString());
       });
     });
@@ -93,7 +86,7 @@ export class Robot {
 
     const math = require('mathjs');
 
-    const xOffset = Conveyer.countToDist(Conveyer.calcDeltaT(cameraEncoder, robotEncoder));
+    const xOffset = Conveyor.countToDist(Conveyor.calcDeltaT(cameraEncoder, robotEncoder));
 
     const robotMatrix = [
       [robotPoints.p1.x, robotPoints.p1.y, robotPoints.p1.z],
@@ -111,8 +104,11 @@ export class Robot {
 
     // Take the calibration points as x min/max for picking
     // because it is guaranteed the robot could reach it.
-    this.config.maxPick.x = beltPoints.p3.x;
-    this.config.minPick.x = beltPoints.p1.x;
+    this.config.maxPick.x = beltPoints.p3.x + xOffset;
+    this.config.minPick.x = beltPoints.p1.x + xOffset;
+
+    this.config.calPoints.robot = robotPoints;
+    this.config.encoder = robotEncoder;
 
     this.config.valid = true;
     console.log('transform: ', this.transform);
@@ -133,7 +129,8 @@ export class Robot {
   }
 
   public async moveTo(coords: BCoord | RCoord, speed = this.config.speed) {
-    if (!this.config.valid) return;
+    if (!this.config.valid && coords.type === CoordType.BCS) return;
+    if (coords.type === CoordType.BCS && (coords.x > this.config.maxPick.x || coords.x < this.config.minPick.x)) return;
     if (coords.type === CoordType.BCS) coords = this.belt2RobotCoords(coords);
     return this.sendMessage(`G0 X${coords.x} Y${coords.y} Z${coords.z} F${speed}`);
   }

@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Camera } from './camera';
-import { Conveyer, SysConfig } from './conveyor';
+import { Conveyor, SysConfig } from './conveyor';
 import { DataController } from './data-io';
 import { Item } from './item';
 import { ItemQueue } from './item_queue';
@@ -28,20 +28,15 @@ let isPointCaptured = [false, false, false];
 const configfile = './config.json';
 
 const robot = new Robot();
-let sysConfig: SysConfig = {
-  cameraEncoder: 0,
-  encoderPort: '/dev/ttyACM1',
-  mmPerCount: 0,
-  robotConfigs: [Robot.defaultConfig],
-};
 
-const imageCanvas = document.getElementById('canvas') as HTMLCanvasElement;
-const imageContext = imageCanvas.getContext('2d');
+const imageCanvas: any = undefined;
+const imageContext: any = undefined;
 
 const queue = new ItemQueue();
 
-Camera.init();
 async function main() {
+  Camera.init();
+
   // Code here runs on page load.
 
   // await Conveyer.connect('/dev/ttyACM0', 9600); // Real connection
@@ -51,7 +46,7 @@ async function main() {
 
   DataController.cameraT =
     (await Promise.all([
-      Conveyer.fetchCount(),
+      Conveyor.fetchCount(),
       Camera.capture(unlabeledImageFile),
     ]))[0];
 
@@ -62,8 +57,8 @@ async function main() {
 
     if (objects === undefined) return;
 
-    const newT = await Conveyer.fetchCount();
-    const deltaX = Conveyer.countToDist(Conveyer.calcDeltaT(t, newT));
+    const newT = await Conveyor.fetchCount();
+    const deltaX = Conveyor.countToDist(Conveyor.calcDeltaT(t, newT));
 
     for (const object of objects) {
       // insert into itemQueue
@@ -87,7 +82,7 @@ async function main() {
 
     DataController.cameraT =
       (await Promise.all([
-        Conveyer.fetchCount(),
+        Conveyor.fetchCount(),
         Camera.capture(unlabeledImageFile),
       ]))[0];
 
@@ -133,7 +128,7 @@ class Doc {
 
 // connect
 Doc.addClickListener('robot-connect-btn', () => robot.connect(Doc.getInputString('robot-port'), 115200));
-Doc.addClickListener('encoder-connect-btn', () => Conveyer.connect(Doc.getInputString('encoder-port'), 9600));
+Doc.addClickListener('encoder-connect-btn', () => Conveyor.connect(Doc.getInputString('encoder-port'), 9600));
 
 // send message to robot
 // Doc.addClickListener('send-btn', async () => robot.sendMessage(Doc.getInputString('input-command')));
@@ -151,12 +146,12 @@ Doc.addClickListener('cal-load-btn', async () => {
 
   try {
     const rawData = await fs.readFile(configPath, 'utf8');
-    sysConfig = JSON.parse(rawData) as SysConfig;
+    Conveyor.sysConfig = JSON.parse(rawData) as SysConfig;
   } catch {
     return;
   }
 
-  const calPoints = sysConfig.robotConfigs[0].calPoints.robot;
+  const calPoints = Conveyor.sysConfig.robotConfigs[0].calPoints.robot;
 
   Doc.setInnerHtml('cal-x1', calPoints.p1.x);
   Doc.setInnerHtml('cal-y1', calPoints.p1.y);
@@ -170,54 +165,63 @@ Doc.addClickListener('cal-load-btn', async () => {
   Doc.setInnerHtml('cal-y3', calPoints.p3.y);
   Doc.setInnerHtml('cal-z3', calPoints.p3.z);
 
-  Doc.setInnerHtml('cal-encoder', sysConfig.mmPerCount * 1000);
+  Doc.setInnerHtml('cal-encoder', Conveyor.sysConfig.mmPerCount * 1000);
 
-  Doc.setInnerHtml('robot-encoder', sysConfig.robotConfigs[0].encoder);
-  Doc.setInnerHtml('camera-encoder', sysConfig.cameraEncoder);
+  Doc.setInnerHtml('robot-encoder', Conveyor.sysConfig.robotConfigs[0].encoder);
+  Doc.setInnerHtml('camera-encoder', Conveyor.sysConfig.cameraEncoder);
 
-  Doc.setInputValue('robot-port', sysConfig.robotConfigs[0].port);
-  Doc.setInputValue('encoder-port', sysConfig.encoderPort);
+  Doc.setInputValue('robot-port', Conveyor.sysConfig.robotConfigs[0].port);
+  Doc.setInputValue('encoder-port', Conveyor.sysConfig.encoderPort);
 
   isPointCaptured = [false, false, false];
 
-  robot.setConfig(sysConfig.robotConfigs[0]);
-  robot.calibrate(sysConfig.cameraEncoder);
+  robot.setConfig(Conveyor.sysConfig.robotConfigs[0]);
+  robot.calibrate(Conveyor.sysConfig.cameraEncoder);
 });
 
 Doc.addClickListener('cal-save-btn', async () => {
-  if (sysConfig.robotConfigs.every(c => c.valid)) {
+  if (Conveyor.sysConfig.robotConfigs.every(c => c.valid)) {
     const configPath = Doc.getInputString('cal-path-input');
-    fs.writeFile(configPath, JSON.stringify(sysConfig));
+    fs.writeFile(configPath, JSON.stringify(Conveyor.sysConfig));
   }
 });
 
+const robotCalPoints: { p1: RCoord, p2: RCoord, p3: RCoord } = {
+  p1: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+  p2: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+  p3: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+};
+
 Doc.addClickListener('point1-capture-btn', async () => {
   const coords = await robot.getCoordsRCS();
-  Doc.setInnerHtml('cal-x1-input', coords.x);
-  Doc.setInnerHtml('cal-y1-input', coords.y);
-  Doc.setInnerHtml('cal-z1-input', coords.z);
+  robotCalPoints.p1 = coords;
+  Doc.setInnerHtml('cal-x1', coords.x);
+  Doc.setInnerHtml('cal-y1', coords.y);
+  Doc.setInnerHtml('cal-z1', coords.z);
   isPointCaptured[0] = true;
 });
 
 Doc.addClickListener('point2-capture-btn', async () => {
   const coords = await robot.getCoordsRCS();
-  Doc.setInnerHtml('cal-x2-input', coords.x);
-  Doc.setInnerHtml('cal-y2-input', coords.y);
-  Doc.setInnerHtml('cal-z2-input', coords.z);
+  robotCalPoints.p2 = coords;
+  Doc.setInnerHtml('cal-x2', coords.x);
+  Doc.setInnerHtml('cal-y2', coords.y);
+  Doc.setInnerHtml('cal-z2', coords.z);
   isPointCaptured[1] = true;
 });
 
 Doc.addClickListener('point3-capture-btn', async () => {
   const coords = await robot.getCoordsRCS();
-  Doc.setInnerHtml('cal-x3-input', coords.x);
-  Doc.setInnerHtml('cal-y3-input', coords.y);
-  Doc.setInnerHtml('cal-z3-input', coords.z);
+  robotCalPoints.p3 = coords;
+  Doc.setInnerHtml('cal-x3', coords.x);
+  Doc.setInnerHtml('cal-y3', coords.y);
+  Doc.setInnerHtml('cal-z3', coords.z);
   isPointCaptured[2] = true;
 });
 
 // calibrate
 Doc.addClickListener('calibrate-btn', async () => {
-  if (sysConfig.cameraEncoder === undefined) {
+  if (Conveyor.sysConfig.cameraEncoder === undefined) {
     console.log('Error: you should callibrate the camera first');
     return;
   }
@@ -227,33 +231,15 @@ Doc.addClickListener('calibrate-btn', async () => {
     return;
   }
 
-  // get data
-  const p1: RCoord = {
-    type: CoordType.RCS,
-    x: Doc.getInputFloat('calibration-x1-input'),
-    y: Doc.getInputFloat('calibration-y1-input'),
-    z: Doc.getInputFloat('calibration-z1-input'),
-  };
+  const count = await Conveyor.fetchCount();
 
-  const p2: RCoord = {
-    type: CoordType.RCS,
-    x: Doc.getInputFloat('calibration-x2-input'),
-    y: Doc.getInputFloat('calibration-y2-input'),
-    z: Doc.getInputFloat('calibration-z2-input'),
-  };
-
-  const p3: RCoord = {
-    type: CoordType.RCS,
-    x: Doc.getInputFloat('calibration-x3-input'),
-    y: Doc.getInputFloat('calibration-y3-input'),
-    z: Doc.getInputFloat('calibration-z3-input'),
-  };
+  Doc.setInnerHtml('robot-encoder', count);
 
   robot.calibrate(
-    sysConfig.cameraEncoder,
-    await Conveyer.fetchCount(),
+    Conveyor.sysConfig.cameraEncoder,
+    count,
     true,
-    { p1, p2, p3 },
+    robotCalPoints,
   );
 });
 
@@ -360,9 +346,10 @@ Doc.addClickListener('motor-off-btn', () => robot.motorsOff());
 
 Doc.addClickListener('origin-camera', async () => {
   Camera.origin();
-  sysConfig.cameraEncoder = await Conveyer.fetchCount();
+  Conveyor.sysConfig.cameraEncoder = await Conveyor.fetchCount();
+  Doc.setInnerHtml('camera-encoder', Conveyor.sysConfig.cameraEncoder);
 });
 
 // Doc.addClickListener('run-model', () => Camera.runModel());
 
-// main();
+main();

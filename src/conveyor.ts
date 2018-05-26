@@ -1,6 +1,6 @@
 import { Observable, Subject } from 'rxjs';
 import * as SerialPort from 'serialport';
-import { RobotConfig } from './robot';
+import { Robot, RobotConfig } from './robot';
 
 export interface SysConfig {
   cameraEncoder: number;
@@ -10,9 +10,16 @@ export interface SysConfig {
 }
 
 // var SerialPort = require('serialport');
-export namespace Conveyer {
+export namespace Conveyor {
   /** The maximum value (exclusive) the encoder can have before restarting at 0 */
   export const encoderLimit = Math.pow(2, 20);
+
+  export let sysConfig: SysConfig = {
+    cameraEncoder: 0,
+    encoderPort: '/dev/ttyACM1',
+    mmPerCount: 0,
+    robotConfigs: [Robot.defaultConfig],
+  };
 
   /** Emits everytime a new encoder count is received */
   export const countUpdated = new Subject<number>();
@@ -84,7 +91,7 @@ export namespace Conveyer {
   export function countToDist(deltaT: number) {
     // return deltaT * 2; // very roughly 400mm/s when mocking
     // return deltaT * .05; // very rough estimate of real belt
-    return deltaT * 0.05082719995; // 0.0681 mm/count belt move pre count
+    return deltaT * sysConfig.mmPerCount;
   }
 
   /**
