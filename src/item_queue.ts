@@ -39,8 +39,10 @@ export class ItemQueue {
    */
   public removeByID(ID: number) {
     for (let index = 0; index < this.items.length; index++) {
-      if (this.items[index].itemID === ID) this.delete(index);
-      break;
+      if (this.items[index].itemID === ID) {
+          this.delete(index);
+          break;
+      }
     }
   }
 
