@@ -302,6 +302,13 @@ export class Robot {
     return this.sendMessage(`G0 X${coords.x} Y${coords.y} Z${coords.z} F${speed}`);
   }
 
+
+  public isValidMove(origin: BCoord | RCoord, destination: BCoord | RCoord)
+  {
+    
+  }
+
+
   public async openGripper() {
     await this.sendMessage('M801');
     await this.sendMessage('M810');
