@@ -43,4 +43,8 @@ export namespace Vector {
   export function distance(v1: Coord3, v2: Coord3) {
     return magnitude({ x: v2.x - v1.x, y: v2.y - v1.y, z: v2.z - v1.z });
   }
+
+  export function subtract(v1: Coord3, v2: Coord3): Coord3 {
+    return { x: v1.x - v2.x, y: v1.y - v2.y, z: v1.z - v2.z };
+  }
 }

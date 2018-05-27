@@ -30,9 +30,9 @@ export class Robot {
   public static readonly defaultConfig: RobotConfig = {
     calPoints: {
       belt: {
-        p1: { type: CoordType.BCS, x: -196.1589, y: 119.6971, z: 1 },
-        p2: { type: CoordType.BCS, x: -196.1589, y: -130.6002, z: 1 },
-        p3: { type: CoordType.BCS, x: 203.0632, y: -130.6002, z: 1 },
+        p1: { type: CoordType.BCS, x: -196.1589, y: 119.6971, z: 0 },
+        p2: { type: CoordType.BCS, x: -196.1589, y: -130.6002, z: 0 },
+        p3: { type: CoordType.BCS, x: 203.0632, y: -130.6002, z: 0 },
       },
       robot: {
         p1: { type: CoordType.RCS, x: 262, y: -108, z: -685 },
@@ -52,6 +52,17 @@ export class Robot {
   private isConnected = false;
   private port: SerialPort;
   private transform: number[][];
+
+  // linear transform matrices (LTM)
+  // used for converting vectors between belt and robot coordinates
+  private b2rLTM: number[][];
+  private r2bLTM: number[][];
+
+  // affine transform matrices (ATM)
+  // used for converting (augmented) points between belt and robot coordinates
+  private b2rATM: number[][];
+  private r2bATM: number[][];
+
   private newData = 0;
   private config = Robot.defaultConfig;
 
@@ -82,25 +93,110 @@ export class Robot {
     robotPoints = this.config.calPoints.robot,
     beltPoints = this.config.calPoints.belt,
   ) {
-    if (cameraEncoder < 0 || (!this.config.valid && !overrideValid)) return;
+    // if (cameraEncoder < 0 || (!this.config.valid && !overrideValid)) return;
 
     const math = require('mathjs');
 
-    const xOffset = Conveyor.countToDist(Conveyor.calcDeltaT(cameraEncoder, robotEncoder));
+    // construct basis vectors
 
-    const robotMatrix = [
-      [robotPoints.p1.x, robotPoints.p1.y, robotPoints.p1.z],
-      [robotPoints.p2.x, robotPoints.p2.y, robotPoints.p2.z],
-      [robotPoints.p3.x, robotPoints.p3.y, robotPoints.p3.z],
+    // find vectors along the calibration board axes in robot coordinates
+    const robotX = Vector.subtract(robotPoints.p1, robotPoints.p2);
+    const robotY = Vector.subtract(robotPoints.p3, robotPoints.p2);
+    const robotZ: Coord3 = { x: 0, y: 0, z: 100 };
+
+    // create a basis matrix for the robot coordinates,
+    // with each row being a basis vector
+    const robotBasis = [
+      [robotX.x, robotX.y, robotX.z],
+      [robotY.x, robotY.y, robotY.z],
+      [robotZ.x, robotZ.y, robotZ.z],
     ];
 
-    const beltMatrix = [
-      [beltPoints.p1.x + xOffset, beltPoints.p1.y, beltPoints.p1.z],
-      [beltPoints.p2.x + xOffset, beltPoints.p2.y, beltPoints.p2.z],
-      [beltPoints.p3.x + xOffset, beltPoints.p3.y, beltPoints.p3.z],
+    // find vectors along the calibration board axes in belt coordinates
+    const beltX = Vector.subtract(beltPoints.p1, beltPoints.p2);
+    const beltY = Vector.subtract(beltPoints.p3, beltPoints.p2);
+    const beltZ: Coord3 = { x: 0, y: 0, z: 100 };
+
+    // create a basis matrix for the belt coordinates
+    // with each row being a basis vector
+    const beltBasis = [
+      [beltX.x, beltX.y, beltX.z],
+      [beltY.x, beltY.y, beltZ.y],
+      [beltZ.x, beltZ.y, beltZ.z],
     ];
 
-    this.transform = math.multiply(math.inv(beltMatrix), robotMatrix);
+    // Calculate linear transform matrices (LTM).
+    //
+    // These matrices convert vectors between coordinate systems,
+    // but do not directly transform points if the coordinate systems have different origins.
+    //
+    // Since beltBasis * b2rLTM = robotBasis, then
+    // b2rLTM = inv(beltBasis) * robotBasis
+    this.b2rLTM = math.multiply(math.inv(beltBasis), robotBasis);
+    this.r2bLTM = math.inv(this.b2rLTM);
+
+    // find how far the robot origin is from the belt origin, in robot coordinates
+
+    // const xOffset = Conveyor.countToDist(Conveyor.calcDeltaT(cameraEncoder, robotEncoder));
+    // for testing;
+    const xOffset = 2000;
+
+    // robot point 2 in belt coordinates
+    // this equals the belt point 2 in belt coordinates,
+    // plus the xOffset in belt coordinates needed to move the point
+    // where the robot coordinates were measured
+    const rp2inBC: BCoord = {
+      type: CoordType.BCS,
+      x: beltPoints.p2.x + xOffset,
+      y: beltPoints.p2.y,
+      z: beltPoints.p2.z,
+    };
+
+    // this is the offset
+    // I'm using a function taht uses a value that I set in this function which is a little funky.
+    // I'm probably going to want to pu guards on all this stuff if I have time
+    const offset = Vector.subtract(robotPoints.p2, this.belt2RobotVector(rp2inBC));
+
+    // Calculate affine transform matrices (ATM)
+    //
+    // To convert from belt coordinate B to robot coordinate R compute:
+    // R = B * b2rLTM + offset
+    // where offset is the vector from the robot origin to the belt origin, in robot coordinates.
+    //
+    // Offset and b2rLTM can be folded into 1 matrix: b2rATM, such that:
+    // [R, 1] =  [B, 1] * b2rATM
+
+    // need to copy by value
+    this.b2rATM = this.b2rLTM.slice();
+    this.b2rATM[0][3] = 0;
+    this.b2rATM[1][3] = 0;
+    this.b2rATM[2][3] = 0;
+    this.b2rATM[3] = [offset.x, offset.y, offset.z, 1];
+
+    this.r2bATM = math.inv(this.b2rATM);
+
+    // log test output
+
+    const iBtoR = this.toRobotVector({ type: CoordType.BCS, x: 1, y: 0, z: 0 });
+    const jBtoR = this.toRobotVector({ type: CoordType.BCS, x: 0, y: 1, z: 0 });
+    const kBtoR = this.toRobotVector({ type: CoordType.BCS, x: 0, y: 0, z: 1 });
+
+    console.log('Belt to Robot ijk:');
+    console.log('i: ', iBtoR);
+    console.log('j: ', jBtoR);
+    console.log('k: ', kBtoR);
+
+    const iRtoB = this.toBeltVector({ type: CoordType.RCS, x: 1, y: 0, z: 0 });
+    const jRtoB = this.toBeltVector({ type: CoordType.RCS, x: 0, y: 1, z: 0 });
+    const kRtoB = this.toBeltVector({ type: CoordType.RCS, x: 0, y: 0, z: 1 });
+
+    console.log('Robot to Belt ijk:');
+    console.log('i: ', iRtoB);
+    console.log('j: ', jRtoB);
+    console.log('k: ', kRtoB);
+
+    const test = this.toBeltCoords({ type: CoordType.RCS, x: 0, y: 0, z: -600 });
+    console.log('robot coord (0,0,-600) as belt coord: ', test);
 
     // Take the calibration points as x min/max for picking
     // because it is guaranteed the robot could reach it.
@@ -115,17 +211,88 @@ export class Robot {
   }
 
   public belt2RobotCoords(coords: BCoord): RCoord {
-    const inputVector = [coords.x, coords.y, 1];
+    const inputVector = [coords.x, coords.y, coords.z, 1];
+    // is there a reason why we are requiring math here, not just importing it?
     const math = require('mathjs');
-    const [x, y, z] = math.multiply(inputVector, this.transform) as number[];
-    return { type: CoordType.RCS, x, y, z};
+    // don't care about n
+    // actually, it should always be 1
+    // is there a way to not read in that variable?
+    const [x, y, z, n] = math.multiply(inputVector, this.b2rATM) as number[];
+    return { type: CoordType.RCS, x, y, z };
   }
 
   public robot2BeltCoords(coords: RCoord): BCoord {
-    const inputVector = [coords.x, coords.y, 1];
+    const inputVector = [coords.x, coords.y, coords.z, 1];
+    // is there a reason why we are requiring math here, not just importing it?
     const math = require('mathjs');
-    const [x, y, z] = math.multiply(inputVector, math.inv(this.transform)) as number[];
+    // don't care about n
+    // actually, it should always be 1
+    // is there a way to not read in that variable?
+    const [x, y, z, n] = math.multiply(inputVector, this.r2bATM) as number[];
     return { type: CoordType.BCS, x, y, z };
+  }
+
+  public toRobotCoords(coords: BCoord | RCoord): RCoord {
+    // if already in Robot Coordinates, return input
+    if (coords.type === CoordType.RCS) {
+      // This should be safe since checked coord type,
+      // but not sure if I should be relying on casting or whatever
+      return coords;
+    }
+
+    return this.belt2RobotCoords(coords);
+  }
+
+  public toBeltCoords(coords: RCoord | BCoord): BCoord {
+    // if already in Belt Coordinates, return input
+    if (coords.type === CoordType.BCS) {
+      // This should be safe since checked coord type,
+      // but not sure if I should be relying on casting or whatever
+      return coords;
+    }
+
+    return this.robot2BeltCoords(coords);
+  }
+
+  // might want a different type for vectors and coordinates
+  // vectors are useful for translating offsets between coordinates
+
+  public belt2RobotVector(coords: BCoord): RCoord {
+    const inputVector = [coords.x, coords.y, coords.z];
+    // is there a reason why we are requiring math here, not just importing it?
+    const math = require('mathjs');
+    const [x, y, z] = math.multiply(inputVector, this.b2rLTM) as number[];
+    return { type: CoordType.RCS, x, y, z };
+  }
+
+  public robot2BeltVector(coords: RCoord): BCoord {
+    const inputVector = [coords.x, coords.y, coords.z];
+    // is there a reason why we are requiring math here, not just importing it?
+    const math = require('mathjs');
+    const [x, y, z] = math.multiply(inputVector, this.r2bLTM) as number[];
+    return { type: CoordType.BCS, x, y, z };
+  }
+
+  public toRobotVector(coords: BCoord | RCoord): RCoord {
+    // if already in Robot Coordinates, return input
+    if (coords.type === CoordType.RCS) {
+      // This should be safe since checked coord type,
+      // but not sure if I should be relying on casting or whatever
+      return coords;
+    }
+
+    return this.belt2RobotVector(coords);
+  }
+
+  public toBeltVector(coords: RCoord | BCoord): BCoord {
+    // if already in Belt Coordinates, return input
+    if (coords.type === CoordType.BCS) {
+      // This should be safe since checked coord type,
+      // but not sure if I should be relying on casting or whatever
+      return coords;
+    }
+
+    return this.robot2BeltVector(coords);
   }
 
   public async moveTo(coords: BCoord | RCoord, speed = this.config.speed) {
