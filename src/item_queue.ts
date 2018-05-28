@@ -6,6 +6,7 @@ export class ItemQueue {
   private _items: Item[] = [];
   private deviationThreshold = 10; // 10 mm radius
   private xLimit = 1000; // 5m TODO determine actual
+  private itemsDetectedByCV: { [className: string]: number } = {};
 
   constructor() {
     // Purge out of range items.
@@ -20,7 +21,15 @@ export class ItemQueue {
    * Insert an intem in the end of the queue
    */
   public insert(item: Item) {
-    if (!this.isDuplicate(item.xyzt, item.classID)) this._items.push(item);
+    if (!this.isDuplicate(item.xyzt, item.classID)) {
+      this._items.push(item);
+
+      if (this.itemsDetectedByCV[item.className] !== undefined) {
+        this.itemsDetectedByCV[item.className]++;
+      } else {
+        this.itemsDetectedByCV[item.className] = 1;
+      }
+    }
     console.log(`Item added to queue\n${item}\n`);
   }
 
@@ -51,6 +60,18 @@ export class ItemQueue {
     }
   }
 
+  public clearItemsDetectedByCV() {
+    this.itemsDetectedByCV = {};
+  }
+
+  public printItemsDetectedByCV() {
+    for (const prop in this.itemsDetectedByCV) {
+      if (this.itemsDetectedByCV.hasOwnProperty(prop)) {
+        console.log('className: ', prop, ' count: ', this.itemsDetectedByCV[prop]);
+      }
+    }
+  }
+
   private isDuplicate(coords: Coord4, classID: number) {
     for (const item of this.items) {
       const t = Conveyer.calcDeltaT(item.t, coords.t);
@@ -70,4 +91,5 @@ export class ItemQueue {
     }
     return false;
   }
+
 }

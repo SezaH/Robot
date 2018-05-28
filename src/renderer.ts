@@ -429,7 +429,13 @@ Doc.addClickListener('origin-camera', async () => {
   cameraEncoder = await Conveyer.fetchCount();
 });
 
-Doc.addClickListener('run-model', () => model.Run());
-Doc.addClickListener('stop-model', () => model.Stop());
+Doc.addClickListener('run-model', () => {
+  queue.clearItemsDetectedByCV();
+  model.Run();
+});
+Doc.addClickListener('stop-model', () => {
+  model.Stop();
+  queue.printItemsDetectedByCV();
+});
 
 main();
