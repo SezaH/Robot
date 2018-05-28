@@ -431,11 +431,13 @@ Doc.addClickListener('origin-camera', async () => {
 
 Doc.addClickListener('run-model', () => {
   queue.clearItemsDetectedByCV();
+  robot.clearItemsPickedByRobot();
   model.Run();
 });
 Doc.addClickListener('stop-model', () => {
   model.Stop();
   queue.printItemsDetectedByCV();
+  robot.printItemsPickedByRobot();
 });
 
 main();

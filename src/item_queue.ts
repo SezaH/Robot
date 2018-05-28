@@ -65,6 +65,7 @@ export class ItemQueue {
   }
 
   public printItemsDetectedByCV() {
+    console.log('Items Detected By CV');
     for (const prop in this.itemsDetectedByCV) {
       if (this.itemsDetectedByCV.hasOwnProperty(prop)) {
         console.log('className: ', prop, ' count: ', this.itemsDetectedByCV[prop]);

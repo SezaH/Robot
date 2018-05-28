@@ -9,6 +9,8 @@ export class Robot {
   private port: SerialPort;
   private transform: number[][];
   private newData = 0;
+  private itemsPickedByRobot: { [className: string]: number } = {};
+
   // private stopItemTracking = new Subject<void>();
 
   public connect(portName: string, baudRate: number) {
@@ -186,6 +188,13 @@ export class Robot {
     // return to home
     await this.moveToRobotCoordinate(0, 0, -400);
 
+    // Add item to counter of items picked up by robot
+    if (this.itemsPickedByRobot[item.className] !== undefined) {
+      this.itemsPickedByRobot[item.className]++;
+    } else {
+      this.itemsPickedByRobot[item.className] = 1;
+    }
+
     // destroy item for some reason
     item.destroy();
 
@@ -197,6 +206,19 @@ export class Robot {
       await this.moveToRobotCoordinate(0, 0, -400);
       await this.openGripper();
       await this.moveToRobotCoordinate(0, 0, -750);
+    }
+  }
+
+  public clearItemsPickedByRobot() {
+    this.itemsPickedByRobot = {};
+  }
+
+  public printItemsPickedByRobot() {
+    console.log('Items Picked Up By Robot');
+    for (const className in this.itemsPickedByRobot) {
+      if (this.itemsPickedByRobot.hasOwnProperty(className)) {
+        console.log('className: ', className, ' count: ', this.itemsPickedByRobot[className]);
+      }
     }
   }
 }
