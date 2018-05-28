@@ -3,8 +3,9 @@ import { spawn } from 'child_process';
 export class Model {
   private mol = spawn('echo', ['Hello Michael']);
 
-  public Run() {
-    this.mol = spawn('python3', ['io_object_detection.py'], { cwd: '../models/research/object_detection' });
+  public Run(modelName: string, pbTXT: string, percentage: string) {
+    // tslint:disable-next-line:max-line-length
+    this.mol = spawn('python3', ['io_object_detection.py', modelName, pbTXT, percentage], { cwd: '../models/research/object_detection' });
 
     console.log('running');
     this.mol.stdout.on('data', (data) => {

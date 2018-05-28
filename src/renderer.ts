@@ -432,7 +432,16 @@ Doc.addClickListener('origin-camera', async () => {
 Doc.addClickListener('run-model', () => {
   queue.clearItemsDetectedByCV();
   robot.clearItemsPickedByRobot();
-  model.Run();
+
+  const fakeNameModel = Doc.getInputEl('modelName').value;
+  const nameModel = fakeNameModel.replace(/.*[\/\\]/, '');
+
+  const fakePbTxt = Doc.getInputEl('pbtxt').value;
+  const pbTxt = fakePbTxt.replace(/.*[\/\\]/, '');
+
+  const percentage = Doc.getInputEl('percentage').value;
+
+  model.Run(nameModel, pbTxt, percentage); // name of model, name of pbtxt, threshold
 });
 Doc.addClickListener('stop-model', () => {
   model.Stop();
