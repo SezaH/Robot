@@ -1,38 +1,43 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-  <meta charset="UTF-8">
-  <title>Hello World!</title>
-  <base href="">
-  <link rel="stylesheet"
-        href="./style.css"></link>
-</head>
+  <head>
+    <meta charset="UTF-8">
+    <title>Robot Control Panel</title>
+    <base href="">
+    <link rel="stylesheet"
+          href="./node_modules/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet"
+          href="./style.css"></link>
+  </head>
 
 <body>
   <h1>Robot<h1>
-    <a href="./calibration.html">CALIBRATION</a>
-  <video width="1920"
-  height="1080"
-  autoplay
-  id="video"></video>
-  <button id="encoder-btn">Encoder</button>
-
-  <button id="browse-btn">Browse</button>
-  <canvas id="canvas"></canvas>
+  <a href="./calibration.html">CALIBRATION</a>
+  <div id="streams">
+  </div>
   <h2>Connection</h2>
-  <form id="serial-frm">
-    Port: <input type="text" name="port" style="width: 20em;" value="/dev/ttyACM2">
-    Baud Rate: <input type="nuber" name="baudRate" value="115200">
+
+  <form class="form">
+    <div class="form-group row col-6">
+      <label for="serial-port" class="col-2 col-form-label">Port</label>   
+      <div class="input-group mb-3">
+        <input id="serial-port" type="text" class="form-control" placeholder="Serial Port">
+        <div class="input-group-append">
+          <button id="connect-btn" class="btn btn-outline-secondary" type="button">Connect</button>
+        </div>
+      </div>
+    </div>
+
+
   </form>
-  <br>
-  <button id="connect-btn">Connect</button>
   <br>
   <h2>Raw Interface</h2>
   Input: <input id="input-command" type="text" style="width: 60em;">
   <button id="send-btn">send</button>
   <br>
   <br>
+
   Output:
   <br>
   <div style="height:300px;width:600px;border:1px solid #ccc;overflow:auto;">
@@ -50,48 +55,8 @@
   <h2>Calibration</h2>
   <p id = "isCalibrated - p">robot not calibrated</p>
   <button id="calibrate-btn">Calibrate</button>
-  <form id="belt-coordinates-frm">
-    <br>
-    <p>belt coordinate points</p><br>
-    x1: <input id="origin-x1-input" type="number" value="-200">
-    y1: <input id="origin-y1-input" type="number" value="125"><br>
-    x2: <input id="origin-x2-input" type="number" value="-200">
-    y2: <input id="origin-y2-input" type="number" value="-125"><br>
-    x3: <input id="origin-x3-input" type="number" value="200">
-    y3: <input id="origin-y3-input" type="number" value="-125"><br>
-  </form>
   <br>
 
-   <p>dynamic cordinate</p>
-  cameraEncoder: <input id="camera-encoder-input" type="number" value="0">
-   <button id="encoder1-btn">Encoder1</button><br>
-
-   robotEncoder: <input id="robot-encoder-input" type="number" value="0">
-   <button id="encoder2-btn">Encoder2</button>
-
- <br>
-  <p>robot coordinate points</p><br> <br>
-  x1: <input id="calibration-x1-input" type="number" value="262">
-  y1: <input id="calibration-y1-input" type="number" value="-108">
-  z1: <input id="calibration-z1-input" type="number" value="-685">
-  <button id="point1-capture-btn">capture</button> <br>
-
-  x2: <input id="calibration-x2-input" type="number" value="272">
-  y2: <input id="calibration-y2-input" type="number" value="142">
-  z2: <input id="calibration-z2-input" type="number" value="-686">
-  <button id="point2-capture-btn">capture</button> <br>
-
-  x3: <input id="calibration-x3-input" type="number" value="-207">
-  y3: <input id="calibration-y3-input" type="number" value="146">
-  z3: <input id="calibration-z3-input" type="number" value="-703">
-  <button id="point3-capture-btn">capture</button> <br>
-
-
-
-
-  <br>
-  <button id="calibration-save-btn">Save</button>
-  <button id="calibration-load-btn">Load</button>
   <h3>Calibration Test</h3>
   <form id="item-location">
     input belt coordinates:<br>
@@ -101,7 +66,6 @@
   </form>
    <button id="test-calibration-btn">Compute</button>
   output robot coordinates:<br>
-  <p id = "belt-location-p"></p>
   <br>
 
   <h2>Control</h2>
@@ -124,8 +88,6 @@
 <br>
 <br>
 
-  PickFromQue_PlaceToSet: <br>
-  <button id="pick-place-queue-btn">PickPlace</button>
 <br>
 <br>
 
@@ -134,13 +96,10 @@
   item_initial_y: <input type="number" id="dg-item-initial-y-input" value="0"> <br>
   hover_zOffset: <input type="number" id="dg-hover-zOffset-input" value="100"> <br>
   pick_zOffset: <input type="number" id="dg-pick-zOffset-input" value="0"> <br>
-  pick_xOffset: <input type="number" id="dg-pick-xOffset-input" value="0"> <br>
-  pick_xMax: <input type="number" id="dg-pick-xMax-input" value="100"> <br>
-  pick_xMin: <input type="number" id="dg-pick-xMin-input" value="-100"> <br>
   place_x: <input type="number" id="dg-place-x-input" value="0"> <br>
   place_y: <input type="number" id="dg-place-y-input" value="650"> <br>
   place_z: <input type="number" id="dg-place-z-input" value="-400"> <br>
-  <button id="enqueue-item-btn"">Enqueue Button</button> <br>
+  <button id="enqueue-item-btn">Enqueue Button</button> <br>
   <br>
   <button id="one-dynamic-grab-btn">One Dynamic Grab</button> <br>
   <button id="start-dynamic-grab-btn">Start Dynamic Grab Loop</button> <br>
@@ -149,7 +108,7 @@
 <br>
 <br>
 
-  Gripper:
+  <Gripper:></Gripper:>
   <button id="open-gripper-btn">Open</button>
   <button id="close-gripper-btn">Close</button>
   <br>
@@ -206,14 +165,13 @@
   <br>
 
   <script>var exports = {};</script>
+  <script src="./node_modules/jquery/dist/jquery.slim.min.js"
+          crossorigin="anonymous"></script>
+  <script src="./node_modules/popper.js/dist/popper.min.js"
+          crossorigin="anonymous"></script>
+  <script src="./node_modules/bootstrap/dist/js/bootstrap.js"
+          crossorigin="anonymous"></script>
   <script type="text/javascript"
           src="./renderer.js"></script>
-
-
-
-
-
-
 </body>
-
 </html>

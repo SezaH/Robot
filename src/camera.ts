@@ -1,6 +1,6 @@
 import { spawn } from 'child_process';
 import * as fs from 'fs-extra';
-import { Conveyer } from './conveyor';
+import { Conveyor } from './conveyor';
 
 export namespace Camera {
   const video = document.getElementById('video') as HTMLVideoElement;
@@ -12,6 +12,7 @@ export namespace Camera {
 
   export function origin() {
     capture(originImageFile);
+
     const cal = spawn('python3', ['calibration.py'], { cwd: '../models/research/object_detection' });
 
     cal.stdout.on('data', (data) => {
@@ -27,10 +28,11 @@ export namespace Camera {
         console.log('Failed: ' + code);
       }
     });
-    return Conveyer.fetchCount();
+    return Conveyor.fetchCount();
   }
 
   export function init() {
+
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices.getUserMedia({
         video: {
@@ -43,8 +45,8 @@ export namespace Camera {
       });
     }
 
-    canvas.width = video.width;
-    canvas.height = video.height;
+    canvas.width = 1920;
+    canvas.height = 1080;
   }
 
   export async function capture(fileName: string) {

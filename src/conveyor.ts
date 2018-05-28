@@ -1,18 +1,38 @@
 import { Observable, Subject } from 'rxjs';
 import * as SerialPort from 'serialport';
+import { Robot, RobotConfig } from './robot';
+
+export interface SysConfig {
+  cameraEncoder: number;
+  encoderPort: string;
+  mmPerCount: number;
+  robotConfigs: RobotConfig[];
+}
 
 // var SerialPort = require('serialport');
-export namespace Conveyer {
+export namespace Conveyor {
   /** The maximum value (exclusive) the encoder can have before restarting at 0 */
   export const encoderLimit = Math.pow(2, 20);
+
+  export let sysConfig: SysConfig = {
+    cameraEncoder: 0,
+    encoderPort: '/dev/ttyACM1',
+    mmPerCount: 0,
+    robotConfigs: [Robot.defaultConfig],
+  };
 
   /** Emits everytime a new encoder count is received */
   export const countUpdated = new Subject<number>();
   export const positionUpdated = new Subject<{ deltaX: number, deltaT: number }>();
 
+  /** Belt's velocity in mm/s */
+  export let beltV = 0;
+
   /** The last received encoder count. */
   let prevT = 0;
   let mockT = 0;
+
+  let prevMs = 0;
 
   /**
    * Emits evertime a new encoder count is received.
@@ -21,7 +41,18 @@ export namespace Conveyer {
   countUpdated.subscribe(t => {
     const deltaT = calcDeltaT(prevT, t);
     const deltaX = countToDist(deltaT);
+    const newMs = Date.now();
+
+    // mm / s = mm / ms * 1000ms / 1s
+    const newBeltV = deltaX / (newMs - prevMs) * 1000/* ms/s */;
+
+    // Average the belt velocity over the smoothingDist
+    const smoothingDist = 250/* mm */;
+    const a = Math.max(smoothingDist, deltaX);
+    beltV = ((smoothingDist - a) * beltV + a * newBeltV) / smoothingDist;
+
     prevT = t;
+    prevMs = newMs;
     positionUpdated.next({ deltaX, deltaT });
   });
 
@@ -60,7 +91,7 @@ export namespace Conveyer {
   export function countToDist(deltaT: number) {
     // return deltaT * 2; // very roughly 400mm/s when mocking
     // return deltaT * .05; // very rough estimate of real belt
-    return deltaT * 0.05082719995; // 0.0681 mm/count belt move pre count
+    return deltaT * sysConfig.mmPerCount;
   }
 
   /**

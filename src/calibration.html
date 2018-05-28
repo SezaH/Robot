@@ -3,22 +3,377 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Hello World!</title>
+  <title>Calibration</title>
   <base href="">
+  <link rel="stylesheet"
+        href="./node_modules/bootstrap/dist/css/bootstrap.css">
   <link rel="stylesheet"
         href="./style.css"></link>
 </head>
 
 <body>
-  <h1>Calibration<h1>
 
-      <a href="./index.html">ROBOT</a>
-  
- 
+  <nav id="header"
+       class="navbar navbar-expand navbar-light bg-light">
+    <span class="navbar-brand mb-0 h1">Control Panel</span>
+    <button class="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent"
+            aria-expanded="false"
+            aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse"
+         id="navbarSupportedContent">
+      <ul class="nav navbar-nav mr-auto"
+          id="pills-tab"
+          role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active"
+             id="pills-calibration-tab"
+             data-toggle="pill"
+             href="#pills-calibration"
+             role="tab"
+             aria-controls="pills-calibration"
+             aria-selected="true">Calibration</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             id="pills-config-tab"
+             data-toggle="pill"
+             href="#pills-config"
+             role="tab"
+             aria-controls="pills-config"
+             aria-selected="false">Configuration</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             id="pills-run-tab"
+             data-toggle="pill"
+             href="#pills-run"
+             role="tab"
+             aria-controls="pills-run"
+             aria-selected="false">Run</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="tab-content">
+
+    <!-- Calibration Tab -->
+    <div class="tab-pane fade show active container"
+         id="pills-calibration"
+         role="tabpanel"
+         aria-labelledby="pills-calibration-tab">
+
+      <!-- Calibration Tab content -->
+      <div class="row">
+        <div class="col mt-3">
+          <h1>Calibration</h1>
+        </div>
+      </div>
+
+      <!-- Load calibration -->
+      <div class="input-group input-group-lg mb-3">
+        <input id='cal-path-input'
+               type="text"
+               class="form-control"
+               value="./cal.json"
+               placeholder="Configuration File">
+        <div class="input-group-append">
+          <button class="btn btn-outline-secondary"
+                  type="button">Browse</button>
+          <button id="cal-load-btn"
+                  class="btn btn-outline-secondary"
+                  type="button">Load</button>
+        </div>
+      </div>
+
+      <!-- Encoder Calibration -->
+      <div class="card mb-3">
+        <h5 class="card-header">Encoder</h5>
+        <div class="card-body">
+
+          <div class="input-group mb-3">
+            <input id='encoder-port'
+                   type="text"
+                   class="form-control"
+                   placeholder="Serial Port">
+            <div class="input-group-append">
+              <button id="encoder-connect-btn"
+                      class="btn btn-outline-secondary"
+                      type="button">Connect</button>
+            </div>
+          </div>
+
+          <p class="card-text">&mu;m/count:
+            <span id="cal-encoder">0</span>
+          </p>
+
+        </div>
+      </div>
+
+      <!-- Camera Calibration -->
+      <div class="card mb-3">
+        <h5 class="card-header">Camera</h5>
+        <div class="card-body">
+
+          <p class="card-text">Encoder:
+            <span id="camera-encoder">0</span>
+          </p>
+
+          <button id="origin-camera"
+                  class="btn btn-primary mt-3"
+                  type="button">Capture Origin</button>
+        </div>
+      </div>
+
+      <!-- Robot Calibration -->
+      <div class="card mb-3">
+        <h5 class="card-header">Robot</h5>
+        <div class="card-body">
+
+          <div class="input-group mb-3">
+            <input id='robot-port'
+                   type="text"
+                   class="form-control"
+                   placeholder="Serial Port">
+            <div class="input-group-append">
+              <button id="robot-connect-btn"
+                      class="btn btn-outline-secondary"
+                      type="button">Connect</button>
+            </div>
+          </div>
+
+
+          <button id="home-btn"
+                  class="btn btn-outline-secondary mb-3"
+                  type="button">Home</button>
+
+          <button id="open-gripper-btn"
+                  class="btn btn-outline-secondary mb-3"
+                  type="button">Open Gripper</button>
+
+          <button id="close-gripper-btn"
+                  class="btn btn-outline-secondary mb-3"
+                  type="button">Close Gripper</button>
+
+          <button id="motor-on-btn"
+                  class="btn btn-outline-secondary mb-3"
+                  type="button">Motors On</button>
+
+          <button id="motor-off-btn"
+                  class="btn btn-outline-secondary mb-3"
+                  type="button">Motors Off</button>
+
+          <table class="table table-sm table-bordered">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">X</th>
+                <th scope="col">Y</th>
+                <th scope="col">Z</th>
+                <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">1</th>
+                <td id="cal-x1">0</td>
+                <td id="cal-y1">0</td>
+                <td id="cal-z1">0</td>
+                <td>
+                  <button id="point1-capture-btn"
+                          class="btn btn-outline-primary w-100 btn-sm my-0"
+                          type="button">Capture</button>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">2</th>
+                <td id="cal-x2">0</td>
+                <td id="cal-y2">0</td>
+                <td id="cal-z2">0</td>
+                <td>
+                  <button id="point2-capture-btn"
+                          class="btn btn-outline-primary w-100 btn-sm my-0"
+                          type="button">Capture</button>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">3</th>
+                <td id="cal-x3">0</td>
+                <td id="cal-y3">0</td>
+                <td id="cal-z3">0</td>
+                <td>
+                  <button id="point3-capture-btn"
+                          class="btn btn-outline-primary w-100 btn-sm my-0"
+                          type="button">Capture</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p class="card-text">Encoder:
+            <span id="robot-encoder">0</span>
+          </p>
+
+          <button id="calibrate-btn"
+                  class="btn btn-primary mt-3"
+                  type="button">Calibrate</button>
+
+        </div>
+      </div>
+
+      <button id="cal-save-btn"
+              class="btn btn-primary w-100 btn-lg mb-3">Save</button>
+    </div>
+
+    <!-- Configuration Tab -->
+    <div class="tab-pane fade container"
+         id="pills-config"
+         role="tabpanel"
+         aria-labelledby="pills-config-tab">
+
+      <!-- Config Tab content -->
+      <div class="row">
+        <div class="col mt-3">
+          <h1>Calibration</h1>
+        </div>
+      </div>
+
+      <!-- Load config -->
+      <div class="input-group input-group-lg mb-3">
+        <input id='config-path-input'
+               type="text"
+               class="form-control"
+               value="./config.json"
+               placeholder="Configuration File">
+        <div class="input-group-append">
+          <button class="btn btn-outline-secondary"
+                  type="button">Browse</button>
+          <button id="config-load-btn"
+                  class="btn btn-outline-secondary"
+                  type="button">Load</button>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <h5 class="card-header">Some sorta config</h5>
+        <div class="card-body">
+
+        </div>
+      </div>
+
+      <button id="config-save-btn"
+              class="btn btn-primary w-100 btn-lg mb-3">Save</button>
+    </div>
+
+    <!-- Run Tab -->
+    <div class="tab-pane fade container-fluid"
+         id="pills-run"
+         role="tabpanel"
+         aria-labelledby="pills-run-tab">
+
+      <!-- Run Tab content -->
+      <div class="card text-center mt-3">
+        <div class="card-header">
+          <ul id="myTab"
+              class="nav nav-tabs card-header-tabs"
+              role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active"
+                 id="split-stream-tab"
+                 data-toggle="tab"
+                 href="#split-stream"
+                 role="tab"
+                 aria-controls="split-stream"
+                 aria-selected="true">Split</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link"
+                 id="live-stream-tab"
+                 data-toggle="tab"
+                 href="#live-stream"
+                 role="tab"
+                 aria-controls="live-stream"
+                 aria-selected="false">Live</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link"
+                 id="labeled-stream-tab"
+                 data-toggle="tab"
+                 href="#labeled-stream"
+                 role="tab"
+                 aria-controls="labeled-stream"
+                 aria-selected="false">Labeled</a>
+            </li>
+          </ul>
+        </div>
+        <div class="card-body">
+          <div class="tab-content"
+               id="streams">
+
+            <div class="tab-pane fade show active"
+                 id="split-stream"
+                 role="tabpanel"
+                 aria-labelledby="split-stream-tab">
+              <div class="row">
+                <div class="col">
+                  <video autoplay
+                         id="video"
+                         class="w-100"></video>
+                </div>
+                <div class="col">
+                  <!-- <canvas id="canvas"
+                          class="w-100"></canvas> -->
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-pane fade"
+                 id="live-stream"
+                 role="tabpanel"
+                 aria-labelledby="live-stream-tab">B</div>
+
+            <div class="tab-pane fade"
+                 id="labeled-stream"
+                 role="tabpanel"
+                 aria-labelledby="labeled-stream-tab">C</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="col-6">
+          <button class="btn-success w-100 btn-lg">START</button>
+        </div>
+        <div class="col-6">
+          <button class="btn-danger w-100 btn-lg">STOP</button>
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="col-3">
+          <button id="one-dynamic-grab-btn" class="btn-success w-100 btn-lg">Single Grab</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
   <script>var exports = {};</script>
+  <script src="./node_modules/jquery/dist/jquery.slim.min.js"
+          crossorigin="anonymous"></script>
+  <script src="./node_modules/popper.js/dist/popper.min.js"
+          crossorigin="anonymous"></script>
+  <script src="./node_modules/bootstrap/dist/js/bootstrap.js"
+          crossorigin="anonymous"></script>
   <script type="text/javascript"
-          src="./calibration.js"></script>
-
+          src="./renderer.js"></script>
 </body>
 
 </html>

@@ -3,7 +3,7 @@
   "editor.tabSize": 2,
   "editor.formatOnSave": false,
   "files.autoSave": "onFocusChange",
-  "html.format.wrapAttributes": "auto",
+  "html.format.wrapAttributes": "force-aligned",
   "editor.renderWhitespace": "all",
   "editor.wordWrapColumn": 80,
   "search.exclude": {
