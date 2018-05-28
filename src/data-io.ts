@@ -38,6 +38,8 @@ export namespace DataController {
     });
   }
 
+  export let cameraT = 0;
+
   /**
    * @returns An observable that emits whenever both the data file and image file are created.
    * The obserable emits an array of IObject and the bitmap of the image found.
@@ -49,9 +51,8 @@ export namespace DataController {
       .zip(
         fileRenamed(dataFile),
         fileRenamed(imageFile),
-        countRecorded,
     )
-      .concatMap(async ([, , t]) => {
+      .concatMap(async () => {
         try {
           await Util.delay(20);
           const [rawData, rawImage] = await Promise.all([
@@ -62,7 +63,7 @@ export namespace DataController {
           const objects = JSON.parse(rawData) as IObject[];
           // if (objects === undefined) return { objects: undefined, bitmap: undefined };
           const bitmap = await createImageBitmap(new Blob([rawImage]));
-          return { objects, bitmap, t };
+          return { objects, bitmap, t: cameraT };
         } catch {
 
           return { objects: undefined, bitmap: undefined, t: undefined };
