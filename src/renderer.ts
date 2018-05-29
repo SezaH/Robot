@@ -356,25 +356,30 @@ Doc.addClickListener('origin-camera', async () => {
   Doc.setInnerHtml('camera-encoder', Conveyor.sysConfig.cameraEncoder);
 });
 
-// Doc.addClickListener('run-model', () => {
-//   queue.clearItemsDetectedByCV();
-//   robot.clearItemsPickedByRobot();
+Doc.addClickListener('start-model', () => {
+  queue.clearItemsDetectedByCV();
+  robot.clearItemsPickedByRobot();
 
-//   const fakeNameModel = Doc.getInputEl('modelName').value;
-//   const nameModel = fakeNameModel.replace(/.*[\/\\]/, '');
+  // const fakeNameModel = Doc.getInputEl('modelName').value;
+  // const nameModel = fakeNameModel.replace(/.*[\/\\]/, '');
 
-//   const fakePbTxt = Doc.getInputEl('pbtxt').value;
-//   const pbTxt = fakePbTxt.replace(/.*[\/\\]/, '');
+  // const fakePbTxt = Doc.getInputEl('pbtxt').value;
+  // const pbTxt = fakePbTxt.replace(/.*[\/\\]/, '');
 
-//   const percentage = Doc.getInputEl('percentage').value;
+  // const percentage = Doc.getInputEl('percentage').value;
 
-//   model.Run(nameModel, pbTxt, percentage); // name of model, name of pbtxt, threshold
-// });
+  // Temporary before gui is added
+  const nameModel = 'cups-faster-rcnn.pb';
+  const pbTxt = 'cup_label_map.pbtxt';
+  const percentage = '0.5';
 
-// Doc.addClickListener('stop-model', () => {
-//   model.Stop();
-//   queue.printItemsDetectedByCV();
-//   robot.printItemsPickedByRobot();
-// });
+  model.Run(nameModel, pbTxt, percentage); // name of model, name of pbtxt, threshold
+});
+
+Doc.addClickListener('stop-model', () => {
+  model.Stop();
+  queue.printItemsDetectedByCV(); // TODO: change to cvs
+  robot.printItemsPickedByRobot(); // TODO: change to cvs
+});
 
 main();

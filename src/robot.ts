@@ -67,7 +67,6 @@ export class Robot {
   private config = Robot.defaultConfig;
   private itemsPickedByRobot: { [className: string]: number } = {};
 
-
   public connect(portName: string, baudRate: number) {
     this.port = new SerialPort(portName, { baudRate }, err => console.error(err));
     this.isConnected = true;
