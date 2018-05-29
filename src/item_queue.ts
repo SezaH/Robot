@@ -64,13 +64,18 @@ export class ItemQueue {
     this.itemsDetectedByCV = {};
   }
 
-  public printItemsDetectedByCV() {
-    console.log('Items Detected By CV');
+  public printItemsDetectedByCV(data: string) {
+    // console.log('Items Detected By CV');
+    data += 'Items Detected By CV\n';
+    data += 'className,count\n';
     for (const prop in this.itemsDetectedByCV) {
       if (this.itemsDetectedByCV.hasOwnProperty(prop)) {
-        console.log('className: ', prop, ' count: ', this.itemsDetectedByCV[prop]);
+        // console.log('className: ', prop, ' count: ', this.itemsDetectedByCV[prop]);
+        data += prop + ',' + this.itemsDetectedByCV[prop] + '\n';
       }
     }
+    data += '\n';
+    return data;
   }
 
   private isDuplicate(coords: Coord4, classID: number) {

@@ -367,7 +367,6 @@ Doc.addClickListener('start-model', () => {
   // const pbTxt = fakePbTxt.replace(/.*[\/\\]/, '');
 
   // const percentage = Doc.getInputEl('percentage').value;
-
   // Temporary before gui is added
   const nameModel = 'cups-faster-rcnn.pb';
   const pbTxt = 'cup_label_map.pbtxt';
@@ -378,8 +377,22 @@ Doc.addClickListener('start-model', () => {
 
 Doc.addClickListener('stop-model', () => {
   model.Stop();
-  queue.printItemsDetectedByCV(); // TODO: change to cvs
-  robot.printItemsPickedByRobot(); // TODO: change to cvs
+
+  // TODO: Output results in GUI
+
+  // save data in a cvs file, asks user for name of file and location.
+  const dataCV = queue.printItemsDetectedByCV('');
+  let allData = robot.printItemsPickedByRobot(dataCV);
+  const filename = 'DATE_EVENT.csv';
+  if (!allData.match(/^data:text\/csv/i)) {
+    allData = 'data:text/csv;charset=utf-8,' + allData;
+  }
+  const dataEncoded = encodeURI(allData);
+  const link = document.createElement('a');
+  link.setAttribute('href', dataEncoded);
+  link.setAttribute('download', filename);
+  link.click();
+
 });
 
 main();

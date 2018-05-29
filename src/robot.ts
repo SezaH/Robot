@@ -437,12 +437,17 @@ export class Robot {
     this.itemsPickedByRobot = {};
   }
 
-  public printItemsPickedByRobot() {
-    console.log('Items Picked Up By Robot');
-    for (const className in this.itemsPickedByRobot) {
-      if (this.itemsPickedByRobot.hasOwnProperty(className)) {
-        console.log('className: ', className, ' count: ', this.itemsPickedByRobot[className]);
+  public printItemsPickedByRobot(data: string) {
+    // console.log('Items Detected By CV');
+    data += 'Items Picked up By Robot\n';
+    data += 'className,count\n';
+    for (const prop in this.itemsPickedByRobot) {
+      if (this.itemsPickedByRobot.hasOwnProperty(prop)) {
+        // console.log('className: ', prop, ' count: ', this.itemsDetectedByCV[prop]);
+        data += prop + ',' + this.itemsPickedByRobot[prop] + '\n';
       }
     }
+    data += '\n';
+    return data;
   }
 }
