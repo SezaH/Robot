@@ -4,7 +4,29 @@ import { Conveyor } from './conveyor';
 import { Item } from './item';
 import { BCoord, Coord3, CoordType, RCoord, Util, Vector } from './utils';
 
+// a number (scalar) bounded to a CoordType
+export interface CoordScalar {
+  scalar: number;
+  coord: CoordType;
+}
+
+// bounds of a cuboid zone
+// bounds are planes parallel to an axis in either coordinate system
+export interface CuboidBoundary {
+  maxX: CoordScalar;
+  maxY: CoordScalar;
+  maxZ: CoordScalar;
+  minY: CoordScalar;
+  minX: CoordScalar;
+  minZ: CoordScalar;
+}
+
+// robot config read from cal.json
 export interface RobotConfig {
+  boundaries: {
+    dropBoundary: CuboidBoundary,
+    pickBoundary: CuboidBoundary,
+  };
   calPoints: {
     belt: {
       p1: BCoord,
@@ -28,6 +50,24 @@ export interface RobotConfig {
 
 export class Robot {
   public static readonly defaultConfig: RobotConfig = {
+    boundaries: {
+      dropBoundary: {
+        maxX: { scalar: 200, coord: CoordType.RCS },
+        maxY: { scalar: 600, coord: CoordType.RCS },
+        maxZ: { scalar: -350, coord: CoordType.RCS },
+        minX: { scalar: -200, coord: CoordType.RCS },
+        minY: { scalar: -600, coord: CoordType.RCS },
+        minZ: { scalar: -450, coord: CoordType.RCS },
+      },
+      pickBoundary: {
+        maxX: { scalar: 100, coord: CoordType.RCS },
+        maxY: { scalar: 250, coord: CoordType.BCS },
+        maxZ: { scalar: -350, coord: CoordType.RCS },
+        minX: { scalar: -100, coord: CoordType.RCS },
+        minY: { scalar: -250, coord: CoordType.BCS },
+        minZ: { scalar: -10, coord: CoordType.BCS },
+      },
+    },
     calPoints: {
       belt: {
         p1: { type: CoordType.BCS, x: -196.1589, y: 119.6971, z: 0 },
@@ -65,6 +105,12 @@ export class Robot {
 
   private newData = 0;
   private config = Robot.defaultConfig;
+
+  // these might be best to be read from file, but for now, here is fine
+
+  // this is so the robot doesn't get stuck
+  // if it overshoots destination and goes a bit out of bounds
+  private originTolerance = 10; // origin bounds extension
 
   public connect(portName: string, baudRate: number) {
     this.port = new SerialPort(portName, { baudRate }, err => console.error(err));
@@ -153,8 +199,8 @@ export class Robot {
     };
 
     // this is the offset
-    // I'm using a function taht uses a value that I set in this function which is a little funky.
-    // I'm probably going to want to pu guards on all this stuff if I have time
+    // I'm using a function that uses a value that I set in this function which is a little funky.
+    // I'm probably going to want to put guards on all this stuff if I have time
     const offset = Vector.subtract(robotPoints.p2, this.belt2RobotVector(rp2inBC));
 
     // Calculate affine transform matrices (ATM)
@@ -174,29 +220,6 @@ export class Robot {
     this.b2rATM[3] = [offset.x, offset.y, offset.z, 1];
 
     this.r2bATM = math.inv(this.b2rATM);
-
-    // log test output
-
-    const iBtoR = this.toRobotVector({ type: CoordType.BCS, x: 1, y: 0, z: 0 });
-    const jBtoR = this.toRobotVector({ type: CoordType.BCS, x: 0, y: 1, z: 0 });
-    const kBtoR = this.toRobotVector({ type: CoordType.BCS, x: 0, y: 0, z: 1 });
-
-    console.log('Belt to Robot ijk:');
-    console.log('i: ', iBtoR);
-    console.log('j: ', jBtoR);
-    console.log('k: ', kBtoR);
-
-    const iRtoB = this.toBeltVector({ type: CoordType.RCS, x: 1, y: 0, z: 0 });
-    const jRtoB = this.toBeltVector({ type: CoordType.RCS, x: 0, y: 1, z: 0 });
-    const kRtoB = this.toBeltVector({ type: CoordType.RCS, x: 0, y: 0, z: 1 });
-
-    console.log('Robot to Belt ijk:');
-    console.log('i: ', iRtoB);
-    console.log('j: ', jRtoB);
-    console.log('k: ', kRtoB);
-
-    const test = this.toBeltCoords({ type: CoordType.RCS, x: 0, y: 0, z: -600 });
-    console.log('robot coord (0,0,-600) as belt coord: ', test);
 
     // Take the calibration points as x min/max for picking
     // because it is guaranteed the robot could reach it.
@@ -296,18 +319,132 @@ export class Robot {
   }
 
   public async moveTo(coords: BCoord | RCoord, speed = this.config.speed) {
+    // cannot move to belt coordinates if not calibrated
     if (!this.config.valid && coords.type === CoordType.BCS) return;
-    if (coords.type === CoordType.BCS && (coords.x > this.config.maxPick.x || coords.x < this.config.minPick.x)) return;
+
+    if (!this.isValidMove(await this.getCoordsRCS(), coords)) return;
+
     if (coords.type === CoordType.BCS) coords = this.belt2RobotCoords(coords);
     return this.sendMessage(`G0 X${coords.x} Y${coords.y} Z${coords.z} F${speed}`);
   }
 
+  // determines if a point is within a CuboidBoundary
+  public isInCuboidBoundary(coord: BCoord | RCoord, boundary: CuboidBoundary, tolerance = 0): boolean {
+    // get both robot and belt coordinates
+    const rCoord = this.toRobotCoords(coord);
+    const bCoord = this.toBeltCoords(coord);
 
-  public isValidMove(origin: BCoord | RCoord, destination: BCoord | RCoord)
-  {
-    
+    // return false if x greater than maxX
+    switch (boundary.maxX.coord) {
+      case CoordType.RCS:
+        if (rCoord.x > boundary.maxX.scalar + tolerance) return false;
+        break;
+
+      case CoordType.BCS:
+        if (rCoord.x > boundary.maxX.scalar + tolerance) return false;
+        break;
+
+      default: // not passed a supported CoordType
+        return false;
+    }
+
+    // return false if x less than minX
+    switch (boundary.minX.coord) {
+      case CoordType.RCS:
+        if (rCoord.x < boundary.minX.scalar - tolerance) return false;
+        break;
+
+      case CoordType.BCS:
+        if (rCoord.x < boundary.minX.scalar - tolerance) return false;
+        break;
+
+      default: // not passed a supported CoordType
+        return false;
+    }
+
+    // return false if y greater than maxY
+    switch (boundary.maxY.coord) {
+      case CoordType.RCS:
+        if (rCoord.y > boundary.maxY.scalar + tolerance) return false;
+        break;
+
+      case CoordType.BCS:
+        if (rCoord.y > boundary.maxY.scalar + tolerance) return false;
+        break;
+
+      default: // not passed a supported CoordType
+        return false;
+    }
+
+    // return false if y less than minY
+    switch (boundary.minY.coord) {
+      case CoordType.RCS:
+        if (rCoord.y < boundary.minY.scalar - tolerance) return false;
+        break;
+
+      case CoordType.BCS:
+        if (rCoord.y < boundary.minY.scalar - tolerance) return false;
+        break;
+
+      default: // not passed a supported CoordType
+        return false;
+    }
+
+    // return false if z greater than maxZ
+    switch (boundary.maxZ.coord) {
+      case CoordType.RCS:
+        if (rCoord.z > boundary.maxZ.scalar + tolerance) return false;
+        break;
+
+      case CoordType.BCS:
+        if (rCoord.z > boundary.maxZ.scalar + tolerance) return false;
+        break;
+
+      default: // not passed a supported CoordType
+        return false;
+    }
+
+    // return false if z less than minZ
+    switch (boundary.minZ.coord) {
+      case CoordType.RCS:
+        if (rCoord.z < boundary.minZ.scalar - tolerance) return false;
+        break;
+
+      case CoordType.BCS:
+        if (rCoord.z < boundary.minZ.scalar - tolerance) return false;
+        break;
+
+      default: // not passed a supported CoordType
+        return false;
+    }
+
+    return true;
+
   }
 
+  public isInDropBoundary(coord: BCoord | RCoord, tolerance = 0): boolean {
+    // also probably want to check if boundaries have been set yet
+    return this.isInCuboidBoundary(coord, this.config.boundaries.dropBoundary, tolerance);
+  }
+
+  public isInPickBoundary(coord: BCoord | RCoord, tolerance = 0): boolean {
+    return this.isInCuboidBoundary(coord, this.config.boundaries.pickBoundary, tolerance);
+  }
+
+  // the idea is that before a move you get current coordinate, then call this function
+
+  // this will have the problem of the robot will overshoot and then it will get stuck
+  // need to give tolerance, but only on origin coordinate.
+  // need to check origin and destination are in same boundary
+  // to make sure robot does not try to go through wall
+  public isValidMove(origin: BCoord | RCoord, destination: BCoord | RCoord): boolean {
+    const originPick = this.isInPickBoundary(origin, this.originTolerance);
+    const originDrop = this.isInDropBoundary(origin, this.originTolerance);
+    const destinationPick = this.isInPickBoundary(destination);
+    const destinationDrop = this.isInDropBoundary(destination);
+
+    return ((originPick && destinationPick) || (originDrop && destinationDrop));
+  }
 
   public async openGripper() {
     await this.sendMessage('M801');
