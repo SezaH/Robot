@@ -11,30 +11,9 @@ export namespace Camera {
   /** Checkerboard centered image sent to calibration.py to set origin. */
   const originImageFile = '../models/research/object_detection/io/origin.jpg';
 
-  export function runModel() {
-    console.log('model');
-    const mol = spawn('python3', ['io_object_detection.py'], { cwd: '../models/research/object_detection' });
-    console.log('running');
-
-    mol.stdout.on('data', (data) => {
-      console.log(`stdout: ${data}`);
-    });
-
-    mol.stderr.on('data', (data) => {
-      console.log(`stderr: ${data}`);
-    });
-
-    mol.on('exit', code => {
-      if (code !== 0) {
-        console.log('Failed: ' + code);
-      }
-    });
-    // mol.kill();
-  }
-
   export function origin() {
     capture(originImageFile);
-    console.log('here');
+
     const cal = spawn('python3', ['calibration.py'], { cwd: '../models/research/object_detection' });
 
     cal.stdout.on('data', (data) => {

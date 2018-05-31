@@ -105,6 +105,7 @@ export class Robot {
 
   private newData = 0;
   private config = Robot.defaultConfig;
+  private itemsPickedByRobot: { [className: string]: number } = {};
 
   // these might be best to be read from file, but for now, here is fine
 
@@ -561,6 +562,32 @@ export class Robot {
     // return to home
     await this.moveTo({ type: CoordType.RCS, x: 0, y: 0, z: -400 });
 
+    // Add item to counter of items picked up by robot
+    if (this.itemsPickedByRobot[item.className] !== undefined) {
+      this.itemsPickedByRobot[item.className]++;
+    } else {
+      this.itemsPickedByRobot[item.className] = 1;
+    }
+
+    // destroy item for some reason
     item.destroy();
+  }
+
+  public clearItemsPickedByRobot() {
+    this.itemsPickedByRobot = {};
+  }
+
+  public printItemsPickedByRobot(data: string) {
+    // console.log('Items Detected By CV');
+    data += 'Items Picked up By Robot\n';
+    data += 'className,count\n';
+    for (const prop in this.itemsPickedByRobot) {
+      if (this.itemsPickedByRobot.hasOwnProperty(prop)) {
+        // console.log('className: ', prop, ' count: ', this.itemsDetectedByCV[prop]);
+        data += prop + ',' + this.itemsPickedByRobot[prop] + '\n';
+      }
+    }
+    data += '\n';
+    return data;
   }
 }
