@@ -5,7 +5,6 @@ import { Conveyor, SysConfig } from './conveyor';
 import { DataController } from './data-io';
 import { Item } from './item';
 import { ItemQueue } from './item_queue';
-import { Model } from './model';
 import { Robot, RobotConfig } from './robot';
 import { Coord3, CoordType, RCoord, Util } from './utils';
 
@@ -18,17 +17,8 @@ const labeledImageFile = '../models/research/object_detection/io/output.jpg';
 /** Unlabeled image sent to CV. */
 const unlabeledImageFile = '../models/research/object_detection/io/input.jpg';
 
-/** Unlabeled image sent to CV. */
-const exportDirectory = './unlabeled/';
-
-/** Probability that the image will be saved as data for training later. */
-const exportProb = 0.01;
-const imageExport = false;
-
 /** If multiple cameras are present, specify which. */
 const cameraID = 0;
-
-const model = new Model();
 
 // for dynamic grab loop
 const dynamicGrabRunning = false;
@@ -54,7 +44,11 @@ async function main() {
 
   await Util.delay(2000);
 
-  DataController.cameraT = await Camera.capture(unlabeledImageFile);
+  DataController.cameraT =
+    (await Promise.all([
+      Conveyor.fetchCount(),
+      Camera.capture(unlabeledImageFile),
+    ]))[0];
 
   // Watch for new data and load into the itemQueue and draw the image to screen.
   // Remove the data files when complete.
@@ -71,6 +65,7 @@ async function main() {
       const x = (object.bndbox.xmax + object.bndbox.xmin) / 2 + deltaX;
       const y = (object.bndbox.ymax + object.bndbox.ymin) / 2;
 
+      // TODO encoder count.
       queue.insert(new Item({ x, y, z: 1, t: newT }, object.id, object.name));
     }
 
@@ -85,10 +80,12 @@ async function main() {
 
     await Util.delay(100);
 
-    DataController.cameraT = await Camera.capture(
-      unlabeledImageFile,
-      { directory: exportDirectory, imageExport, prob: exportProb },
-    );
+    DataController.cameraT =
+      (await Promise.all([
+        Conveyor.fetchCount(),
+        Camera.capture(unlabeledImageFile),
+      ]))[0];
+
   });
 }
 
@@ -184,8 +181,10 @@ Doc.addClickListener('cal-load-btn', async () => {
 
 Doc.addClickListener('cal-save-btn', async () => {
   // if (Conveyor.sysConfig.robotConfigs.every(c => c.valid)) {
+
   const configPath = Doc.getInputString('cal-path-input');
   fs.writeFile(configPath, JSON.stringify(Conveyor.sysConfig));
+
   // }
 });
 
@@ -255,7 +254,7 @@ Doc.addClickListener('calibrate-btn', async () => {
 //   console.log(`output: {x: ${coord.x}, y: ${coord.y}, z: ${coord.z}}`);
 // });
 
-Doc.addClickListener('home-btn', () => robot.moveTo({ type: CoordType.RCS, x: 0, y: 0, z: -500 }, 5000));
+Doc.addClickListener('home-btn', () => robot.moveTo({ type: CoordType.RCS, x: 0, y: 0, z: -400 }, 5000));
 Doc.addClickListener('open-gripper-btn', () => robot.openGripper());
 Doc.addClickListener('close-gripper-btn', () => robot.closeGripper());
 Doc.addClickListener('motor-on-btn', () => robot.motorsOn());
@@ -356,48 +355,6 @@ Doc.addClickListener('origin-camera', async () => {
   Doc.setInnerHtml('camera-encoder', Conveyor.sysConfig.cameraEncoder);
 });
 
-Doc.addClickListener('start-model', () => {
-  queue.clearItemsDetectedByCV();
-  robot.clearItemsPickedByRobot();
-
-  // const fakeNameModel = Doc.getInputEl('modelName').value;
-  // const nameModel = fakeNameModel.replace(/.*[\/\\]/, '');
-
-  // const fakePbTxt = Doc.getInputEl('pbtxt').value;
-  // const pbTxt = fakePbTxt.replace(/.*[\/\\]/, '');
-
-  // const percentage = Doc.getInputEl('percentage').value;
-  // Temporary before gui is added
-  const nameModel = 'cups-faster-rcnn.pb';
-  const pbTxt = 'cup_label_map.pbtxt';
-  const percentage = '0.5';
-
-  model.Run(nameModel, pbTxt, percentage); // name of model, name of pbtxt, threshold
-});
-
-Doc.addClickListener('stop-model', () => {
-  model.Stop();
-
-  // TODO: Output results in GUI
-
-  // save data in a cvs file, asks user for name of file and location.
-  const dataCV = queue.printItemsDetectedByCV('');
-  let allData = robot.printItemsPickedByRobot(dataCV);
-  const filename = 'DATE_EVENT.csv';
-  if (!allData.match(/^data:text\/csv/i)) {
-    allData = 'data:text/csv;charset=utf-8,' + allData;
-  }
-  const dataEncoded = encodeURI(allData);
-  const link = document.createElement('a');
-  link.setAttribute('href', dataEncoded);
-  link.setAttribute('download', filename);
-  link.click();
-
-});
-
-Doc.addClickListener('sidebar-toggle', () => {
-  document.getElementById('sidebar').classList.toggle('collapse');
-  document.getElementsByTagName('body')[0].classList.toggle('split');
-});
+// Doc.addClickListener('run-model', () => Camera.runModel());
 
 main();

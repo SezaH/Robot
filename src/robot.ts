@@ -342,7 +342,7 @@ export class Robot {
         break;
 
       case CoordType.BCS:
-        if (rCoord.x > boundary.maxX.scalar + tolerance) return false;
+        if (bCoord.x > boundary.maxX.scalar + tolerance) return false;
         break;
 
       default: // not passed a supported CoordType
@@ -356,7 +356,7 @@ export class Robot {
         break;
 
       case CoordType.BCS:
-        if (rCoord.x < boundary.minX.scalar - tolerance) return false;
+        if (bCoord.x < boundary.minX.scalar - tolerance) return false;
         break;
 
       default: // not passed a supported CoordType
@@ -370,7 +370,7 @@ export class Robot {
         break;
 
       case CoordType.BCS:
-        if (rCoord.y > boundary.maxY.scalar + tolerance) return false;
+        if (bCoord.y > boundary.maxY.scalar + tolerance) return false;
         break;
 
       default: // not passed a supported CoordType
@@ -384,7 +384,7 @@ export class Robot {
         break;
 
       case CoordType.BCS:
-        if (rCoord.y < boundary.minY.scalar - tolerance) return false;
+        if (bCoord.y < boundary.minY.scalar - tolerance) return false;
         break;
 
       default: // not passed a supported CoordType
@@ -398,7 +398,7 @@ export class Robot {
         break;
 
       case CoordType.BCS:
-        if (rCoord.z > boundary.maxZ.scalar + tolerance) return false;
+        if (bCoord.z > boundary.maxZ.scalar + tolerance) return false;
         break;
 
       default: // not passed a supported CoordType
@@ -412,7 +412,7 @@ export class Robot {
         break;
 
       case CoordType.BCS:
-        if (rCoord.z < boundary.minZ.scalar - tolerance) return false;
+        if (bCoord.z < boundary.minZ.scalar - tolerance) return false;
         break;
 
       default: // not passed a supported CoordType
