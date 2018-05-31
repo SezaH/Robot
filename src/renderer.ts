@@ -5,6 +5,7 @@ import { Conveyor, SysConfig } from './conveyor';
 import { DataController } from './data-io';
 import { Item } from './item';
 import { ItemQueue } from './item_queue';
+import { Model } from './model';
 import { Robot, RobotConfig } from './robot';
 import { Coord3, CoordType, RCoord, Util } from './utils';
 
@@ -28,6 +29,8 @@ let isPointCaptured = [false, false, false];
 const configfile = './config.json';
 
 const robot = new Robot();
+
+const model = new Model();
 
 const imageCanvas: any = undefined;
 const imageContext: any = undefined;
@@ -370,7 +373,6 @@ Doc.addClickListener('start-model', () => {
   const nameModel = 'cups-faster-rcnn.pb';
   const pbTxt = 'cup_label_map.pbtxt';
   const percentage = '0.5';
-
 
   model.Run(nameModel, pbTxt, percentage); // name of model, name of pbtxt, threshold
 });
