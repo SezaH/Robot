@@ -372,6 +372,7 @@ Doc.addClickListener('start-model', () => {
   const pbTxt = 'cup_label_map.pbtxt';
   const percentage = '0.5';
 
+
   model.Run(nameModel, pbTxt, percentage); // name of model, name of pbtxt, threshold
 });
 
