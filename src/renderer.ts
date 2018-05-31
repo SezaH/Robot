@@ -183,10 +183,10 @@ Doc.addClickListener('cal-load-btn', async () => {
 });
 
 Doc.addClickListener('cal-save-btn', async () => {
-  if (Conveyor.sysConfig.robotConfigs.every(c => c.valid)) {
-    const configPath = Doc.getInputString('cal-path-input');
-    fs.writeFile(configPath, JSON.stringify(Conveyor.sysConfig));
-  }
+  // if (Conveyor.sysConfig.robotConfigs.every(c => c.valid)) {
+  const configPath = Doc.getInputString('cal-path-input');
+  fs.writeFile(configPath, JSON.stringify(Conveyor.sysConfig));
+  // }
 });
 
 const robotCalPoints: { p1: RCoord, p2: RCoord, p3: RCoord } = {
