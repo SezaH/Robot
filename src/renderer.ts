@@ -355,4 +355,9 @@ Doc.addClickListener('origin-camera', async () => {
 
 // Doc.addClickListener('run-model', () => Camera.runModel());
 
+Doc.addClickListener('sidebar-toggle', () => {
+  document.getElementById('sidebar').classList.toggle('collapse');
+  document.getElementsByTagName('body')[0].classList.toggle('split');
+});
+
 main();
