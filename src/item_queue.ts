@@ -18,7 +18,7 @@ export class ItemQueue {
   }
 
   /**
-   * Insert an intem in the end of the queue
+   * Insert an item in the end of the queue
    */
   public insert(item: Item) {
     if (!this.isDuplicate(item.xyzt, item.classID)) {
@@ -40,6 +40,30 @@ export class ItemQueue {
     if (this._items.length > 0) {
       return this._items.pop();
     }
+  }
+
+  /**
+   * Delete an item from the queue by ID number
+   * @param ID ID of item to remove
+   */
+  public removeByID(ID: number) {
+    for (let index = 0; index < this.items.length; index++) {
+      if (this.items[index].itemID === ID) {
+          this.delete(index);
+          break;
+      }
+    }
+  }
+
+  /**
+   * get the closet item to the robot and return it but still keep it in queue
+   */
+  public getClosestItemToRobot() {
+      let closest: Item = this.items[0];
+      for (let index = 1;  index < this.items.length; index++) {
+          if (this.items[index].x > closest.x ) closest = this.items[index];
+      }
+      return closest;
   }
 
   /**
