@@ -355,6 +355,44 @@ Doc.addClickListener('origin-camera', async () => {
   Doc.setInnerHtml('camera-encoder', Conveyor.sysConfig.cameraEncoder);
 });
 
-// Doc.addClickListener('run-model', () => Camera.runModel());
+Doc.addClickListener('start-model', () => {
+  queue.clearItemsDetectedByCV();
+  robot.clearItemsPickedByRobot();
+
+  // const fakeNameModel = Doc.getInputEl('modelName').value;
+  // const nameModel = fakeNameModel.replace(/.*[\/\\]/, '');
+
+  // const fakePbTxt = Doc.getInputEl('pbtxt').value;
+  // const pbTxt = fakePbTxt.replace(/.*[\/\\]/, '');
+
+  // const percentage = Doc.getInputEl('percentage').value;
+  // Temporary before gui is added
+  const nameModel = 'cups-faster-rcnn.pb';
+  const pbTxt = 'cup_label_map.pbtxt';
+  const percentage = '0.5';
+
+
+  model.Run(nameModel, pbTxt, percentage); // name of model, name of pbtxt, threshold
+});
+
+Doc.addClickListener('stop-model', () => {
+  model.Stop();
+
+  // TODO: Output results in GUI
+
+  // save data in a cvs file, asks user for name of file and location.
+  const dataCV = queue.printItemsDetectedByCV('');
+  let allData = robot.printItemsPickedByRobot(dataCV);
+  const filename = 'DATE_EVENT.csv';
+  if (!allData.match(/^data:text\/csv/i)) {
+    allData = 'data:text/csv;charset=utf-8,' + allData;
+  }
+  const dataEncoded = encodeURI(allData);
+  const link = document.createElement('a');
+  link.setAttribute('href', dataEncoded);
+  link.setAttribute('download', filename);
+  link.click();
+
+});
 
 main();
