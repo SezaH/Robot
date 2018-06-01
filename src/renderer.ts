@@ -363,21 +363,20 @@ Doc.addClickListener('start-model', () => {
   const modelName = Doc.getInputEl('modelName').value;
   const labelMap = Doc.getInputEl('labelMap').value;
   const threshold = Doc.getInputEl('threshold').value;
-
+  
   // Temporary before gui is added
-  // const nameModel = 'cups-faster-rcnn.pb';
-  // const pbTxt = 'cup_label_map.pbtxt';
-  // const percentage = '0.5';
+  // const modelName = 'cups-faster-rcnn.pb';
+  // const labelMap = 'cup_label_map.pbtxt';
+  // const threshold = '50';
 
   model.Run(modelName, labelMap, threshold); // name of model, name of pbtxt, threshold
 });
 
 Doc.addClickListener('stop-model', () => {
   model.Stop();
+});
 
-  // TODO: Output results in GUI
-
-  // save data in a cvs file, asks user for name of file and location.
+Doc.addClickListener('save-item-counter', () => {
   const dataCV = queue.printItemsDetectedByCV('');
   let allData = robot.printItemsPickedByRobot(dataCV);
   const filename = 'DATE_EVENT.csv';
@@ -389,7 +388,6 @@ Doc.addClickListener('stop-model', () => {
   link.setAttribute('href', dataEncoded);
   link.setAttribute('download', filename);
   link.click();
-
 });
 
 main();
