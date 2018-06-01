@@ -1,10 +1,11 @@
+
 import { Conveyor } from './conveyor';
 import { Item } from './item';
 import { Coord2, Coord3, Coord4, Vector } from './utils';
 
 export class ItemQueue {
   private _items: Item[] = [];
-  private deviationThreshold = 10; // 10 mm radius
+  private deviationThreshold = 25; // 25 mm radius
   private xLimit = 1000; // 5m TODO determine actual
   private itemsDetectedByCV: { [className: string]: number } = {};
 
@@ -23,14 +24,17 @@ export class ItemQueue {
   public insert(item: Item) {
     if (!this.isDuplicate(item.xyzt, item.classID)) {
       this._items.push(item);
+      console.log(`Item added to queue\n${item}\n`);
 
       if (this.itemsDetectedByCV[item.className] !== undefined) {
         this.itemsDetectedByCV[item.className]++;
       } else {
         this.itemsDetectedByCV[item.className] = 1;
       }
+    } else {
+      console.log(`Item added duplicate\n${item}\n`);
+
     }
-    console.log(`Item added to queue\n${item}\n`);
   }
 
   /**
@@ -107,7 +111,7 @@ export class ItemQueue {
       const t = Conveyor.calcDeltaT(item.t, coords.t);
 
       const deltas: Coord3 = {
-        x: coords.x - (item.x + (t - item.t)),
+        x: coords.x - (item.x + Conveyor.countToDist(t)),
         y: coords.y - item.y,
         z: coords.z - item.z,
       };
