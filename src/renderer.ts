@@ -356,6 +356,18 @@ Doc.addClickListener('origin-camera', async () => {
   Doc.setInnerHtml('camera-encoder', Conveyor.sysConfig.cameraEncoder);
 });
 
+Doc.addClickListener('model-name-btn', async () => {
+  console.log('modelName');
+  // Get path
+  // update input text modelName
+});
+
+Doc.addClickListener('label-map-btn', async () => {
+  console.log('Label Map');
+  // Get path
+  // update input text labelMap
+});
+
 Doc.addClickListener('start-model', () => {
   queue.clearItemsDetectedByCV();
   robot.clearItemsPickedByRobot();
@@ -363,7 +375,7 @@ Doc.addClickListener('start-model', () => {
   const modelName = Doc.getInputEl('modelName').value;
   const labelMap = Doc.getInputEl('labelMap').value;
   const threshold = Doc.getInputEl('threshold').value;
-  
+
   // Temporary before gui is added
   // const modelName = 'cups-faster-rcnn.pb';
   // const labelMap = 'cup_label_map.pbtxt';
