@@ -358,31 +358,39 @@ Doc.addClickListener('origin-camera', async () => {
   Doc.setInnerHtml('camera-encoder', Conveyor.sysConfig.cameraEncoder);
 });
 
+Doc.addClickListener('model-name-btn', async () => {
+  console.log('modelName');
+  // Get path
+  // update input text modelName
+});
+
+Doc.addClickListener('label-map-btn', async () => {
+  console.log('Label Map');
+  // Get path
+  // update input text labelMap
+});
+
 Doc.addClickListener('start-model', () => {
   queue.clearItemsDetectedByCV();
   robot.clearItemsPickedByRobot();
 
-  // const fakeNameModel = Doc.getInputEl('modelName').value;
-  // const nameModel = fakeNameModel.replace(/.*[\/\\]/, '');
+  const modelName = Doc.getInputEl('modelName').value;
+  const labelMap = Doc.getInputEl('labelMap').value;
+  const threshold = Doc.getInputEl('threshold').value;
 
-  // const fakePbTxt = Doc.getInputEl('pbtxt').value;
-  // const pbTxt = fakePbTxt.replace(/.*[\/\\]/, '');
-
-  // const percentage = Doc.getInputEl('percentage').value;
   // Temporary before gui is added
-  const nameModel = 'cups-faster-rcnn.pb';
-  const pbTxt = 'cup_label_map.pbtxt';
-  const percentage = '0.5';
+  // const modelName = 'cups-faster-rcnn.pb';
+  // const labelMap = 'cup_label_map.pbtxt';
+  // const threshold = '50';
 
-  model.Run(nameModel, pbTxt, percentage); // name of model, name of pbtxt, threshold
+  model.Run(modelName, labelMap, threshold); // name of model, name of pbtxt, threshold
 });
 
 Doc.addClickListener('stop-model', () => {
   model.Stop();
+});
 
-  // TODO: Output results in GUI
-
-  // save data in a cvs file, asks user for name of file and location.
+Doc.addClickListener('save-item-counter', () => {
   const dataCV = queue.printItemsDetectedByCV('');
   let allData = robot.printItemsPickedByRobot(dataCV);
   const filename = 'DATE_EVENT.csv';
@@ -394,7 +402,6 @@ Doc.addClickListener('stop-model', () => {
   link.setAttribute('href', dataEncoded);
   link.setAttribute('download', filename);
   link.click();
-
 });
 
 Doc.addClickListener('sidebar-toggle', () => {

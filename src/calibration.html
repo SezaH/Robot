@@ -246,9 +246,11 @@
       <!-- Config Tab content -->
       <div class="row">
         <div class="col mt-3">
-          <h1>Calibration</h1>
+          <h1>Configuration</h1>
         </div>
       </div>
+
+
 
       <!-- Load config -->
       <div class="input-group input-group-lg mb-3">
@@ -266,15 +268,48 @@
         </div>
       </div>
 
+      <!-- MODEL -->
       <div class="card mb-3">
-        <h5 class="card-header">Some sorta config</h5>
+        <h5 class="card-header">Model Configuration</h5>
         <div class="card-body">
 
+          <div class="input-group mb-3">
+            <input id='modelName'
+                   type="text"
+                   class="form-control"
+                   placeholder="Model file">
+            <div class="input-group-append">
+              <button id="model-name-btn"
+                      class="btn btn-outline-secondary"
+                      type="button">Browse</button>
+            </div>
+          </div>
+
+          <div class="input-group mb-3">
+            <input id='labelMap'
+                   type="text"
+                   class="form-control"
+                   placeholder="Label Map">
+            <div class="input-group-append">
+              <button id="label-map-btn"
+                      class="btn btn-outline-secondary"
+                      type="button">Browse</button>
+            </div>
+          </div>
+
+          <div class="input-group mb-3">
+            <input id='threshold-percentage'
+                   type="text"
+                   class="form-control"
+                   placeholder="Threshold %">
+          </div>
         </div>
       </div>
 
+
       <button id="config-save-btn"
               class="btn btn-primary w-100 btn-lg mb-3">Save</button>
+
     </div>
 
     <!-- Run Tab -->
@@ -366,6 +401,10 @@
           <button id="one-dynamic-grab-btn"
                   class="btn-success w-100 btn-lg">Single Grab</button>
         </div>
+      </div>
+      <div class="row mt-3">
+          <button id="save-item-counter"
+              class="btn btn-primary w-100 btn-lg mb-3">Save</button>
       </div>
     </div>
   </div>
