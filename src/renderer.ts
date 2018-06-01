@@ -360,20 +360,16 @@ Doc.addClickListener('start-model', () => {
   queue.clearItemsDetectedByCV();
   robot.clearItemsPickedByRobot();
 
-  // const fakeNameModel = Doc.getInputEl('modelName').value;
-  // const nameModel = fakeNameModel.replace(/.*[\/\\]/, '');
+  const modelName = Doc.getInputEl('modelName').value;
+  const labelMap = Doc.getInputEl('labelMap').value;
+  const threshold = Doc.getInputEl('threshold').value;
 
-  // const fakePbTxt = Doc.getInputEl('pbtxt').value;
-  // const pbTxt = fakePbTxt.replace(/.*[\/\\]/, '');
-
-  // const percentage = Doc.getInputEl('percentage').value;
   // Temporary before gui is added
-  const nameModel = 'cups-faster-rcnn.pb';
-  const pbTxt = 'cup_label_map.pbtxt';
-  const percentage = '0.5';
+  // const nameModel = 'cups-faster-rcnn.pb';
+  // const pbTxt = 'cup_label_map.pbtxt';
+  // const percentage = '0.5';
 
-
-  model.Run(nameModel, pbTxt, percentage); // name of model, name of pbtxt, threshold
+  model.Run(modelName, labelMap, threshold); // name of model, name of pbtxt, threshold
 });
 
 Doc.addClickListener('stop-model', () => {
