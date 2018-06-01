@@ -54,10 +54,10 @@ export namespace DataController {
     )
       .concatMap(async () => {
         try {
-          await Util.delay(20);
+          await Util.delay(30);
           const [rawData, rawImage] = await Promise.all([
-            fs.readFile(dataFile, 'utf8'),
-            fs.readFile(imageFile),
+            fs.readFile(dataFile, 'utf8').catch(() => undefined),
+            fs.readFile(imageFile).catch(() => undefined),
           ]);
 
           const objects = JSON.parse(rawData) as IObject[];
@@ -65,7 +65,6 @@ export namespace DataController {
           const bitmap = await createImageBitmap(new Blob([rawImage]));
           return { objects, bitmap, t: cameraT };
         } catch {
-
           return { objects: undefined, bitmap: undefined, t: undefined };
         }
       });

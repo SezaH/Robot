@@ -18,6 +18,13 @@ const labeledImageFile = '../models/research/object_detection/io/output.jpg';
 /** Unlabeled image sent to CV. */
 const unlabeledImageFile = '../models/research/object_detection/io/input.jpg';
 
+/** Unlabeled image sent to CV. */
+const exportDirectory = './unlabeled/';
+
+/** Probability that the image will be saved as data for training later. */
+const exportProb = 0.01;
+const imageExport = false;
+
 /** If multiple cameras are present, specify which. */
 const cameraID = 0;
 
@@ -32,8 +39,8 @@ const robot = new Robot();
 
 const model = new Model();
 
-const imageCanvas: any = undefined;
-const imageContext: any = undefined;
+const imageCanvas = document.getElementById('canvas') as HTMLCanvasElement;
+const imageContext = imageCanvas.getContext('2d');
 
 const queue = new ItemQueue();
 
@@ -47,11 +54,7 @@ async function main() {
 
   await Util.delay(2000);
 
-  DataController.cameraT =
-    (await Promise.all([
-      Conveyor.fetchCount(),
-      Camera.capture(unlabeledImageFile),
-    ]))[0];
+  DataController.cameraT = await Camera.capture(unlabeledImageFile);
 
   // Watch for new data and load into the itemQueue and draw the image to screen.
   // Remove the data files when complete.
@@ -68,7 +71,6 @@ async function main() {
       const x = (object.bndbox.xmax + object.bndbox.xmin) / 2 + deltaX;
       const y = (object.bndbox.ymax + object.bndbox.ymin) / 2;
 
-      // TODO encoder count.
       queue.insert(new Item({ x, y, z: 1, t: newT }, object.id, object.name));
     }
 
@@ -83,12 +85,10 @@ async function main() {
 
     await Util.delay(100);
 
-    DataController.cameraT =
-      (await Promise.all([
-        Conveyor.fetchCount(),
-        Camera.capture(unlabeledImageFile),
-      ]))[0];
-
+    DataController.cameraT = await Camera.capture(
+      unlabeledImageFile,
+      { directory: exportDirectory, imageExport, prob: exportProb },
+    );
   });
 }
 
