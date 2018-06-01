@@ -184,9 +184,7 @@ export class Robot {
 
     // find how far the robot origin is from the belt origin, in robot coordinates
 
-    // const xOffset = Conveyor.countToDist(Conveyor.calcDeltaT(cameraEncoder, robotEncoder));
-    // for testing;
-    const xOffset = 2000;
+    const xOffset = Conveyor.countToDist(Conveyor.calcDeltaT(cameraEncoder, robotEncoder));
 
     // robot point 2 in belt coordinates
     // this equals the belt point 2 in belt coordinates,
@@ -323,7 +321,10 @@ export class Robot {
     // cannot move to belt coordinates if not calibrated
     if (!this.config.valid && coords.type === CoordType.BCS) return;
 
-    if (!this.isValidMove(await this.getCoordsRCS(), coords)) return;
+    if (!this.isValidMove(await this.getCoordsRCS(), coords)) {
+      console.log('invalid move to: ', coords);
+      return;
+    }
 
     if (coords.type === CoordType.BCS) coords = this.belt2RobotCoords(coords);
     return this.sendMessage(`G0 X${coords.x} Y${coords.y} Z${coords.z} F${speed}`);
@@ -439,6 +440,10 @@ export class Robot {
   // need to check origin and destination are in same boundary
   // to make sure robot does not try to go through wall
   public isValidMove(origin: BCoord | RCoord, destination: BCoord | RCoord): boolean {
+
+    console.log('testing if valid move.');
+    console.log('from: ', origin);
+    console.log('to: ', destination);
     const originPick = this.isInPickBoundary(origin, this.originTolerance);
     const originDrop = this.isInDropBoundary(origin, this.originTolerance);
     const destinationPick = this.isInPickBoundary(destination);
@@ -466,6 +471,9 @@ export class Robot {
   }
 
   public async getCoordsRCS() {
+
+    Util.delay(50);
+    await this.sendMessage('M895');
     const coordinates = await this.sendMessage('M895');
 
     const [x, y, z] = coordinates.split(',').map(str => {
@@ -508,6 +516,7 @@ export class Robot {
 
     const predictTarget = (self: BCoord, iterations = 1) => {
       let secs = 0;
+      iterations = 1;
       for (let i = 0; i < iterations; i++) {
         secs = Vector.distance(item.projectCoords(secs), self) / this.config.speed * 60;
       }
@@ -522,32 +531,36 @@ export class Robot {
     let target = predictTarget(await this.getCoordsBCS());
 
     // if item already moved out of range, cannot pick cup
-    if (target.x > this.config.maxPick.x) {
-      console.log('itemInRange reject with initial itemRobotX: ', item.x);
-      console.log('Item initially past pickable range');
-      item.destroy();
-      return;
-    } else if (target.x < this.config.minPick.x) {
-      // move to most forward place on belt
-      // since the conveyor is a bit skewed with respect to the robot, need to adjust for that.
-      const idlePos: BCoord = { type: CoordType.BCS, x: this.config.maxPick.x, y: item.y, z: item.z + zOffsetHover };
-      await this.moveTo(idlePos);
 
-      while (target.x < this.config.minPick.x) {
-        await item.coordsUpdated.first().toPromise();
-        target = predictTarget(idlePos);
-        console.log(target, item.xyz);
-
-        // if passed range, somehow went through range without notice, return error
-        if (target.x > this.config.maxPick.x) {
-          console.log('itemInRange reject with initial itemRobotX: ', item.x);
-          console.log('Item never detected in pickable range');
-          item.destroy();
-          return;
-        }
-      }
-    } else {
+    if (this.isInPickBoundary(target)) {
       await this.moveTo({ type: CoordType.BCS, x: target.x, y: item.y, z: item.z + zOffsetHover });
+    } else {
+      // if out of range, but in front of robot
+      if (this.belt2RobotCoords(target).x > 0) {
+        // move to most forward place on belt
+        // since the conveyor is a bit skewed with respect to the robot, need to adjust for that.
+        const idlePos: BCoord = { type: CoordType.BCS, x: this.config.minPick.x, y: item.y, z: item.z + zOffsetHover };
+        await this.moveTo(idlePos);
+
+        while (target.x < this.config.minPick.x) {
+          await item.coordsUpdated.first().toPromise();
+          target = predictTarget(idlePos);
+          console.log(target, item.xyz);
+
+          // if passed range, somehow went through range without notice, return error
+          if (target.x > this.config.maxPick.x) {
+            console.log('itemInRange reject with initial itemRobotX: ', item.x);
+            console.log('Item never detected in pickable range');
+            item.destroy();
+            return;
+          }
+        }
+      } else {
+        console.log('itemInRange reject with initial itemRobotX: ', item.x);
+        console.log('Item initially past pickable range');
+        item.destroy();
+        return;
+      }
     }
 
     target = await predictTarget(await this.getCoordsBCS());

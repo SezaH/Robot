@@ -283,7 +283,7 @@ Doc.addClickListener('motor-off-btn', () => robot.motorsOff());
 
 Doc.addClickListener('one-dynamic-grab-btn', async () => {
   const item = new Item({ x: 0, y: 0, z: 1, t: await Conveyor.fetchCount() }, 1, 'cup');
-  robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 0, z: -500 }, 200, 100);
+  robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 100, 0);
 });
 
 // async function dynamicGrabFromInput() {
