@@ -6,7 +6,7 @@ import { DataController } from './data-io';
 import { Item } from './item';
 import { ItemQueue } from './item_queue';
 import { Model } from './model';
-import { Robot, RobotConfig } from './robot';
+import { Robot, RobotCal } from './robot';
 import { Coord3, CoordType, RCoord, Util } from './utils';
 
 /** Object bounding boxes returned from CV. */
@@ -33,6 +33,7 @@ const dynamicGrabRunning = false;
 
 let isPointCaptured = [false, false, false];
 
+const calfile = './cal.json';
 const configfile = './config.json';
 
 const robot = new Robot();
@@ -145,16 +146,16 @@ Doc.addClickListener('encoder-connect-btn', () => Conveyor.connect(Doc.getInputS
 // });
 
 Doc.addClickListener('cal-load-btn', async () => {
-  const configPath = Doc.getInputString('cal-path-input');
+  const calPath = Doc.getInputString('cal-path-input');
 
   try {
-    const rawData = await fs.readFile(configPath, 'utf8');
-    Conveyor.sysConfig = JSON.parse(rawData) as SysConfig;
+    const rawData = await fs.readFile(calPath, 'utf8');
+    Conveyor.sysCal = JSON.parse(rawData) as SysConfig;
   } catch {
     return;
   }
 
-  const calPoints = Conveyor.sysConfig.robotConfigs[0].calPoints.robot;
+  const calPoints = Conveyor.sysCal.robotConfigs[0].calPoints.robot;
 
   Doc.setInnerHtml('cal-x1', calPoints.p1.x);
   Doc.setInnerHtml('cal-y1', calPoints.p1.y);
@@ -168,25 +169,25 @@ Doc.addClickListener('cal-load-btn', async () => {
   Doc.setInnerHtml('cal-y3', calPoints.p3.y);
   Doc.setInnerHtml('cal-z3', calPoints.p3.z);
 
-  Doc.setInnerHtml('cal-encoder', Conveyor.sysConfig.mmPerCount * 1000);
+  Doc.setInnerHtml('cal-encoder', Conveyor.sysCal.mmPerCount * 1000);
 
-  Doc.setInnerHtml('robot-encoder', Conveyor.sysConfig.robotConfigs[0].encoder);
-  Doc.setInnerHtml('camera-encoder', Conveyor.sysConfig.cameraEncoder);
+  Doc.setInnerHtml('robot-encoder', Conveyor.sysCal.robotConfigs[0].encoder);
+  Doc.setInnerHtml('camera-encoder', Conveyor.sysCal.cameraEncoder);
 
-  Doc.setInputValue('robot-port', Conveyor.sysConfig.robotConfigs[0].port);
-  Doc.setInputValue('encoder-port', Conveyor.sysConfig.encoderPort);
+  Doc.setInputValue('robot-port', Conveyor.sysCal.robotConfigs[0].port);
+  Doc.setInputValue('encoder-port', Conveyor.sysCal.encoderPort);
 
   isPointCaptured = [false, false, false];
 
-  robot.setConfig(Conveyor.sysConfig.robotConfigs[0]);
-  robot.calibrate(Conveyor.sysConfig.cameraEncoder);
+  robot.setConfig(Conveyor.sysCal.robotConfigs[0]);
+  robot.calibrate(Conveyor.sysCal.cameraEncoder);
 });
 
 Doc.addClickListener('cal-save-btn', async () => {
   // if (Conveyor.sysConfig.robotConfigs.every(c => c.valid)) {
 
-  const configPath = Doc.getInputString('cal-path-input');
-  fs.writeFile(configPath, JSON.stringify(Conveyor.sysConfig));
+  const calPath = Doc.getInputString('cal-path-input');
+  fs.outputFile(calPath, JSON.stringify(Conveyor.sysCal));
 
   // }
 });
@@ -226,7 +227,7 @@ Doc.addClickListener('point3-capture-btn', async () => {
 
 // calibrate
 Doc.addClickListener('calibrate-btn', async () => {
-  if (Conveyor.sysConfig.cameraEncoder === undefined) {
+  if (Conveyor.sysCal.cameraEncoder === undefined) {
     console.log('Error: you should callibrate the camera first');
     return;
   }
@@ -241,7 +242,7 @@ Doc.addClickListener('calibrate-btn', async () => {
   Doc.setInnerHtml('robot-encoder', count);
 
   robot.calibrate(
-    Conveyor.sysConfig.cameraEncoder,
+    Conveyor.sysCal.cameraEncoder,
     count,
     true,
     robotCalPoints,
@@ -354,8 +355,8 @@ Doc.addClickListener('one-dynamic-grab-btn', async () => {
 
 Doc.addClickListener('origin-camera', async () => {
   Camera.origin();
-  Conveyor.sysConfig.cameraEncoder = await Conveyor.fetchCount();
-  Doc.setInnerHtml('camera-encoder', Conveyor.sysConfig.cameraEncoder);
+  Conveyor.sysCal.cameraEncoder = await Conveyor.fetchCount();
+  Doc.setInnerHtml('camera-encoder', Conveyor.sysCal.cameraEncoder);
 });
 
 Doc.addClickListener('model-name-btn', async () => {

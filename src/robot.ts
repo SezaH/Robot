@@ -21,8 +21,8 @@ export interface CuboidBoundary {
   minZ: CoordScalar;
 }
 
-// robot config read from cal.json
-export interface RobotConfig {
+// robot cal read from cal.json
+export interface RobotCal {
   boundaries: {
     dropBoundary: CuboidBoundary,
     pickBoundary: CuboidBoundary,
@@ -49,7 +49,7 @@ export interface RobotConfig {
 }
 
 export class Robot {
-  public static readonly defaultConfig: RobotConfig = {
+  public static readonly defaultCal: RobotCal = {
     boundaries: {
       dropBoundary: {
         maxX: { scalar: 200, coord: CoordType.RCS },
@@ -104,7 +104,7 @@ export class Robot {
   private r2bATM: number[][];
 
   private newData = 0;
-  private config = Robot.defaultConfig;
+  private cal = Robot.defaultCal;
   private itemsPickedByRobot: { [className: string]: number } = {};
 
   // these might be best to be read from file, but for now, here is fine
@@ -129,18 +129,18 @@ export class Robot {
     return retval;
   }
 
-  public setConfig(config: RobotConfig) {
-    this.config = config;
+  public setConfig(cal: RobotCal) {
+    this.cal = cal;
   }
 
   public calibrate(
     cameraEncoder: number,
-    robotEncoder = this.config.encoder,
+    robotEncoder = this.cal.encoder,
     overrideValid = false,
-    robotPoints = this.config.calPoints.robot,
-    beltPoints = this.config.calPoints.belt,
+    robotPoints = this.cal.calPoints.robot,
+    beltPoints = this.cal.calPoints.belt,
   ) {
-    // if (cameraEncoder < 0 || (!this.config.valid && !overrideValid)) return;
+    // if (cameraEncoder < 0 || (!this.cal.valid && !overrideValid)) return;
 
     const math = require('mathjs');
 
@@ -222,13 +222,13 @@ export class Robot {
 
     // Take the calibration points as x min/max for picking
     // because it is guaranteed the robot could reach it.
-    this.config.maxPick.x = xOffset + 100;
-    this.config.minPick.x = xOffset - 100;
+    this.cal.maxPick.x = xOffset + 100;
+    this.cal.minPick.x = xOffset - 100;
 
-    this.config.calPoints.robot = robotPoints;
-    this.config.encoder = robotEncoder;
+    this.cal.calPoints.robot = robotPoints;
+    this.cal.encoder = robotEncoder;
 
-    this.config.valid = true;
+    this.cal.valid = true;
     console.log('transform: ', this.transform);
   }
 
@@ -317,9 +317,9 @@ export class Robot {
     return this.robot2BeltVector(coords);
   }
 
-  public async moveTo(coords: BCoord | RCoord, speed = this.config.speed) {
+  public async moveTo(coords: BCoord | RCoord, speed = this.cal.speed) {
     // cannot move to belt coordinates if not calibrated
-    if (!this.config.valid && coords.type === CoordType.BCS) return;
+    if (!this.cal.valid && coords.type === CoordType.BCS) return;
 
     if (!this.isValidMove(await this.getCoordsRCS(), coords)) {
       console.log('invalid move to: ', coords);
@@ -426,11 +426,11 @@ export class Robot {
 
   public isInDropBoundary(coord: BCoord | RCoord, tolerance = 0): boolean {
     // also probably want to check if boundaries have been set yet
-    return this.isInCuboidBoundary(coord, this.config.boundaries.dropBoundary, tolerance);
+    return this.isInCuboidBoundary(coord, this.cal.boundaries.dropBoundary, tolerance);
   }
 
   public isInPickBoundary(coord: BCoord | RCoord, tolerance = 0): boolean {
-    return this.isInCuboidBoundary(coord, this.config.boundaries.pickBoundary, tolerance);
+    return this.isInCuboidBoundary(coord, this.cal.boundaries.pickBoundary, tolerance);
   }
 
   // the idea is that before a move you get current coordinate, then call this function
@@ -489,7 +489,7 @@ export class Robot {
     return this.robot2BeltCoords(await this.getCoordsRCS());
   }
 
-  public async pick({ type, x, y, z }: BCoord | RCoord, zOffset = this.config.zOffset) {
+  public async pick({ type, x, y, z }: BCoord | RCoord, zOffset = this.cal.zOffset) {
     await this.openGripper();
 
     if (type === CoordType.BCS) {
@@ -518,7 +518,7 @@ export class Robot {
       let secs = 0;
       iterations = 1;
       for (let i = 0; i < iterations; i++) {
-        secs = Vector.distance(item.projectCoords(secs), self) / this.config.speed * 60;
+        secs = Vector.distance(item.projectCoords(secs), self) / this.cal.speed * 60;
       }
       return item.projectCoords(secs);
     };
@@ -539,16 +539,16 @@ export class Robot {
       if (this.belt2RobotCoords(target).x > 0) {
         // move to most forward place on belt
         // since the conveyor is a bit skewed with respect to the robot, need to adjust for that.
-        const idlePos: BCoord = { type: CoordType.BCS, x: this.config.minPick.x, y: item.y, z: item.z + zOffsetHover };
+        const idlePos: BCoord = { type: CoordType.BCS, x: this.cal.minPick.x, y: item.y, z: item.z + zOffsetHover };
         await this.moveTo(idlePos);
 
-        while (target.x < this.config.minPick.x) {
+        while (target.x < this.cal.minPick.x) {
           await item.coordsUpdated.first().toPromise();
           target = predictTarget(idlePos);
           console.log(target, item.xyz);
 
           // if passed range, somehow went through range without notice, return error
-          if (target.x > this.config.maxPick.x) {
+          if (target.x > this.cal.maxPick.x) {
             console.log('itemInRange reject with initial itemRobotX: ', item.x);
             console.log('Item never detected in pickable range');
             item.destroy();
