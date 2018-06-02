@@ -24,7 +24,7 @@ const exportDirectory = './unlabeled/';
 
 /** Probability that the image will be saved as data for training later. */
 const exportProb = 0.01;
-const imageExport = false;
+const imageExport = true;
 
 /** If multiple cameras are present, specify which. */
 const cameraID = 0;

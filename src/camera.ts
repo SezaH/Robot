@@ -52,7 +52,7 @@ export namespace Camera {
 
   export async function capture(
     fileName: string,
-    { imageExport = false, directory = '', prob = 0.01 } = {},
+    { imageExport = false, directory = '', prob = 0.0 } = {},
   ) {
     const count = Conveyor.fetchCount();
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
