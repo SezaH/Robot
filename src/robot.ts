@@ -88,6 +88,7 @@ export class Robot {
     valid: false,
     zOffset: 100,
   };
+  public itemsPickedByRobot: { [className: string]: number } = {};
 
   private isConnected = false;
   private port: SerialPort;
@@ -105,7 +106,6 @@ export class Robot {
 
   private newData = 0;
   private cal = Robot.defaultCal;
-  private itemsPickedByRobot: { [className: string]: number } = {};
 
   // these might be best to be read from file, but for now, here is fine
 

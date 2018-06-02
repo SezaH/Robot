@@ -1,6 +1,7 @@
 import { ipcRenderer } from 'electron';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import { Observable } from 'rxjs';
 import { Camera } from './camera';
 import { Conveyor, SysCal } from './conveyor';
 import { DataController } from './data-io';
@@ -421,10 +422,34 @@ Doc.addClickListener('apply-model', () => {
 Doc.addClickListener('start-model', () => {
   queue.clearItemsDetectedByCV();
   robot.clearItemsPickedByRobot();
+  Observable.interval(1000).takeUntil(
+    Observable.fromEvent(document.getElementById('stop-model'), 'click'),
+  ).subscribe(() => updateItemsRecorded());
 
   // name of model, name of pbtxt, threshold
   ipcRenderer.send('main-start-model', sysConfig.model.name, sysConfig.model.labelMap, sysConfig.model.threshold);
 });
+
+const itemListBody = document.getElementById('items-list-body') as HTMLDivElement;
+
+function updateItemsRecorded() {
+  itemListBody.innerHTML = '';
+  for (const prop in queue.itemsDetectedByCV) {
+    if (queue.itemsDetectedByCV.hasOwnProperty(prop)) {
+      // console.log('className: ', prop, ' count: ', this.itemsDetectedByCV[prop]);
+      // data += prop + ',' + queue.itemsDetectedByCV[prop] + '\n';
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `<th scope="row">${prop}</th>
+                      <td>${queue.itemsDetectedByCV[prop]}</td>
+                       <td>${robot.itemsPickedByRobot[prop]}</td>`;
+
+      itemListBody.appendChild(tr);
+
+    }
+  }
+
+}
 
 Doc.addClickListener('stop-model', () => {
   console.log('renderer stop model');

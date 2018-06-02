@@ -4,10 +4,10 @@ import { Item } from './item';
 import { Coord2, Coord3, Coord4, Vector } from './utils';
 
 export class ItemQueue {
+  public itemsDetectedByCV: { [className: string]: number } = {};
   private _items: Item[] = [];
   private deviationThreshold = 25; // 25 mm radius
   private xLimit = 1000; // 5m TODO determine actual
-  private itemsDetectedByCV: { [className: string]: number } = {};
 
   constructor() {
     // Purge out of range items.
