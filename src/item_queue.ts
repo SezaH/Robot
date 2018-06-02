@@ -6,8 +6,8 @@ import { Coord2, Coord3, Coord4, Vector } from './utils';
 export class ItemQueue {
   public itemsDetectedByCV: { [className: string]: number } = {};
   private _items: Item[] = [];
-  private deviationThreshold = 25; // 25 mm radius
-  private xLimit = 1000; // 5m TODO determine actual
+  private deviationThreshold = 40; // 40 mm radius
+  private xLimit = 1200;
 
   constructor() {
     // Purge out of range items.
@@ -22,7 +22,7 @@ export class ItemQueue {
    * Insert an item in the end of the queue
    */
   public insert(item: Item) {
-    if (!this.isDuplicate(item.xyzt, item.classID)) {
+    if (item.x < this.xLimit && !this.isDuplicate(item.xyzt, item.classID)) {
       this._items.push(item);
       console.log(`Item added to queue\n${item}\n`);
 
@@ -32,18 +32,13 @@ export class ItemQueue {
         this.itemsDetectedByCV[item.className] = 1;
       }
     } else {
-      console.log(`Item added duplicate\n${item}\n`);
+      // console.log(`Item added duplicate\n${item}\n`);
 
     }
   }
 
-  /**
-   * Remove last item from the queue and return it
-   */
-  public remove(): Item {
-    if (this._items.length > 0) {
-      return this._items.pop();
-    }
+  public clear() {
+    this._items.length = 0;
   }
 
   /**
@@ -116,6 +111,7 @@ export class ItemQueue {
         z: coords.z - item.z,
       };
 
+      // console.log(Vector.magnitude(deltas), deltas, coords, item.xyz, Conveyor.countToDist(t), t);
       if (Vector.magnitude(deltas) < this.deviationThreshold && item.classID === classID) {
         item.deviation = deltas;
         item.xyzt = coords;

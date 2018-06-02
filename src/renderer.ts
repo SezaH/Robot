@@ -147,7 +147,7 @@ class Doc {
 
 // connect
 Doc.addClickListener('robot-connect-btn', () => robot.connect(Doc.getInputString('robot-port'), 115200));
-Doc.addClickListener('encoder-connect-btn', () => Conveyor.connect(Doc.getInputString('encoder-port'), 9600));
+Doc.addClickListener('encoder-connect-btn', () => Conveyor.connect(Doc.getInputString('encoder-port'), 250000));
 
 // send message to robot
 // Doc.addClickListener('send-btn', async () => robot.sendMessage(Doc.getInputString('input-command')));
@@ -454,6 +454,7 @@ function updateItemsRecorded() {
 Doc.addClickListener('stop-model', () => {
   console.log('renderer stop model');
   ipcRenderer.send('main-stop-model');
+  queue.clear();
 });
 
 Doc.addClickListener('save-item-counter', () => {
