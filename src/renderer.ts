@@ -154,11 +154,10 @@ Doc.addClickListener('position1', async () => {
 Doc.addClickListener('position2', async () => {
   position2 = await Conveyor.fetchCount();
 });
-const deltaPosition = Conveyor.calcDeltaT(position1, position2);
-const distance = parseFloat(Doc.getInputString('distance'));
-// const distance = document.getElementById('distance).value;
 
 Doc.addClickListener('ratio', () => {
+  const deltaPosition = Conveyor.calcDeltaT(position1, position2);
+  const distance = Doc.getInputFloat('distance');
   numOfEncoderCalibration++;
   ratio += (distance / deltaPosition);
   Conveyor.sysConfig.mmPerCount = ratio / numOfEncoderCalibration;
