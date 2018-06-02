@@ -10,6 +10,16 @@ export namespace Util {
     });
   }
 
+  export async function getFilepath(description: string, extensions: string[]) {
+    return new Promise<string>((resolve, reject) => {
+      remote.dialog.showOpenDialog({
+        filters: [
+          { name: description, extensions },
+        ],
+      }, (paths) => resolve((paths === undefined) ? '' : paths[0]));
+    });
+  }
+
   export function delay(ms: number) {
     return new Promise<void>(resolve => setTimeout(() => resolve(), ms));
   }

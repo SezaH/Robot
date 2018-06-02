@@ -56,9 +56,9 @@ interface SysConfig {
 
 let sysConfig: SysConfig = {
   model: {
-    labelMap: 'default',
-    name: 'default',
-    threshold: '0.5',
+    labelMap: 'waste_busters/data/cup_label_map.pbtxt',
+    name: 'waste_busters/export/faster_rcnn_resnet101_cups_1239.pb',
+    threshold: '75',
   },
 };
 
@@ -224,8 +224,15 @@ Doc.addClickListener('config-load-btn', async () => {
   Doc.setInnerHtml('threshold-percentage', sysConfig.model.threshold);
 });
 
+Doc.addClickListener('cal-browse-btn', async () => {
+  Doc.setInputValue('cal-path-input', await Util.getFilepath('Calibration file', ['.json']));
+});
+
+Doc.addClickListener('config-browse-btn', async () => {
+  Doc.setInputValue('config-path-input', await Util.getFilepath('Configuration file', ['.json']));
+});
+
 Doc.addClickListener('config-save-btn', async () => {
-  // if (Conveyor.sysConfig.robotConfigs.every(c => c.valid)) {
 
   const configPath = Doc.getInputString('config-path-input');
   fs.outputFile(configPath, JSON.stringify(sysConfig));
@@ -401,26 +408,25 @@ Doc.addClickListener('origin-camera', async () => {
 });
 
 Doc.addClickListener('model-name-btn', async () => {
-  console.log('modelName');
-  // Get path
-  // update input text modelName
+  Doc.setInputValue('modelName', await Util.getFilepath('Model file', ['.pb']));
 });
 
 Doc.addClickListener('label-map-btn', async () => {
-  console.log('Label Map');
-  // Get path
-  // update input text labelMap
+  Doc.setInputValue('labelMap', await Util.getFilepath('Label map file', ['pb.txt']));
+});
+
+Doc.addClickListener('apply-model', () => {
+  sysConfig.model.labelMap = Doc.getInputString('labelMap');
+  sysConfig.model.name = Doc.getInputString('modelName');
+  sysConfig.model.threshold = Doc.getInputString('threshold-percentage');
 });
 
 Doc.addClickListener('start-model', () => {
   queue.clearItemsDetectedByCV();
   robot.clearItemsPickedByRobot();
 
-  const modelName = 'waste_busters/export/faster_rcnn_resnet101_cups_1239.pb';
-  const labelMap = 'waste_busters/data/cup_label_map.pbtxt';
-  const threshold = '75';
-
-  ipcRenderer.send('main-start-model', sysConfig.model.name, sysConfig.model.labelMap, sysConfig.model.threshold);
+  // name of model, name of pbtxt, threshold
+  model.Run(sysConfig.model.name, sysConfig.model.labelMap, sysConfig.model.threshold);
 });
 
 Doc.addClickListener('stop-model', () => {
