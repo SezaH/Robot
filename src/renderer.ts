@@ -161,11 +161,13 @@ Doc.addClickListener('ratio', () => {
   numOfEncoderCalibration++;
   ratio += (distance / deltaPosition);
   Conveyor.sysConfig.mmPerCount = ratio / numOfEncoderCalibration;
+  Doc.setInnerHtml('cal-encoder', Conveyor.sysConfig.mmPerCount * 1000);
 });
 Doc.addClickListener('clean', () => {
   numOfEncoderCalibration = 0;
   ratio = 0;
   Conveyor.sysConfig.mmPerCount = 0;
+  Doc.setInnerHtml('cal-encoder', Conveyor.sysConfig.mmPerCount * 1000);
 });
 
 Doc.addClickListener('cal-load-btn', async () => {
