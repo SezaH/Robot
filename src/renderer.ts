@@ -1,3 +1,4 @@
+import { ipcRenderer } from 'electron';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Camera } from './camera';
@@ -415,17 +416,16 @@ Doc.addClickListener('start-model', () => {
   queue.clearItemsDetectedByCV();
   robot.clearItemsPickedByRobot();
 
-  // Temporary before gui is added
-  // const modelName = 'cups-faster-rcnn.pb';
-  // const labelMap = 'cup_label_map.pbtxt';
-  // const threshold = '50';
+  const modelName = 'waste_busters/export/faster_rcnn_resnet101_cups_1239.pb';
+  const labelMap = 'waste_busters/data/cup_label_map.pbtxt';
+  const threshold = '75';
 
-  // name of model, name of pbtxt, threshold
-  model.Run(sysConfig.model.name, sysConfig.model.labelMap, sysConfig.model.threshold);
+  ipcRenderer.send('main-start-model', sysConfig.model.name, sysConfig.model.labelMap, sysConfig.model.threshold);
 });
 
 Doc.addClickListener('stop-model', () => {
-  model.Stop();
+  console.log('renderer stop model');
+  ipcRenderer.send('main-stop-model');
 });
 
 Doc.addClickListener('save-item-counter', () => {

@@ -1,12 +1,16 @@
 import { app, BrowserWindow, screen } from 'electron';
+import { ipcMain } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
+// import { IpcM } from './ipcMR';
+import { Model } from './model';
 
 function startApp() {
   let mainWindow: Electron.BrowserWindow;
   const args = process.argv.slice(1);
   const serve = args.some(val => val === '--serve');
   const debug = args.some(val => val === '--console');
+  const model = new Model();
 
   if (serve) require('electron-reload')(__dirname);
 
@@ -30,6 +34,7 @@ function startApp() {
 
     // Emitted when the window is closed.
     mainWindow.on('closed', () => {
+      model.Stop();
       // Dereference the window object, usually you would store windows
       // in an array if your app supports multi windows, this is the time
       // when you should delete the corresponding element.
@@ -44,6 +49,8 @@ function startApp() {
 
   // Quit when all windows are closed.
   app.on('window-all-closed', () => {
+
+    model.Stop();
     // On OS X it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
     if (process.platform !== 'darwin') {
@@ -58,6 +65,15 @@ function startApp() {
       createWindow();
     }
   });
+
+  ipcMain.on('main-start-model', (e: any, modelName: string, labelMap: string, threshold: string) => {
+    model.Run(modelName, labelMap, threshold);
+  });
+
+  ipcMain.on('main-stop-model', () => {
+    model.Stop();
+  });
+
 }
 
 startApp();
