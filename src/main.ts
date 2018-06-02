@@ -66,8 +66,11 @@ function startApp() {
     }
   });
 
-  ipcMain.on('main-start-model', (modelName: string, labelMap: string, threshold: string) => {
+  ipcMain.on('main-start-model', (e: any, modelName: string, labelMap: string, threshold: string) => {
     console.log('in main, start');
+    console.log('modelName = ' + modelName);
+    console.log('labelMap = ' + labelMap);
+    console.log('threshold = ' + threshold);
     model.Run(modelName, labelMap, threshold);
   });
 

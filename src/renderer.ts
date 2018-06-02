@@ -370,14 +370,16 @@ Doc.addClickListener('start-model', () => {
   queue.clearItemsDetectedByCV();
   robot.clearItemsPickedByRobot();
 
-  const modelName = 'frozen_inference_graph.pb';
-  const labelMap = 'waste_busters/cup_label_map.pbtxt';
+  const modelName = 'waste_busters/export/faster_rcnn_resnet101_cups_1239.pb';
+  const labelMap = 'waste_busters/data/cup_label_map.pbtxt';
   const threshold = '75';
+  const temp = '';
 
   ipcRenderer.send('main-start-model', modelName, labelMap, threshold);
 });
 
-Doc.addClickListener('main-stop-model', () => {
+Doc.addClickListener('stop-model', () => {
+  console.log('renderer stop model');
   ipcRenderer.send('main-stop-model');
 });
 
