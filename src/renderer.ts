@@ -6,7 +6,6 @@ import { Conveyor, SysCal } from './conveyor';
 import { DataController } from './data-io';
 import { Item } from './item';
 import { ItemQueue } from './item_queue';
-import { Model } from './model';
 import { Robot, RobotCal } from './robot';
 import { Coord3, CoordType, RCoord, Util } from './utils';
 
@@ -38,8 +37,6 @@ const calfile = './cal.json';
 const configfile = './config.json';
 
 const robot = new Robot();
-
-const model = new Model();
 
 const imageCanvas = document.getElementById('canvas') as HTMLCanvasElement;
 const imageContext = imageCanvas.getContext('2d');
@@ -426,7 +423,7 @@ Doc.addClickListener('start-model', () => {
   robot.clearItemsPickedByRobot();
 
   // name of model, name of pbtxt, threshold
-  model.Run(sysConfig.model.name, sysConfig.model.labelMap, sysConfig.model.threshold);
+  ipcRenderer.send('main-start-model', sysConfig.model.name, sysConfig.model.labelMap, sysConfig.model.threshold);
 });
 
 Doc.addClickListener('stop-model', () => {

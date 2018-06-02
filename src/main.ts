@@ -71,6 +71,7 @@ function startApp() {
   });
 
   ipcMain.on('main-stop-model', () => {
+    console.log('main-stop-model');
     model.Stop();
   });
 
