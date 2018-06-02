@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Camera } from './camera';
-import { Conveyor, SysConfig } from './conveyor';
+import { Conveyor, SysCal } from './conveyor';
 import { DataController } from './data-io';
 import { Item } from './item';
 import { ItemQueue } from './item_queue';
@@ -44,6 +44,22 @@ const imageCanvas = document.getElementById('canvas') as HTMLCanvasElement;
 const imageContext = imageCanvas.getContext('2d');
 
 const queue = new ItemQueue();
+
+interface SysConfig {
+  model: {
+    name: string,
+    labelMap: string,
+    threshold: string,
+  };
+}
+
+let sysConfig: SysConfig = {
+  model: {
+    labelMap: 'default',
+    name: 'default',
+    threshold: '0.5',
+  },
+};
 
 async function main() {
   Camera.init();
@@ -150,7 +166,7 @@ Doc.addClickListener('cal-load-btn', async () => {
 
   try {
     const rawData = await fs.readFile(calPath, 'utf8');
-    Conveyor.sysCal = JSON.parse(rawData) as SysConfig;
+    Conveyor.sysCal = JSON.parse(rawData) as SysCal;
   } catch {
     return;
   }
@@ -188,6 +204,30 @@ Doc.addClickListener('cal-save-btn', async () => {
 
   const calPath = Doc.getInputString('cal-path-input');
   fs.outputFile(calPath, JSON.stringify(Conveyor.sysCal));
+
+  // }
+});
+
+Doc.addClickListener('config-load-btn', async () => {
+  const configPath = Doc.getInputString('config-path-input');
+
+  try {
+    const rawData = await fs.readFile(configPath, 'utf8');
+    sysConfig = JSON.parse(rawData) as SysConfig;
+  } catch {
+    return;
+  }
+
+  Doc.setInnerHtml('modelName', sysConfig.model.name);
+  Doc.setInnerHtml('labelMap', sysConfig.model.labelMap);
+  Doc.setInnerHtml('threshold-percentage', sysConfig.model.threshold);
+});
+
+Doc.addClickListener('config-save-btn', async () => {
+  // if (Conveyor.sysConfig.robotConfigs.every(c => c.valid)) {
+
+  const configPath = Doc.getInputString('config-path-input');
+  fs.outputFile(configPath, JSON.stringify(sysConfig));
 
   // }
 });
@@ -375,16 +415,13 @@ Doc.addClickListener('start-model', () => {
   queue.clearItemsDetectedByCV();
   robot.clearItemsPickedByRobot();
 
-  const modelName = Doc.getInputEl('modelName').value;
-  const labelMap = Doc.getInputEl('labelMap').value;
-  const threshold = Doc.getInputEl('threshold').value;
-
   // Temporary before gui is added
   // const modelName = 'cups-faster-rcnn.pb';
   // const labelMap = 'cup_label_map.pbtxt';
   // const threshold = '50';
 
-  model.Run(modelName, labelMap, threshold); // name of model, name of pbtxt, threshold
+  // name of model, name of pbtxt, threshold
+  model.Run(sysConfig.model.name, sysConfig.model.labelMap, sysConfig.model.threshold);
 });
 
 Doc.addClickListener('stop-model', () => {

@@ -2,7 +2,7 @@ import { Observable, Subject } from 'rxjs';
 import * as SerialPort from 'serialport';
 import { Robot, RobotCal } from './robot';
 
-export interface SysConfig {
+export interface SysCal {
   cameraEncoder: number;
   encoderPort: string;
   mmPerCount: number;
@@ -14,7 +14,7 @@ export namespace Conveyor {
   /** The maximum value (exclusive) the encoder can have before restarting at 0 */
   export const encoderLimit = Math.pow(2, 20);
 
-  export let sysCal: SysConfig = {
+  export let sysCal: SysCal = {
     cameraEncoder: 0,
     encoderPort: '/dev/ttyACM1',
     mmPerCount: 0,
