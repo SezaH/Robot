@@ -1,3 +1,4 @@
+import { ipcRenderer } from 'electron';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Camera } from './camera';
@@ -5,7 +6,6 @@ import { Conveyor, SysConfig } from './conveyor';
 import { DataController } from './data-io';
 import { Item } from './item';
 import { ItemQueue } from './item_queue';
-import { Model } from './model';
 import { Robot, RobotConfig } from './robot';
 import { Coord3, CoordType, RCoord, Util } from './utils';
 
@@ -20,8 +20,6 @@ const unlabeledImageFile = '../models/research/object_detection/io/input.jpg';
 
 /** If multiple cameras are present, specify which. */
 const cameraID = 0;
-
-const model = new Model();
 
 // for dynamic grab loop
 const dynamicGrabRunning = false;
@@ -372,20 +370,15 @@ Doc.addClickListener('start-model', () => {
   queue.clearItemsDetectedByCV();
   robot.clearItemsPickedByRobot();
 
-  const modelName = Doc.getInputEl('modelName').value;
-  const labelMap = Doc.getInputEl('labelMap').value;
-  const threshold = Doc.getInputEl('threshold').value;
+  const modelName = 'frozen_inference_graph.pb';
+  const labelMap = 'waste_busters/cup_label_map.pbtxt';
+  const threshold = '75';
 
-  // Temporary before gui is added
-  // const modelName = 'cups-faster-rcnn.pb';
-  // const labelMap = 'cup_label_map.pbtxt';
-  // const threshold = '50';
-
-  model.Run(modelName, labelMap, threshold); // name of model, name of pbtxt, threshold
+  ipcRenderer.send('main-start-model', modelName, labelMap, threshold);
 });
 
-Doc.addClickListener('stop-model', () => {
-  model.Stop();
+Doc.addClickListener('main-stop-model', () => {
+  ipcRenderer.send('main-stop-model');
 });
 
 Doc.addClickListener('save-item-counter', () => {
