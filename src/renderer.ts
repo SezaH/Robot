@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { Camera } from './camera';
 import { Conveyor, SysCal } from './conveyor';
 import { DataController } from './data-io';
@@ -30,7 +30,10 @@ const imageExport = true;
 const cameraID = 0;
 
 // for dynamic grab loop
-const dynamicGrabRunning = false;
+let running = false;
+
+const dynamicPick = new Subject<Item>();
+const runningStopped = new Subject<void>();
 
 let isPointCaptured = [false, false, false];
 
@@ -227,10 +230,19 @@ Doc.addClickListener('cal-load-btn', async () => {
 Doc.addClickListener('cal-save-btn', async () => {
   // if (Conveyor.sysConfig.robotConfigs.every(c => c.valid)) {
 
+  // already saved camera encoder  when take picture
+  // already saved robot encoder when capture first point or calibrate
+  // should save this only when press save, methinks
+
+  // if (this.robotCalPoints) {
+  Conveyor.sysCal.robotConfigs[0].calPoints.robot.p1 = robotCalPoints.p1;
+  Conveyor.sysCal.robotConfigs[0].calPoints.robot.p2 = robotCalPoints.p2;
+  Conveyor.sysCal.robotConfigs[0].calPoints.robot.p3 = robotCalPoints.p3;
+  // }
+
   const calPath = Doc.getInputString('cal-path-input');
   fs.outputFile(calPath, JSON.stringify(Conveyor.sysCal));
 
-  // }
 });
 
 Doc.addClickListener('config-load-btn', async () => {
@@ -271,6 +283,8 @@ const robotCalPoints: { p1: RCoord, p2: RCoord, p3: RCoord } = {
 };
 
 Doc.addClickListener('point1-capture-btn', async () => {
+  // add this here for now
+  Conveyor.sysCal.robotConfigs[0].encoder = await Conveyor.fetchCount();
   const coords = await robot.getCoordsRCS();
   robotCalPoints.p1 = coords;
   Doc.setInnerHtml('cal-x1', coords.x);
@@ -310,6 +324,7 @@ Doc.addClickListener('calibrate-btn', async () => {
   // }
 
   const count = await Conveyor.fetchCount();
+  Conveyor.sysCal.robotConfigs[0].encoder = count;
 
   Doc.setInnerHtml('robot-encoder', count);
 
@@ -356,7 +371,7 @@ Doc.addClickListener('motor-off-btn', () => robot.motorsOff());
 
 Doc.addClickListener('one-dynamic-grab-btn', async () => {
   const item = new Item({ x: 0, y: 0, z: 1, t: await Conveyor.fetchCount() }, 1, 'cup');
-  robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 100, 0);
+  robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 100, 0, runningStopped);
 });
 
 // async function dynamicGrabFromInput() {
@@ -445,15 +460,44 @@ Doc.addClickListener('apply-model', () => {
   sysConfig.model.threshold = Doc.getInputString('threshold-percentage');
 });
 
-Doc.addClickListener('start-model', () => {
-  queue.clearItemsDetectedByCV();
-  robot.clearItemsPickedByRobot();
-  Observable.interval(1000).takeUntil(
-    Observable.fromEvent(document.getElementById('stop-model'), 'click'),
-  ).subscribe(() => updateItemsRecorded());
+Doc.addClickListener('start-model', async () => {
+  if (!running) {
+    running = true;
 
-  // name of model, name of pbtxt, threshold
-  ipcRenderer.send('main-start-model', sysConfig.model.name, sysConfig.model.labelMap, sysConfig.model.threshold);
+    (document.getElementById('start-model') as HTMLButtonElement).disabled = true;
+
+    queue.clear();
+    queue.clearItemsDetectedByCV();
+    robot.clearItemsPickedByRobot();
+
+    Observable
+      .interval(1000)
+      .takeUntil(runningStopped)
+      .subscribe(() => updateItemsRecorded());
+
+    // name of model, name of pbtxt, threshold
+    ipcRenderer.send('main-start-model', sysConfig.model.name, sysConfig.model.labelMap, sysConfig.model.threshold);
+
+    const getNextItem = () => Observable
+      .interval(50)
+      .takeUntil(runningStopped)
+      .map(() => queue.getClosestItemToRobot())
+      .filter(item => item !== undefined)
+      .take(1)
+      .toPromise();
+
+    dynamicPick
+      .takeUntil(runningStopped)
+      .do(item => console.log('pick item ', item))
+      .concatMap(async item =>
+        await robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 150, 0, runningStopped))
+      .subscribe(async i => {
+        console.log('pick done', i);
+        dynamicPick.next(await getNextItem());
+      });
+
+    dynamicPick.next(await getNextItem());
+  }
 });
 
 const itemListBody = document.getElementById('items-list-body') as HTMLDivElement;
@@ -477,11 +521,15 @@ function updateItemsRecorded() {
 
 }
 
-Doc.addClickListener('stop-model', () => {
+runningStopped.subscribe(() => {
   console.log('renderer stop model');
+  running = false;
   ipcRenderer.send('main-stop-model');
   queue.clear();
+  (document.getElementById('start-model') as HTMLButtonElement).disabled = false;
 });
+
+Doc.addClickListener('stop-model', () => runningStopped.next());
 
 Doc.addClickListener('save-item-counter', () => {
   const dataCV = queue.printItemsDetectedByCV('');

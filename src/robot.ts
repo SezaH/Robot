@@ -1,3 +1,4 @@
+import { Subject } from 'rxjs';
 import { throttleTime } from 'rxjs/operator/throttleTime';
 import * as SerialPort from 'serialport';
 import { Conveyor } from './conveyor';
@@ -83,7 +84,7 @@ export class Robot {
     encoder: -1,
     maxPick: { type: CoordType.BCS, x: 0, y: 0, z: 0 },
     minPick: { type: CoordType.BCS, x: 0, y: 0, z: 0 },
-    port: '/dev/ACM0',
+    port: '/dev/ttyACM0',
     speed: 5000,
     valid: false,
     zOffset: 100,
@@ -104,8 +105,9 @@ export class Robot {
   private b2rATM: number[][];
   private r2bATM: number[][];
 
-  private newData = 0;
   private cal = Robot.defaultCal;
+
+  private _coords: RCoord;
 
   // these might be best to be read from file, but for now, here is fine
 
@@ -113,9 +115,11 @@ export class Robot {
   // if it overshoots destination and goes a bit out of bounds
   private originTolerance = 10; // origin bounds extension
 
-  public connect(portName: string, baudRate: number) {
+  public async connect(portName: string, baudRate: number) {
     this.port = new SerialPort(portName, { baudRate }, err => console.error(err));
     this.isConnected = true;
+    await Util.delay(500);
+    await this.getCoordsRCS();
   }
 
   public sendMessage(message: string) {
@@ -126,6 +130,7 @@ export class Robot {
       });
     });
     this.port.write(message + '\r\n');
+    console.log(message);
     return retval;
   }
 
@@ -321,12 +326,14 @@ export class Robot {
     // cannot move to belt coordinates if not calibrated
     if (!this.cal.valid && coords.type === CoordType.BCS) return;
 
-    if (!this.isValidMove(await this.getCoordsRCS(), coords)) {
+    if (!this.isValidMove(this.coordBCS, coords)) {
       console.log('invalid move to: ', coords);
-      return;
+      // return;
     }
 
     if (coords.type === CoordType.BCS) coords = this.belt2RobotCoords(coords);
+
+    this._coords = coords;
     return this.sendMessage(`G0 X${coords.x} Y${coords.y} Z${coords.z} F${speed}`);
   }
 
@@ -472,7 +479,6 @@ export class Robot {
 
   public async getCoordsRCS() {
 
-    Util.delay(50);
     await this.sendMessage('M895');
     const coordinates = await this.sendMessage('M895');
 
@@ -481,9 +487,17 @@ export class Robot {
       return (num !== null) ? parseFloat(num[0]) : undefined;
     });
 
-    const coord: RCoord = { type: CoordType.RCS, x, y, z };
-    return coord;
+    if (x !== undefined && y !== undefined && z !== undefined) {
+      this._coords = { type: CoordType.RCS, x, y, z };
+      console.log(this._coords);
+
+    }
+    return this._coords;
   }
+
+  public get coordBCS() { return this.robot2BeltCoords(this.coordRCS); }
+
+  public get coordRCS() { return this._coords; }
 
   public async getCoordsBCS() {
     return this.robot2BeltCoords(await this.getCoordsRCS());
@@ -507,63 +521,84 @@ export class Robot {
     await this.openGripper();
   }
 
+  // keeps attempting dynamic grabs until successful
   public async dynamicGrab(
     item: Item,
     place: RCoord,
     zOffsetHover: number,
     zOffsetPick: number,
+    runningStopped: Subject<void>,
   ) {
-
-    const predictTarget = (self: BCoord, iterations = 1) => {
-      let secs = 0;
-      iterations = 1;
-      for (let i = 0; i < iterations; i++) {
-        secs = Vector.distance(item.projectCoords(secs), self) / this.cal.speed * 60;
-      }
+    const predictTarget = () => {
+      const secs = (Conveyor.beltV * 1.5 > this.cal.speed * 60) ?
+        0 : // Robot is too slow.
+        Vector.distance(item.xyz, this.coordBCS) / this.cal.speed * 60;
       return item.projectCoords(secs);
     };
 
-    // makes sense to open gripper before doing stuff
+    // Take ownership of the item.
+    item.picked = true;
+
     await this.openGripper();
 
-    await item.coordsUpdated.first().toPromise();
+    let target = predictTarget();
 
-    let target = predictTarget(await this.getCoordsBCS());
+    console.log('DGA: belt itemX: ', item.x);
+    console.log('DGA: belt targetX: ', target.x);
+    console.log('DGA: belt targetY: ', target.y);
+    console.log('DGA: belt targetZ: ', target.z);
 
-    // if item already moved out of range, cannot pick cup
+    console.log('DGA: robot itemX: ', this.toRobotCoords(item.projectCoords(0)).x);
+    console.log('DGA: robot targetX: ', this.toRobotCoords(target).x);
 
     if (this.isInPickBoundary(target)) {
       await this.moveTo({ type: CoordType.BCS, x: target.x, y: item.y, z: item.z + zOffsetHover });
-    } else {
+    } else if (this.belt2RobotCoords(target).x > 0) {
       // if out of range, but in front of robot
-      if (this.belt2RobotCoords(target).x > 0) {
-        // move to most forward place on belt
-        // since the conveyor is a bit skewed with respect to the robot, need to adjust for that.
-        const idlePos: BCoord = { type: CoordType.BCS, x: this.cal.minPick.x, y: item.y, z: item.z + zOffsetHover };
-        await this.moveTo(idlePos);
 
-        while (target.x < this.cal.minPick.x) {
-          await item.coordsUpdated.first().toPromise();
-          target = predictTarget(idlePos);
-          console.log(target, item.xyz);
+      // move to most forward place on belt
+      // since the conveyor is a bit skewed with respect to the robot, need to adjust for that.
+      await this.moveTo({ type: CoordType.BCS, x: this.cal.minPick.x, y: item.y, z: item.z + zOffsetHover });
 
-          // if passed range, somehow went through range without notice, return error
-          if (target.x > this.cal.maxPick.x) {
-            console.log('itemInRange reject with initial itemRobotX: ', item.x);
-            console.log('Item never detected in pickable range');
-            item.destroy();
-            return;
-          }
-        }
-      } else {
-        console.log('itemInRange reject with initial itemRobotX: ', item.x);
-        console.log('Item initially past pickable range');
+      try {
+        await item.coordsUpdated
+          .takeUntil(runningStopped)
+          .map(() => predictTarget())
+          .do(targ => console.log(targ))
+          .first(targ => this.isInPickBoundary(targ))
+          .toPromise();
+      } catch {
         item.destroy();
         return;
       }
+    } else {
+      console.log('DGA: Item initially past pickable range');
+      item.destroy();
+      return;
     }
 
-    target = await predictTarget(await this.getCoordsBCS());
+    target = predictTarget();
+
+    console.log('DGA: pick belt itemX: ', item.x);
+    console.log('DGA: pick belt itemY: ', item.y);
+    console.log('DGA: pick belt itemZ: ', item.z);
+    console.log('DGA: pick belt targetX: ', target.x);
+    console.log('DGA: pick belt targetY: ', target.y);
+    console.log('DGA: pick belt targetZ: ', target.z);
+
+    console.log('DGA: pick robot itemX: ', this.toRobotCoords(item.projectCoords(0)).x);
+    console.log('DGA: pick robot itemY: ', this.toRobotCoords(item.projectCoords(0)).y);
+    console.log('DGA: pick robot itemZ: ', this.toRobotCoords(item.projectCoords(0)).z);
+    console.log('DGA: pick robot targetX: ', this.toRobotCoords(target).x);
+    console.log('DGA: pick robot targetY: ', this.toRobotCoords(target).y);
+    console.log('DGA: pick robot targetZ: ', this.toRobotCoords(target).z);
+
+    if (!this.isInPickBoundary(target)) {
+      console.log('DGA: final target out of range');
+      item.destroy();
+      return;
+    }
+
     // now since in range, try to pick item
     await this.pick(target);
     // now wait a tiny bit for better pickup
@@ -582,8 +617,8 @@ export class Robot {
       this.itemsPickedByRobot[item.className] = 1;
     }
 
-    // destroy item for some reason
     item.destroy();
+    console.log('DGA: Item Successful Pick Attempt');
   }
 
   public clearItemsPickedByRobot() {
