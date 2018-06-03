@@ -115,10 +115,11 @@ export class Robot {
   // if it overshoots destination and goes a bit out of bounds
   private originTolerance = 10; // origin bounds extension
 
-  public connect(portName: string, baudRate: number) {
+  public async connect(portName: string, baudRate: number) {
     this.port = new SerialPort(portName, { baudRate }, err => console.error(err));
     this.isConnected = true;
-    this.getCoordsRCS();
+    await Util.delay(500);
+    await this.getCoordsRCS();
   }
 
   public sendMessage(message: string) {
@@ -325,7 +326,7 @@ export class Robot {
     // cannot move to belt coordinates if not calibrated
     if (!this.cal.valid && coords.type === CoordType.BCS) return;
 
-    if (!this.isValidMove(await this.getCoordsRCS(), coords)) {
+    if (!this.isValidMove(this.coordBCS, coords)) {
       console.log('invalid move to: ', coords);
       // return;
     }
@@ -478,7 +479,6 @@ export class Robot {
 
   public async getCoordsRCS() {
 
-    Util.delay(50);
     await this.sendMessage('M895');
     const coordinates = await this.sendMessage('M895');
 
@@ -487,7 +487,11 @@ export class Robot {
       return (num !== null) ? parseFloat(num[0]) : undefined;
     });
 
-    this._coords = { type: CoordType.RCS, x, y, z };
+    if (x !== undefined && y !== undefined && z !== undefined) {
+      this._coords = { type: CoordType.RCS, x, y, z };
+      console.log(this._coords);
+
+    }
     return this._coords;
   }
 
@@ -561,8 +565,7 @@ export class Robot {
           .takeUntil(runningStopped)
           .map(() => predictTarget())
           .do(targ => console.log(targ))
-          .filter(targ => targ.x >= this.cal.minPick.x)
-          .first()
+          .first(targ => this.isInPickBoundary(targ))
           .toPromise();
       } catch {
         item.destroy();

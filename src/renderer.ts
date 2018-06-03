@@ -462,11 +462,11 @@ Doc.addClickListener('start-model', async () => {
 
     dynamicPick
       .takeUntil(runningStopped)
-      .do(item => console.log('First ', item))
+      .do(item => console.log('pick item ', item))
       .concatMap(async item =>
         await robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 150, 0, runningStopped))
       .subscribe(async i => {
-        console.log('third', i);
+        console.log('pick done', i);
         dynamicPick.next(await getNextItem());
       });
 

@@ -13,7 +13,7 @@ export class ItemQueue {
     // Purge out of range items.
     Conveyor.positionUpdated.subscribe(() => {
       for (let i = this.items.length - 1; i >= 0; i--) {
-        if (this.items[i].x > this.xLimit && !this.items[i].picked) this.delete(i);
+        if (this.items[i].x > this.xLimit) this.delete(i);
       }
     });
   }
@@ -22,7 +22,7 @@ export class ItemQueue {
    * Insert an item in the end of the queue
    */
   public insert(item: Item) {
-    if (item.x < this.xLimit && !this.isDuplicate(item.xyzt, item.classID)) {
+    if (item.x <= this.xLimit && !this.isDuplicate(item.xyzt, item.classID)) {
       this._items.push(item);
       console.log(`Item added to queue\n${item}\n`);
 
@@ -74,7 +74,7 @@ export class ItemQueue {
    */
   public delete(index: number) {
     console.log(`Item removed from queue\n${this._items[index]}\n`);
-    this._items[index].destroy();
+    if (!this.items[index].picked) this._items[index].destroy();
     this._items.splice(index, 1);
   }
 
