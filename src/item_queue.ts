@@ -1,7 +1,7 @@
 
 import { Conveyor } from './conveyor';
 import { Item } from './item';
-import { Coord2, Coord3, Coord4, Vector } from './utils';
+import { Coord2, Coord3, Coord4, Util, Vector } from './utils';
 
 export class ItemQueue {
   public itemsDetectedByCV: { [className: string]: number } = {};
@@ -13,7 +13,7 @@ export class ItemQueue {
     // Purge out of range items.
     Conveyor.positionUpdated.subscribe(() => {
       for (let i = this.items.length - 1; i >= 0; i--) {
-        if (this.items[i].x > this.xLimit) this.delete(i);
+        if (this.items[i].x > this.xLimit && !this.items[i].picked) this.delete(i);
       }
     });
   }
@@ -38,6 +38,7 @@ export class ItemQueue {
   }
 
   public clear() {
+    for (const item of this._items) item.destroy();
     this._items.length = 0;
   }
 
@@ -58,10 +59,12 @@ export class ItemQueue {
    * get the closet item to the robot and return it but still keep it in queue
    */
   public getClosestItemToRobot() {
-    let closest: Item = this.items[0];
-    for (let index = 1; index < this.items.length; index++) {
-      if (this.items[index].x > closest.x) closest = this.items[index];
+    let closest = this._items[0];
+
+    for (const item of this._items) {
+      if (item.x > closest.x) closest = item;
     }
+
     return closest;
   }
 

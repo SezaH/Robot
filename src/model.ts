@@ -10,7 +10,6 @@ export class Model {
       return;
     }
 
-    
     // tslint:disable-next-line:max-line-length
     this.mol = spawn('python3', ['io_object_detection.py', modelName, pbTXT, percentage], { cwd: '../models/research/object_detection' });
     this.running = true;

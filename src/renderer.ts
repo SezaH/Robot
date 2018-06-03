@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { Camera } from './camera';
 import { Conveyor, SysCal } from './conveyor';
 import { DataController } from './data-io';
@@ -30,7 +30,10 @@ const imageExport = true;
 const cameraID = 0;
 
 // for dynamic grab loop
-const dynamicGrabRunning = false;
+let running = false;
+
+const dynamicPick = new Subject<void>();
+const runningStopped = new Subject<void>();
 
 let isPointCaptured = [false, false, false];
 
@@ -419,15 +422,32 @@ Doc.addClickListener('apply-model', () => {
   sysConfig.model.threshold = Doc.getInputString('threshold-percentage');
 });
 
-Doc.addClickListener('start-model', () => {
-  queue.clearItemsDetectedByCV();
-  robot.clearItemsPickedByRobot();
-  Observable.interval(1000).takeUntil(
-    Observable.fromEvent(document.getElementById('stop-model'), 'click'),
-  ).subscribe(() => updateItemsRecorded());
+Doc.addClickListener('start-model', async () => {
+  if (!running) {
+    running = true;
 
-  // name of model, name of pbtxt, threshold
-  ipcRenderer.send('main-start-model', sysConfig.model.name, sysConfig.model.labelMap, sysConfig.model.threshold);
+    (document.getElementById('start-model') as HTMLButtonElement).disabled = true;
+
+    queue.clear();
+    queue.clearItemsDetectedByCV();
+    robot.clearItemsPickedByRobot();
+
+    Observable.interval(1000).takeUntil(
+      Observable.fromEvent(document.getElementById('stop-model'), 'click'),
+    ).subscribe(() => updateItemsRecorded());
+
+    // name of model, name of pbtxt, threshold
+    ipcRenderer.send('main-start-model', sysConfig.model.name, sysConfig.model.labelMap, sysConfig.model.threshold);
+
+    Observable.interval(50)
+      .takeUntil(runningStopped)
+      // .map(() => queue.getClosestItemToRobot())
+      .filter(item => item !== undefined)
+      .do(item => console.log('First ', item))
+      // .concatMap(async item => await robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 100, 0))
+      .concatMap(async item => { console.log('second', item); await Util.delay(2000); return item; })
+      .subscribe((i) => console.log('third', i));
+  }
 });
 
 const itemListBody = document.getElementById('items-list-body') as HTMLDivElement;
@@ -453,8 +473,11 @@ function updateItemsRecorded() {
 
 Doc.addClickListener('stop-model', () => {
   console.log('renderer stop model');
+  running = false;
   ipcRenderer.send('main-stop-model');
+  runningStopped.next();
   queue.clear();
+  (document.getElementById('start-model') as HTMLButtonElement).disabled = false;
 });
 
 Doc.addClickListener('save-item-counter', () => {

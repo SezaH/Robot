@@ -126,6 +126,7 @@ export class Robot {
       });
     });
     this.port.write(message + '\r\n');
+    console.log(message);
     return retval;
   }
 
@@ -323,7 +324,7 @@ export class Robot {
 
     if (!this.isValidMove(await this.getCoordsRCS(), coords)) {
       console.log('invalid move to: ', coords);
-      return;
+      // return;
     }
 
     if (coords.type === CoordType.BCS) coords = this.belt2RobotCoords(coords);
@@ -514,19 +515,19 @@ export class Robot {
     zOffsetPick: number,
   ) {
 
-    const predictTarget = (self: BCoord, iterations = 1) => {
-      let secs = 0;
-      iterations = 1;
-      for (let i = 0; i < iterations; i++) {
-        secs = Vector.distance(item.projectCoords(secs), self) / this.cal.speed * 60;
-      }
+    const predictTarget = (self: BCoord) => {
+      const secs = (Conveyor.beltV * 1.5 > this.cal.speed * 60) ?
+        0 : // Robot is too slow.
+        Vector.distance(item.xyz, self) / this.cal.speed * 60;
+
       return item.projectCoords(secs);
     };
 
+    // Take ownership of the item.
+    item.picked = true;
+
     // makes sense to open gripper before doing stuff
     await this.openGripper();
-
-    await item.coordsUpdated.first().toPromise();
 
     let target = predictTarget(await this.getCoordsBCS());
 
@@ -543,7 +544,12 @@ export class Robot {
         await this.moveTo(idlePos);
 
         while (target.x < this.cal.minPick.x) {
-          await item.coordsUpdated.first().toPromise();
+          try {
+            await item.coordsUpdated.first().toPromise();
+          } catch {
+            console.log('Item destroyed by someone else');
+            return;
+          }
           target = predictTarget(idlePos);
           console.log(target, item.xyz);
 
@@ -563,7 +569,7 @@ export class Robot {
       }
     }
 
-    target = await predictTarget(await this.getCoordsBCS());
+    target = predictTarget(await this.getCoordsBCS());
     // now since in range, try to pick item
     await this.pick(target);
     // now wait a tiny bit for better pickup
@@ -582,7 +588,6 @@ export class Robot {
       this.itemsPickedByRobot[item.className] = 1;
     }
 
-    // destroy item for some reason
     item.destroy();
   }
 

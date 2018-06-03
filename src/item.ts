@@ -13,6 +13,7 @@ export class Item {
   private _deviation: Coord3 = { x: 0, y: 0, z: 0 };
   private _coordsUpdated = new Subject<Coord3>();
   private _subscription: Subscription;
+  private _picked = false;
 
   constructor(
     coords: Coord4,
@@ -64,6 +65,9 @@ export class Item {
   public get deviation() { return this._deviation; }
   public set deviation(d) { this._deviation = d; }
 
+  public get picked() { return this._picked; }
+  public set picked(p) { this._picked = p; }
+
   public get coordsUpdated() { return this._coordsUpdated.asObservable(); }
 
   public projectCoords(seconds = 0): BCoord {
@@ -76,6 +80,7 @@ export class Item {
   }
 
   public destroy() {
+    this._coordsUpdated.complete();
     this._subscription.unsubscribe();
   }
 
