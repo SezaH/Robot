@@ -14,6 +14,7 @@ export class Item {
   private _coordsUpdated = new Subject<Coord3>();
   private _subscription: Subscription;
   private _picked = false;
+  private _active = true;
 
   constructor(
     coords: Coord4,
@@ -80,8 +81,11 @@ export class Item {
   }
 
   public destroy() {
-    this._coordsUpdated.complete();
-    this._subscription.unsubscribe();
+    if (this._active) {
+      this._coordsUpdated.complete();
+      this._subscription.unsubscribe();
+      this._active = false;
+    }
   }
 
   public toString() {

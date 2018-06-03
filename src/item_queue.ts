@@ -59,11 +59,6 @@ export class ItemQueue {
    * get the closet item to the robot and return it but still keep it in queue
    */
   public getClosestItemToRobot() {
-
-    // if not items in queue, return undefined
-    if (this._items.length === 0) {
-      return undefined;
-    }
     let closest = this._items[0];
 
     for (const item of this._items) {

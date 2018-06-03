@@ -32,7 +32,7 @@ const cameraID = 0;
 // for dynamic grab loop
 let running = false;
 
-const dynamicPick = new Subject<void>();
+const dynamicPick = new Subject<Item>();
 const runningStopped = new Subject<void>();
 
 let isPointCaptured = [false, false, false];
@@ -344,8 +344,8 @@ Doc.addClickListener('motor-off-btn', () => robot.motorsOff());
 // });
 
 Doc.addClickListener('one-dynamic-grab-btn', async () => {
-  // const item = new Item({ x: 0, y: 0, z: 1, t: await Conveyor.fetchCount() }, 1, 'cup');
-  robot.dynamicGrab(queue, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 100, 0);
+  const item = new Item({ x: 0, y: 0, z: 1, t: await Conveyor.fetchCount() }, 1, 'cup');
+  robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 100, 0, runningStopped);
 });
 
 // async function dynamicGrabFromInput() {
@@ -444,21 +444,33 @@ Doc.addClickListener('start-model', async () => {
     queue.clearItemsDetectedByCV();
     robot.clearItemsPickedByRobot();
 
-    Observable.interval(1000).takeUntil(
-      Observable.fromEvent(document.getElementById('stop-model'), 'click'),
-    ).subscribe(() => updateItemsRecorded());
+    Observable
+      .interval(1000)
+      .takeUntil(runningStopped)
+      .subscribe(() => updateItemsRecorded());
 
     // name of model, name of pbtxt, threshold
     ipcRenderer.send('main-start-model', sysConfig.model.name, sysConfig.model.labelMap, sysConfig.model.threshold);
 
-    Observable.interval(50)
+    const getNextItem = () => Observable
+      .interval(50)
       .takeUntil(runningStopped)
-      // .map(() => queue.getClosestItemToRobot())
+      .map(() => queue.getClosestItemToRobot())
       .filter(item => item !== undefined)
+      .take(1)
+      .toPromise();
+
+    dynamicPick
+      .takeUntil(runningStopped)
       .do(item => console.log('First ', item))
-      // .concatMap(async item => await robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 100, 0))
-      .concatMap(async item => { console.log('second', item); await Util.delay(2000); return item; })
-      .subscribe((i) => console.log('third', i));
+      .concatMap(async item =>
+        await robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 150, 0, runningStopped))
+      .subscribe(async i => {
+        console.log('third', i);
+        dynamicPick.next(await getNextItem());
+      });
+
+    dynamicPick.next(await getNextItem());
   }
 });
 
@@ -483,14 +495,15 @@ function updateItemsRecorded() {
 
 }
 
-Doc.addClickListener('stop-model', () => {
+runningStopped.subscribe(() => {
   console.log('renderer stop model');
   running = false;
   ipcRenderer.send('main-stop-model');
-  runningStopped.next();
   queue.clear();
   (document.getElementById('start-model') as HTMLButtonElement).disabled = false;
 });
+
+Doc.addClickListener('stop-model', () => runningStopped.next());
 
 Doc.addClickListener('save-item-counter', () => {
   const dataCV = queue.printItemsDetectedByCV('');
