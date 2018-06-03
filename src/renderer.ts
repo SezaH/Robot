@@ -204,10 +204,19 @@ Doc.addClickListener('cal-load-btn', async () => {
 Doc.addClickListener('cal-save-btn', async () => {
   // if (Conveyor.sysConfig.robotConfigs.every(c => c.valid)) {
 
+  // already saved camera encoder  when take picture
+  // already saved robot encoder when capture first point or calibrate
+  // should save this only when press save, methinks
+
+  // if (this.robotCalPoints) {
+  Conveyor.sysCal.robotConfigs[0].calPoints.robot.p1 = robotCalPoints.p1;
+  Conveyor.sysCal.robotConfigs[0].calPoints.robot.p2 = robotCalPoints.p2;
+  Conveyor.sysCal.robotConfigs[0].calPoints.robot.p3 = robotCalPoints.p3;
+  // }
+
   const calPath = Doc.getInputString('cal-path-input');
   fs.outputFile(calPath, JSON.stringify(Conveyor.sysCal));
 
-  // }
 });
 
 Doc.addClickListener('config-load-btn', async () => {
@@ -248,6 +257,8 @@ const robotCalPoints: { p1: RCoord, p2: RCoord, p3: RCoord } = {
 };
 
 Doc.addClickListener('point1-capture-btn', async () => {
+  // add this here for now
+  Conveyor.sysCal.robotConfigs[0].encoder = await Conveyor.fetchCount();
   const coords = await robot.getCoordsRCS();
   robotCalPoints.p1 = coords;
   Doc.setInnerHtml('cal-x1', coords.x);
@@ -287,6 +298,7 @@ Doc.addClickListener('calibrate-btn', async () => {
   // }
 
   const count = await Conveyor.fetchCount();
+  Conveyor.sysCal.robotConfigs[0].encoder = count;
 
   Doc.setInnerHtml('robot-encoder', count);
 
@@ -332,8 +344,8 @@ Doc.addClickListener('motor-off-btn', () => robot.motorsOff());
 // });
 
 Doc.addClickListener('one-dynamic-grab-btn', async () => {
-  const item = new Item({ x: 0, y: 0, z: 1, t: await Conveyor.fetchCount() }, 1, 'cup');
-  robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 100, 0);
+  // const item = new Item({ x: 0, y: 0, z: 1, t: await Conveyor.fetchCount() }, 1, 'cup');
+  robot.dynamicGrab(queue, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 100, 0);
 });
 
 // async function dynamicGrabFromInput() {

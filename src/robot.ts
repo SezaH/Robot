@@ -2,6 +2,7 @@ import { throttleTime } from 'rxjs/operator/throttleTime';
 import * as SerialPort from 'serialport';
 import { Conveyor } from './conveyor';
 import { Item } from './item';
+import { ItemQueue } from './item_queue';
 import { BCoord, Coord3, CoordType, RCoord, Util, Vector } from './utils';
 
 // a number (scalar) bounded to a CoordType
@@ -83,7 +84,7 @@ export class Robot {
     encoder: -1,
     maxPick: { type: CoordType.BCS, x: 0, y: 0, z: 0 },
     minPick: { type: CoordType.BCS, x: 0, y: 0, z: 0 },
-    port: '/dev/ACM0',
+    port: '/dev/ttyACM0',
     speed: 5000,
     valid: false,
     zOffset: 100,
@@ -508,19 +509,47 @@ export class Robot {
     await this.openGripper();
   }
 
+  // keeps attempting dynamic grabs until successful
   public async dynamicGrab(
-    item: Item,
+    queue: ItemQueue,
     place: RCoord,
     zOffsetHover: number,
     zOffsetPick: number,
   ) {
+    while (await this.dynamicGrabAttempt(queue, place, zOffsetHover, zOffsetPick) !== 0) {
+      await Util.delay(500);
+    }
+  }
+
+  // may have to call this a bunch to get a dynamic grab
+  // returns 0 if successfully attempted a grab
+  // returns 1 if no items in queue
+  // returns 2 if first item in queue is already beyond robot range
+  // returns 3 if missed the item
+  // returns >3 for other error
+  public async dynamicGrabAttempt(
+    queue: ItemQueue,
+    place: RCoord,
+    zOffsetHover: number,
+    zOffsetPick: number,
+  ) {
+    const item = queue.getClosestItemToRobot();
+    if (item === undefined) {
+      console.log('DGA: no items in queue');
+      return 1;
+    }
+
+    // const predictTarget = (self: BCoord) => {
+    //   const secs = (Conveyor.beltV * 1.5 > this.cal.speed * 60) ?
+    //     0 : // Robot is too slow.
+    //     Vector.distance(item.xyz, self) / this.cal.speed * 60;
+
+    //   return item.projectCoords(secs);
+    // };
 
     const predictTarget = (self: BCoord) => {
-      const secs = (Conveyor.beltV * 1.5 > this.cal.speed * 60) ?
-        0 : // Robot is too slow.
-        Vector.distance(item.xyz, self) / this.cal.speed * 60;
-
-      return item.projectCoords(secs);
+      // console.log('DGA: belt speed (mm/s): ', Conveyor.beltV);
+      return item.projectCoords(0);
     };
 
     // Take ownership of the item.
@@ -530,6 +559,14 @@ export class Robot {
     await this.openGripper();
 
     let target = predictTarget(await this.getCoordsBCS());
+
+    console.log('DGA: belt itemX: ', item.x);
+    console.log('DGA: belt targetX: ', target.x);
+    console.log('DGA: belt targetY: ', target.y);
+    console.log('DGA: belt targetZ: ', target.z);
+
+    console.log('DGA: robot itemX: ', this.toRobotCoords(item.projectCoords(0)).x);
+    console.log('DGA: robot targetX: ', this.toRobotCoords(target).x);
 
     // if item already moved out of range, cannot pick cup
 
@@ -547,29 +584,46 @@ export class Robot {
           try {
             await item.coordsUpdated.first().toPromise();
           } catch {
-            console.log('Item destroyed by someone else');
-            return;
+            console.log('DGA: Item destroyed by someone else');
+            return 4;
           }
           target = predictTarget(idlePos);
-          console.log(target, item.xyz);
+          console.log('DGA wait for item loop', target, item.xyz);
 
           // if passed range, somehow went through range without notice, return error
           if (target.x > this.cal.maxPick.x) {
             console.log('itemInRange reject with initial itemRobotX: ', item.x);
-            console.log('Item never detected in pickable range');
+            console.log('DGA: Item never detected in pickable range');
+            queue.removeByID(item.itemID);
             item.destroy();
-            return;
+            return 3;
           }
         }
       } else {
         console.log('itemInRange reject with initial itemRobotX: ', item.x);
-        console.log('Item initially past pickable range');
+        console.log('DGA: Item initially past pickable range');
+        queue.removeByID(item.itemID);
         item.destroy();
-        return;
+        return 2;
       }
     }
 
     target = predictTarget(await this.getCoordsBCS());
+
+    console.log('DGA: pick belt itemX: ', item.x);
+    console.log('DGA: pick belt itemY: ', item.y);
+    console.log('DGA: pick belt itemZ: ', item.z);
+    console.log('DGA: pick belt targetX: ', target.x);
+    console.log('DGA: pick belt targetY: ', target.y);
+    console.log('DGA: pick belt targetZ: ', target.z);
+
+    console.log('DGA: pick robot itemX: ', this.toRobotCoords(item.projectCoords(0)).x);
+    console.log('DGA: pick robot itemY: ', this.toRobotCoords(item.projectCoords(0)).y);
+    console.log('DGA: pick robot itemZ: ', this.toRobotCoords(item.projectCoords(0)).z);
+    console.log('DGA: pick robot targetX: ', this.toRobotCoords(target).x);
+    console.log('DGA: pick robot targetY: ', this.toRobotCoords(target).y);
+    console.log('DGA: pick robot targetZ: ', this.toRobotCoords(target).z);
+
     // now since in range, try to pick item
     await this.pick(target);
     // now wait a tiny bit for better pickup
@@ -588,7 +642,10 @@ export class Robot {
       this.itemsPickedByRobot[item.className] = 1;
     }
 
+    queue.removeByID(item.itemID);
     item.destroy();
+    console.log('DGA: Item Successful Pick Attempt');
+    return 0;
   }
 
   public clearItemsPickedByRobot() {
