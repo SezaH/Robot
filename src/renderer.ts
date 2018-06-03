@@ -159,6 +159,32 @@ Doc.addClickListener('encoder-connect-btn', () => Conveyor.connect(Doc.getInputS
 //   console.log(`new ${newT}, old ${lastT}, delta: ${deltaT}, deltaX ${deltaX}`);
 //   lastT = newT;
 // });
+let numOfEncoderCalibration = 0;
+let position1: number;
+let position2: number;
+let ratio = 0;
+
+Doc.addClickListener('position1', async () => {
+  position1 = await Conveyor.fetchCount();
+});
+Doc.addClickListener('position2', async () => {
+  position2 = await Conveyor.fetchCount();
+});
+
+Doc.addClickListener('ratio', () => {
+  const deltaPosition = Conveyor.calcDeltaT(position1, position2);
+  const distance = Doc.getInputFloat('distance');
+  numOfEncoderCalibration++;
+  ratio += (distance / deltaPosition);
+  Conveyor.sysConfig.mmPerCount = ratio / numOfEncoderCalibration;
+  Doc.setInnerHtml('cal-encoder', Conveyor.sysConfig.mmPerCount * 1000);
+});
+Doc.addClickListener('clean', () => {
+  numOfEncoderCalibration = 0;
+  ratio = 0;
+  Conveyor.sysConfig.mmPerCount = 0;
+  Doc.setInnerHtml('cal-encoder', Conveyor.sysConfig.mmPerCount * 1000);
+});
 
 Doc.addClickListener('cal-load-btn', async () => {
   const calPath = Doc.getInputString('cal-path-input');
