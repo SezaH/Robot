@@ -100,10 +100,12 @@ export namespace Conveyor {
    * @param t1 The old encoder count
    * @param t2 The new encoder count
    */
-  export function calcDeltaT(oldT: number, newT: number) {
-    newT = (newT < oldT) ? newT + encoderLimit - oldT : newT;
-    return newT - oldT;
+  export function calcDeltaT(t1: number, t2: number) {
+    if (t2 - t1 > encoderLimit / 2) return t2 - encoderLimit - t1;
+    if (t1 - t2 > encoderLimit / 2) return t2 + encoderLimit - t1;
+    return t2 - t1;
   }
+
   /**
    * Fetches the latest encoder count immediately.
    */

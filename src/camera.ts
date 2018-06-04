@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import * as fs from 'fs-extra';
+import { join as joinPath } from 'path';
 import { Conveyor } from './conveyor';
 
 export namespace Camera {
@@ -49,7 +50,11 @@ export namespace Camera {
     canvas.height = 1080;
   }
 
-  export async function capture(fileName: string) {
+  export async function capture(
+    fileName: string,
+    { imageExport = false, directory = '', prob = 0.0 } = {},
+  ) {
+    const count = Conveyor.fetchCount();
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     try {
@@ -62,8 +67,16 @@ export namespace Camera {
       });
 
       await fs.writeFile(fileName, Buffer.from(image));
+
+      // Save some images to be labeled and trained on later.
+      if (imageExport && directory !== '' && Math.random() <= prob) {
+        const name = ('00000000' + Math.floor(Math.random() * 100000000).toString()).slice(-8);
+        await fs.outputFile(joinPath(directory, `${name}.jpg`), Buffer.from(image));
+      }
     } catch (error) {
       console.error(error);
     }
+
+    return count;
   }
 }
