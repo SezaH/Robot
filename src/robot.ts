@@ -115,6 +115,31 @@ export class Robot {
   // if it overshoots destination and goes a bit out of bounds
   private originTolerance = 10; // origin bounds extension
 
+  public setSpeed(speed: number) {
+    this.cal.speed = speed;
+  }
+
+  public getSpeed() {
+    return this.cal.speed;
+  }
+
+  public setHoverZOffset(zOffset: number) {
+    this.cal.zOffset = zOffset;
+  }
+
+  public getHoverZOffset() {
+    return this.cal.zOffset;
+  }
+
+  public getBeltWidth() {
+    return this.cal.boundaries.pickBoundary.maxY.scalar + (-1) * this.cal.boundaries.pickBoundary.minY.scalar;
+  }
+
+  public setBeltWidth(beltWidth: number) {
+    this.cal.boundaries.pickBoundary.maxY.scalar = beltWidth / 2;
+    this.cal.boundaries.pickBoundary.minY.scalar = (-1) * (beltWidth / 2);
+  }
+
   public async connect(portName: string, baudRate: number) {
     this.port = new SerialPort(portName, { baudRate }, err => console.error(err));
     this.isConnected = true;

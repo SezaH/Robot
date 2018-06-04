@@ -251,20 +251,20 @@ Doc.addClickListener('cal-save-btn', async () => {
 
 });
 
-Doc.addClickListener('config-load-btn', async () => {
-  const configPath = Doc.getInputString('config-path-input');
+// Doc.addClickListener('config-load-btn', async () => {
+//   const configPath = Doc.getInputString('config-path-input');
 
-  try {
-    const rawData = await fs.readFile(configPath, 'utf8');
-    sysConfig = JSON.parse(rawData) as SysConfig;
-  } catch {
-    return;
-  }
+//   try {
+//     const rawData = await fs.readFile(configPath, 'utf8');
+//     sysConfig = JSON.parse(rawData) as SysConfig;
+//   } catch {
+//     return;
+//   }
 
-  Doc.setInnerHtml('modelName', sysConfig.model.name);
-  Doc.setInnerHtml('labelMap', sysConfig.model.labelMap);
-  Doc.setInnerHtml('threshold-percentage', sysConfig.model.threshold);
-});
+//   Doc.setInnerHtml('modelName', sysConfig.model.name);
+//   Doc.setInnerHtml('labelMap', sysConfig.model.labelMap);
+//   Doc.setInnerHtml('threshold-percentage', sysConfig.model.threshold);
+// });
 
 Doc.addClickListener('cal-browse-btn', async () => {
   Doc.setInputValue('cal-path-input', await Util.getFilepath('Calibration file', ['.json']));
@@ -595,6 +595,18 @@ Doc.addClickListener('save-item-counter', () => {
 Doc.addClickListener('sidebar-toggle', () => {
   document.getElementById('sidebar').classList.toggle('collapse');
   document.getElementsByTagName('body')[0].classList.toggle('split');
+});
+
+Doc.addClickListener('robot-config-load-btn', () => {
+  Doc.setInputValue('robot-config-speed', robot.getSpeed());
+  Doc.setInputValue('hover-Z-offset', robot.getHoverZOffset());
+  Doc.setInputValue('belt-width', robot.getBeltWidth());
+});
+
+Doc.addClickListener('apply-robot-config', () => {
+  robot.setSpeed(Doc.getInputFloat('robot-config-speed'));
+  robot.setHoverZOffset(Doc.getInputFloat('hover-Z-offset'));
+  robot.setBeltWidth(Doc.getInputFloat('belt-width'));
 });
 
 main();
