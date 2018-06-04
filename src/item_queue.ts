@@ -22,7 +22,7 @@ export class ItemQueue {
    * Insert an item in the end of the queue
    */
   public insert(item: Item) {
-    if (item.x <= this.xLimit && !this.isDuplicate(item.xyzt, item.classID)) {
+    if (item.x <= this.xLimit && !this.isDuplicate(item.xyzt, item.classID) && item.y > -220 && item.y < 220) {
       this._items.push(item);
       console.log(`Item added to queue\n${item}\n`);
 

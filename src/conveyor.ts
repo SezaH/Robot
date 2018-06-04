@@ -64,7 +64,7 @@ export namespace Conveyor {
   export async function connect(portName: string, baudRate: number, mock = false) {
 
     // Fetch new encoder counts at least 10 times a second.
-    Observable.interval(100).subscribe(() => fetchCount());
+    Observable.interval(50).subscribe(() => fetchCount());
 
     if (mock) {
       Observable.interval(1).subscribe(t => mockT = t);

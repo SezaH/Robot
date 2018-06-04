@@ -54,7 +54,6 @@ export namespace Camera {
     fileName: string,
     { imageExport = false, directory = '', prob = 0.0 } = {},
   ) {
-    const count = Conveyor.fetchCount();
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     try {
@@ -77,6 +76,7 @@ export namespace Camera {
       console.error(error);
     }
 
+    const count = Conveyor.fetchCount();
     return count;
   }
 }

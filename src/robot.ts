@@ -533,7 +533,7 @@ export class Robot {
       const secs = (Conveyor.beltV * 1.5 > this.cal.speed * 60) ?
         0 : // Robot is too slow.
         Vector.distance(item.xyz, this.coordBCS) / this.cal.speed * 60;
-      return item.projectCoords(secs);
+      return item.projectCoords(0);
     };
 
     // Take ownership of the item.
@@ -577,7 +577,17 @@ export class Robot {
       return;
     }
 
-    target = predictTarget();
+    console.log('DGA: about to pick');
+    console.log('DGA: about to pick');
+    console.log('DGA: about to pick');
+
+    // const promise = item.coordsUpdated
+    //   .takeUntil(runningStopped)
+    //   .map(() => predictTarget())
+    //   .first()
+    //   .toPromise();
+    // Conveyor.fetchCount();
+    target = { type: CoordType.BCS, ...item.xyz };
 
     console.log('DGA: pick belt itemX: ', item.x);
     console.log('DGA: pick belt itemY: ', item.y);
@@ -616,6 +626,33 @@ export class Robot {
     } else {
       this.itemsPickedByRobot[item.className] = 1;
     }
+
+    item.destroy();
+    console.log('DGA: Item Successful Pick Attempt');
+  }
+
+  // keeps attempting dynamic grabs until successful
+  public async dynamicGrab2(
+    item: Item,
+    place: RCoord,
+    zOffsetHover: number,
+    zOffsetPick: number,
+    runningStopped: Subject<void>,
+  ) {
+    // Take ownership of the item.
+    item.picked = true;
+
+    await this.openGripper();
+
+    let target: BCoord = { type: CoordType.BCS, ...item.xyz };
+
+    while (!this.isInPickBoundary(target)) {
+      await Util.delay(50);
+      target = { type: CoordType.BCS, ...item.xyz };
+    }
+
+    // return to home
+    await this.moveTo(target);
 
     item.destroy();
     console.log('DGA: Item Successful Pick Attempt');

@@ -102,7 +102,7 @@ async function main() {
       fs.remove(labeledImageFile),
     ]);
 
-    await Util.delay(100);
+    await Util.delay(10);
 
     DataController.cameraT = await Camera.capture(
       unlabeledImageFile,
@@ -169,17 +169,23 @@ let ratio = 0;
 
 Doc.addClickListener('position1', async () => {
   position1 = await Conveyor.fetchCount();
+  console.log('p1 ', position1);
+
 });
 Doc.addClickListener('position2', async () => {
   position2 = await Conveyor.fetchCount();
+  console.log('p2 ', position2);
+
 });
 
 Doc.addClickListener('ratio', () => {
   const deltaPosition = Conveyor.calcDeltaT(position1, position2);
-  const distance = Doc.getInputFloat('distance');
-  numOfEncoderCalibration++;
-  ratio += (distance / deltaPosition);
-  Conveyor.sysCal.mmPerCount = ratio / numOfEncoderCalibration;
+  console.log(Conveyor.countToDist(deltaPosition));
+
+  // const distance = Doc.getInputFloat('distance');
+  // numOfEncoderCalibration++;
+  // ratio += (distance / deltaPosition);
+  // Conveyor.sysCal.mmPerCount = ratio / numOfEncoderCalibration;
   Doc.setInnerHtml('cal-encoder', Conveyor.sysCal.mmPerCount * 1000);
 });
 Doc.addClickListener('clean', () => {
@@ -370,10 +376,51 @@ Doc.addClickListener('motor-off-btn', () => robot.motorsOff());
 // });
 
 Doc.addClickListener('one-dynamic-grab-btn', async () => {
-  const item = new Item({ x: 0, y: 0, z: 1, t: await Conveyor.fetchCount() }, 1, 'cup');
-  robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 100, 0, runningStopped);
+
+  const count = await Conveyor.fetchCount();
+  queue.insert(new Item({ x: 0 * 12 * 25.4, y: -150, z: 1, t: count }, 1, 'cup'));
+  queue.insert(new Item({ x: -1 * 12 * 25.4, y: 150, z: 1, t: count }, 1, 'cup'));
+  queue.insert(new Item({ x: -2 * 12 * 25.4, y: -150, z: 1, t: count }, 1, 'cup'));
+  queue.insert(new Item({ x: -3 * 12 * 25.4, y: 150, z: 1, t: count }, 1, 'cup'));
+  queue.insert(new Item({ x: -4 * 12 * 25.4, y: -150, z: 1, t: count }, 1, 'cup'));
+  queue.insert(new Item({ x: -5 * 12 * 25.4, y: 150, z: 1, t: count }, 1, 'cup'));
+  queue.insert(new Item({ x: -6 * 12 * 25.4, y: -150, z: 1, t: count }, 1, 'cup'));
+  queue.insert(new Item({ x: -7 * 12 * 25.4, y: 150, z: 1, t: count }, 1, 'cup'));
+  queue.insert(new Item({ x: -8 * 12 * 25.4, y: -150, z: 1, t: count }, 1, 'cup'));
+
+  const getNextItem = () => Observable
+    .interval(50)
+    .takeUntil(runningStopped)
+    .map(() => queue.getClosestItemToRobot())
+    .filter(item => item !== undefined)
+    .take(1)
+    .toPromise();
+
+  dynamicPick
+    .takeUntil(runningStopped)
+    .do(item => console.log('pick item ', item))
+    .concatMap(async item =>
+      await robot.dynamicGrab2(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 150, 0, runningStopped))
+    .subscribe(async i => {
+      console.log('pick done', i);
+      dynamicPick.next(await getNextItem());
+    });
+
+  dynamicPick.next(await getNextItem());
 });
 
+Doc.addClickListener('one-dynamic-grab2-btn', async () => {
+
+  const item = await Observable
+    .interval(50)
+    .takeUntil(runningStopped)
+    .map(() => queue.getClosestItemToRobot())
+    .filter(i => i !== undefined)
+    .take(1)
+    .toPromise();
+
+  robot.dynamicGrab2(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 100, 0, runningStopped);
+});
 // async function dynamicGrabFromInput() {
 
 //   let item = queue.remove();
@@ -490,7 +537,7 @@ Doc.addClickListener('start-model', async () => {
       .takeUntil(runningStopped)
       .do(item => console.log('pick item ', item))
       .concatMap(async item =>
-        await robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 150, 0, runningStopped))
+        await robot.dynamicGrab2(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 150, 0, runningStopped))
       .subscribe(async i => {
         console.log('pick done', i);
         dynamicPick.next(await getNextItem());
