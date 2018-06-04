@@ -48,6 +48,7 @@ const imageContext = imageCanvas.getContext('2d');
 const queue = new ItemQueue();
 
 interface SysConfig {
+  dropLocations: DropLoc[];
   model: {
     name: string,
     labelMap: string,
@@ -55,7 +56,15 @@ interface SysConfig {
   };
 }
 
+interface DropLoc {
+  dropLoc: RCoord;
+  classId: number;
+  className: string;
+
+}
+
 let sysConfig: SysConfig = {
+  dropLocations: [],
   model: {
     labelMap: 'waste_busters/data/cup_label_map.pbtxt',
     name: 'waste_busters/export/faster_rcnn_resnet101_cups_1239.pb',
@@ -490,7 +499,7 @@ Doc.addClickListener('start-model', async () => {
       .takeUntil(runningStopped)
       .do(item => console.log('pick item ', item))
       .concatMap(async item =>
-        await robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 150, 0, runningStopped))
+        await robot.dynamicGrab(item, getDropLocation(item), 150, 0, runningStopped))
       .subscribe(async i => {
         console.log('pick done', i);
         dynamicPick.next(await getNextItem());
@@ -499,6 +508,17 @@ Doc.addClickListener('start-model', async () => {
     dynamicPick.next(await getNextItem());
   }
 });
+
+function getDropLocation(item: Item) : RCoord
+{
+  for (const dropLoc of sysConfig.dropLocations)
+  {
+    if (dropLoc.classId === item.classID)
+      return dropLoc.dropLoc;
+  }
+  // if not, return {0,0,0}, signifying no drop location found
+  return {type: CoordType.RCS, x: 0, y: 0, z: 0};
+}
 
 const itemListBody = document.getElementById('items-list-body') as HTMLDivElement;
 
