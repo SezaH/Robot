@@ -1,7 +1,7 @@
 
 import { Conveyor } from './conveyor';
 import { Item } from './item';
-import { Coord2, Coord3, Coord4, Vector } from './utils';
+import { Coord2, Coord3, Coord4, Util, Vector } from './utils';
 
 export class ItemQueue {
   public itemsDetectedByCV: { [className: string]: number } = {};
@@ -22,7 +22,7 @@ export class ItemQueue {
    * Insert an item in the end of the queue
    */
   public insert(item: Item) {
-    if (item.x < this.xLimit && !this.isDuplicate(item.xyzt, item.classID)) {
+    if (item.x <= this.xLimit && !this.isDuplicate(item.xyzt, item.classID)) {
       this._items.push(item);
       console.log(`Item added to queue\n${item}\n`);
 
@@ -38,6 +38,7 @@ export class ItemQueue {
   }
 
   public clear() {
+    for (const item of this._items) item.destroy();
     this._items.length = 0;
   }
 
@@ -58,10 +59,12 @@ export class ItemQueue {
    * get the closet item to the robot and return it but still keep it in queue
    */
   public getClosestItemToRobot() {
-    let closest: Item = this.items[0];
-    for (let index = 1; index < this.items.length; index++) {
-      if (this.items[index].x > closest.x) closest = this.items[index];
+    let closest = this._items[0];
+
+    for (const item of this._items) {
+      if (item.x > closest.x) closest = item;
     }
+
     return closest;
   }
 
@@ -71,7 +74,7 @@ export class ItemQueue {
    */
   public delete(index: number) {
     console.log(`Item removed from queue\n${this._items[index]}\n`);
-    this._items[index].destroy();
+    if (!this.items[index].picked) this._items[index].destroy();
     this._items.splice(index, 1);
   }
 
