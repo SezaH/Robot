@@ -74,7 +74,7 @@ export class Item {
   public projectCoords(seconds = 0): BCoord {
     return {
       type: CoordType.BCS,
-      x: this._coords.x + Conveyor.beltV * seconds,
+      x: this._coords.x + Conveyor.beltV * seconds + 75,
       y: this._coords.y,
       z: this._coords.z,
     };

@@ -7,7 +7,7 @@ export class ItemQueue {
   public itemsDetectedByCV: { [className: string]: number } = {};
   private _items: Item[] = [];
   private deviationThreshold = 40; // 40 mm radius
-  private xLimit = 1200;
+  private xLimit = 1100;
 
   constructor() {
     // Purge out of range items.
@@ -22,7 +22,7 @@ export class ItemQueue {
    * Insert an item in the end of the queue
    */
   public insert(item: Item) {
-    if (item.x <= this.xLimit && !this.isDuplicate(item.xyzt, item.classID)) {
+    if (item.x <= this.xLimit && !this.isDuplicate(item.xyzt, item.classID) && item.y > -220 && item.y < 220) {
       this._items.push(item);
       console.log(`Item added to queue\n${item}\n`);
 
@@ -117,7 +117,7 @@ export class ItemQueue {
       // console.log(Vector.magnitude(deltas), deltas, coords, item.xyz, Conveyor.countToDist(t), t);
       if (Vector.magnitude(deltas) < this.deviationThreshold && item.classID === classID) {
         item.deviation = deltas;
-        item.xyzt = coords;
+        // item.xyzt = coords;
         item.numDetections++;
         return true;
       }

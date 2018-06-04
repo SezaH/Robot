@@ -12,7 +12,7 @@ export interface SysCal {
 // var SerialPort = require('serialport');
 export namespace Conveyor {
   /** The maximum value (exclusive) the encoder can have before restarting at 0 */
-  export const encoderLimit = Math.pow(2, 30);
+  export const encoderLimit = Math.pow(2, 20);
 
   export let sysCal: SysCal = {
     cameraEncoder: 0,
@@ -64,7 +64,7 @@ export namespace Conveyor {
   export async function connect(portName: string, baudRate: number, mock = false) {
 
     // Fetch new encoder counts at least 10 times a second.
-    Observable.interval(100).subscribe(() => fetchCount());
+    Observable.interval(50).subscribe(() => fetchCount());
 
     if (mock) {
       Observable.interval(1).subscribe(t => mockT = t);
