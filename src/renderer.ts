@@ -223,11 +223,11 @@ Doc.addClickListener('config-load-btn', async () => {
 });
 
 Doc.addClickListener('cal-browse-btn', async () => {
-  Doc.setInputValue('cal-path-input', await Util.getFilepath('Calibration file', ['.json']));
+  Doc.setInputValue('cal-path-input', await Util.getFilepath('Calibration file', ['json']));
 });
 
 Doc.addClickListener('config-browse-btn', async () => {
-  Doc.setInputValue('config-path-input', await Util.getFilepath('Configuration file', ['.json']));
+  Doc.setInputValue('config-path-input', await Util.getFilepath('Configuration file', ['json']));
 });
 
 Doc.addClickListener('config-save-btn', async () => {
@@ -406,11 +406,11 @@ Doc.addClickListener('origin-camera', async () => {
 });
 
 Doc.addClickListener('model-name-btn', async () => {
-  Doc.setInputValue('modelName', await Util.getFilepath('Model file', ['.pb']));
+  Doc.setInputValue('modelName', await Util.getFilepath('Model file', ['pb']));
 });
 
 Doc.addClickListener('label-map-btn', async () => {
-  Doc.setInputValue('labelMap', await Util.getFilepath('Label map file', ['pb.txt']));
+  Doc.setInputValue('labelMap', await Util.getFilepath('Label map file', ['pbtxt']));
 });
 
 Doc.addClickListener('apply-model', () => {

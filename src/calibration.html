@@ -268,9 +268,52 @@
                   class="btn btn-outline-secondary"
                   type="button">Load</button>
         </div>
+      </div>      <div class="card mb-3">
+        <h5 class="card-header">Model Configuration</h5>
+        <div class="card-body">
+
+          <div class="input-group mb-3">
+            <input id='modelName'
+                   type="text"
+                   class="form-control"
+                   placeholder="Model file">
+            <div class="input-group-append">
+              <button id="model-name-btn"
+                      class="btn btn-outline-secondary"
+                      type="button">Browse</button>
+            </div>
+          </div>
+
+          <div class="input-group mb-3">
+            <input id='labelMap'
+                   type="text"
+                   class="form-control"
+                   placeholder="Label Map">
+            <div class="input-group-append">
+              <button id="label-map-btn"
+                      class="btn btn-outline-secondary"
+                      type="button">Browse</button>
+            </div>
+          </div>
+
+          <div class="input-group mb-3">
+            <input id='threshold-percentage'
+                   type="text"
+                   class="form-control"
+                   placeholder="Threshold %">
+          </div>
+
+          <button id="apply-model"
+                  class="btn btn-primary"
+                  type="button">Apply</button>
+        </div>
       </div>
 
-      <!-- MODEL -->
+
+
+
+
+
       <div class="card mb-3">
         <h5 class="card-header">Model Configuration</h5>
         <div class="card-body">
@@ -311,6 +354,9 @@
                   type="button">Apply</button>
         </div>
       </div>
+
+      <!-- MODEL -->
+
 
 
       <button id="config-save-btn"
