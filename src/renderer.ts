@@ -185,6 +185,7 @@ Doc.addClickListener('ratio', () => {
   ratio += (distance / deltaPosition);
   Conveyor.sysCal.mmPerCount = ratio / numOfEncoderCalibration;
   Doc.setInnerHtml('cal-encoder', Conveyor.sysCal.mmPerCount * 1000);
+  Doc.setInnerHtml('distance', '');
 });
 
 Doc.addClickListener('clean', () => {
@@ -355,12 +356,37 @@ Doc.addClickListener('calibrate-btn', async () => {
 //   const coord = robot.belt2RobotCoords({ type: CoordType.BCS, x, y, z: 0 });
 //   console.log(`output: {x: ${coord.x}, y: ${coord.y}, z: ${coord.z}}`);
 // });
+function robotMoveTo() {
+  robot.moveTo({ type: CoordType.RCS, x: 0, y: 0, z: -400 }, 5000);
+}
 
-Doc.addClickListener('home-btn', () => robot.moveTo({ type: CoordType.RCS, x: 0, y: 0, z: -400 }, 5000));
-Doc.addClickListener('open-gripper-btn', () => robot.openGripper());
-Doc.addClickListener('close-gripper-btn', () => robot.closeGripper());
-Doc.addClickListener('motor-on-btn', () => robot.motorsOn());
-Doc.addClickListener('motor-off-btn', () => robot.motorsOff());
+function robotOpenGripper() {
+  robot.openGripper();
+}
+
+function robotCloseGripper() {
+  robot.closeGripper();
+}
+
+function robotMotorsOn() {
+  robot.motorsOn();
+}
+
+function robotMotorsOff() {
+  robot.motorsOff();
+}
+
+Doc.addClickListener('home-btn', robotMoveTo);
+Doc.addClickListener('open-gripper-btn', robotOpenGripper);
+Doc.addClickListener('close-gripper-btn', robotCloseGripper);
+Doc.addClickListener('motor-on-btn', robotMotorsOn);
+Doc.addClickListener('motor-off-btn', robotMotorsOff);
+
+Doc.addClickListener('home-side-btn', robotMoveTo);
+Doc.addClickListener('open-gripper-side-btn', robotOpenGripper);
+Doc.addClickListener('close-gripper-side-btn', robotCloseGripper);
+Doc.addClickListener('motor-on-side-btn', robotMotorsOn);
+Doc.addClickListener('motor-off-side-btn', robotMotorsOff);
 
 // Doc.addClickListener('pick-btn', () => {
 //   robot.pick({
