@@ -59,8 +59,10 @@
              aria-selected="false">Run</a>
         </li>
       </ul>
-      <span id="robot-status" class="badge badge-secondary mr-3">Robot</span>
-      <span id="encoder-status" class="badge badge-secondary mr-auto">Encoder</span>
+      <span id="robot-status"
+            class="badge badge-secondary mr-3">Robot</span>
+      <span id="encoder-status"
+            class="badge badge-secondary mr-auto">Encoder</span>
       <button id="sidebar-toggle"
               class="btn btn-sm btn-outline-secondary my-1">
         <span class="navbar-toggler-icon"></span>
@@ -267,27 +269,27 @@
             </div>
           </div>
           <div class="input-group mb-3">
-              <div class="input-group-prepend">
-                <span class="input-group-text">Robot Speed</span>
-              </div>
+            <div class="input-group-prepend">
+              <span class="input-group-text">Robot Speed</span>
+            </div>
             <input id='robot-config-speed'
                    type="text"
                    class="form-control"
                    placeholder="mm/min">
           </div>
           <div class="input-group mb-3">
-              <div class="input-group-prepend">
-                <span class="input-group-text">Belt Width</span>
-              </div>
+            <div class="input-group-prepend">
+              <span class="input-group-text">Belt Width</span>
+            </div>
             <input id='robot-belt-width'
                    type="number"
                    class="form-control"
                    placeholder="millimeters">
           </div>
           <div class="input-group mb-3">
-              <div class="input-group-prepend">
-                <span class="input-group-text">Hover Z-Offset</span>
-              </div>
+            <div class="input-group-prepend">
+              <span class="input-group-text">Hover Z-Offset</span>
+            </div>
             <input id='robot-hover-Z-offset'
                    type="number"
                    class="form-control"
@@ -311,22 +313,22 @@
                    class="form-control"
                    placeholder="millimeters">
           </div> -->
-          
+
           <div class="input-group mb-3">
             <div class="input-group-prepend">
               <span class="input-group-text">Baud Rate</span>
             </div>
-          <input id='robot-baudRate'
-                 type="number"
-                 class="form-control"
-                 placeholder="millimeters">
+            <input id='robot-baudRate'
+                   type="number"
+                   class="form-control"
+                   placeholder="millimeters">
           </div>
           <button id="apply-robot-config"
-            class="btn btn-primary"
-            type="button">Apply</button>
+                  class="btn btn-primary"
+                  type="button">Apply</button>
           <button id="save-robot-config"
-            class="btn btn-primary"
-            type="button">Save</button>
+                  class="btn btn-primary"
+                  type="button">Save</button>
         </div>
       </div>
 
@@ -517,6 +519,33 @@
         <button id="motor-off-side-btn"
                 class="btn btn-outline-secondary mb-3"
                 type="button">Motors Off</button>
+      </div>
+    </div>
+    <div class="row mt-3">
+      <div class="col">
+        <button id="X+"
+                class="btn btn-outline-secondary mb-3"
+                type="button">X+</button>
+
+        <button id="Y+"
+                class="btn btn-outline-secondary mb-3"
+                type="button">Y+</button>
+
+        <button id="Z+"
+                class="btn btn-outline-secondary mb-3"
+                type="button">Z+</button>
+        <br>
+        <button id="X-"
+                class="btn btn-outline-secondary mb-3"
+                type="button">X -</button>
+
+        <button id="Y-"
+                class="btn btn-outline-secondary mb-3"
+                type="button">Y -</button>
+        <button id="Z-"
+                class="btn btn-outline-secondary mb-3"
+                type="button">Z -</button>
+        <br>
       </div>
     </div>
   </div>
