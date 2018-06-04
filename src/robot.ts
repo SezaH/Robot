@@ -533,7 +533,7 @@ export class Robot {
       const secs = (Conveyor.beltV * 1.5 > this.cal.speed * 60) ?
         0 : // Robot is too slow.
         Vector.distance(item.xyz, this.coordBCS) / this.cal.speed * 60;
-      return item.projectCoords(0);
+      return item.projectCoords(secs);
     };
 
     // Take ownership of the item.
@@ -581,13 +581,13 @@ export class Robot {
     console.log('DGA: about to pick');
     console.log('DGA: about to pick');
 
-    // const promise = item.coordsUpdated
-    //   .takeUntil(runningStopped)
-    //   .map(() => predictTarget())
-    //   .first()
-    //   .toPromise();
-    // Conveyor.fetchCount();
-    target = { type: CoordType.BCS, ...item.xyz };
+    const promise = item.coordsUpdated
+      .takeUntil(runningStopped)
+      .map(() => predictTarget())
+      .first()
+      .toPromise();
+    Conveyor.fetchCount();
+    target = await promise;
 
     console.log('DGA: pick belt itemX: ', item.x);
     console.log('DGA: pick belt itemY: ', item.y);

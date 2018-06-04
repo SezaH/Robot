@@ -117,7 +117,7 @@ export class ItemQueue {
       // console.log(Vector.magnitude(deltas), deltas, coords, item.xyz, Conveyor.countToDist(t), t);
       if (Vector.magnitude(deltas) < this.deviationThreshold && item.classID === classID) {
         item.deviation = deltas;
-        item.xyzt = coords;
+        // item.xyzt = coords;
         item.numDetections++;
         return true;
       }

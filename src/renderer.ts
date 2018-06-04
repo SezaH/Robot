@@ -19,12 +19,12 @@ const labeledImageFile = '../models/research/object_detection/io/output.jpg';
 /** Unlabeled image sent to CV. */
 const unlabeledImageFile = '../models/research/object_detection/io/input.jpg';
 
-/** Unlabeled image sent to CV. */
-const exportDirectory = './unlabeled/';
+// /** Unlabeled image sent to CV. */
+// const exportDirectory = './unlabeled/';
 
-/** Probability that the image will be saved as data for training later. */
-const exportProb = 0.01;
-const imageExport = true;
+// /** Probability that the image will be saved as data for training later. */
+// const exportProb = 0.01;
+// const imageExport = true;
 
 /** If multiple cameras are present, specify which. */
 const cameraID = 0;
@@ -73,13 +73,16 @@ async function main() {
 
   await Util.delay(2000);
 
-  DataController.cameraT = await Camera.capture(unlabeledImageFile);
+  DataController.cameraT =
+    (await Promise.all([
+      Conveyor.fetchCount(),
+      Camera.capture(unlabeledImageFile),
+    ]))[0];
 
   // Watch for new data and load into the itemQueue and draw the image to screen.
   // Remove the data files when complete.
   DataController.newData(datafile, labeledImageFile).subscribe(async ({ objects, bitmap, t }) => {
     // console.log('New data detected: ', objects);
-
     if (objects === undefined) return;
 
     const newT = await Conveyor.fetchCount();
@@ -102,12 +105,14 @@ async function main() {
       fs.remove(labeledImageFile),
     ]);
 
-    await Util.delay(10);
+    await Util.delay(100);
 
-    DataController.cameraT = await Camera.capture(
-      unlabeledImageFile,
-      { directory: exportDirectory, imageExport, prob: exportProb },
-    );
+    DataController.cameraT =
+      (await Promise.all([
+        Conveyor.fetchCount(),
+        Camera.capture(unlabeledImageFile),
+      ]))[0];
+
   });
 }
 
@@ -150,7 +155,7 @@ class Doc {
 
 // connect
 Doc.addClickListener('robot-connect-btn', () => robot.connect(Doc.getInputString('robot-port'), 115200));
-Doc.addClickListener('encoder-connect-btn', () => Conveyor.connect(Doc.getInputString('encoder-port'), 250000));
+Doc.addClickListener('encoder-connect-btn', () => Conveyor.connect(Doc.getInputString('encoder-port'), 9600));
 
 // send message to robot
 // Doc.addClickListener('send-btn', async () => robot.sendMessage(Doc.getInputString('input-command')));
@@ -537,7 +542,7 @@ Doc.addClickListener('start-model', async () => {
       .takeUntil(runningStopped)
       .do(item => console.log('pick item ', item))
       .concatMap(async item =>
-        await robot.dynamicGrab2(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 150, 0, runningStopped))
+        await robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 150, 0, runningStopped))
       .subscribe(async i => {
         console.log('pick done', i);
         dynamicPick.next(await getNextItem());
