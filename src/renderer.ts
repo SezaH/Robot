@@ -375,52 +375,52 @@ Doc.addClickListener('motor-off-btn', () => robot.motorsOff());
 //   });
 // });
 
-Doc.addClickListener('one-dynamic-grab-btn', async () => {
+// Doc.addClickListener('one-dynamic-grab-btn', async () => {
 
-  const count = await Conveyor.fetchCount();
-  queue.insert(new Item({ x: 0 * 12 * 25.4, y: -150, z: 1, t: count }, 1, 'cup'));
-  queue.insert(new Item({ x: -1 * 12 * 25.4, y: 150, z: 1, t: count }, 1, 'cup'));
-  queue.insert(new Item({ x: -2 * 12 * 25.4, y: -150, z: 1, t: count }, 1, 'cup'));
-  queue.insert(new Item({ x: -3 * 12 * 25.4, y: 150, z: 1, t: count }, 1, 'cup'));
-  queue.insert(new Item({ x: -4 * 12 * 25.4, y: -150, z: 1, t: count }, 1, 'cup'));
-  queue.insert(new Item({ x: -5 * 12 * 25.4, y: 150, z: 1, t: count }, 1, 'cup'));
-  queue.insert(new Item({ x: -6 * 12 * 25.4, y: -150, z: 1, t: count }, 1, 'cup'));
-  queue.insert(new Item({ x: -7 * 12 * 25.4, y: 150, z: 1, t: count }, 1, 'cup'));
-  queue.insert(new Item({ x: -8 * 12 * 25.4, y: -150, z: 1, t: count }, 1, 'cup'));
+//   const count = await Conveyor.fetchCount();
+//   queue.insert(new Item({ x: 0 * 12 * 25.4, y: -150, z: 1, t: count }, 1, 'cup'));
+//   queue.insert(new Item({ x: -1 * 12 * 25.4, y: 150, z: 1, t: count }, 1, 'cup'));
+//   queue.insert(new Item({ x: -2 * 12 * 25.4, y: -150, z: 1, t: count }, 1, 'cup'));
+//   queue.insert(new Item({ x: -3 * 12 * 25.4, y: 150, z: 1, t: count }, 1, 'cup'));
+//   queue.insert(new Item({ x: -4 * 12 * 25.4, y: -150, z: 1, t: count }, 1, 'cup'));
+//   queue.insert(new Item({ x: -5 * 12 * 25.4, y: 150, z: 1, t: count }, 1, 'cup'));
+//   queue.insert(new Item({ x: -6 * 12 * 25.4, y: -150, z: 1, t: count }, 1, 'cup'));
+//   queue.insert(new Item({ x: -7 * 12 * 25.4, y: 150, z: 1, t: count }, 1, 'cup'));
+//   queue.insert(new Item({ x: -8 * 12 * 25.4, y: -150, z: 1, t: count }, 1, 'cup'));
 
-  const getNextItem = () => Observable
-    .interval(50)
-    .takeUntil(runningStopped)
-    .map(() => queue.getClosestItemToRobot())
-    .filter(item => item !== undefined)
-    .take(1)
-    .toPromise();
+//   const getNextItem = () => Observable
+//     .interval(50)
+//     .takeUntil(runningStopped)
+//     .map(() => queue.getClosestItemToRobot())
+//     .filter(item => item !== undefined)
+//     .take(1)
+//     .toPromise();
 
-  dynamicPick
-    .takeUntil(runningStopped)
-    .do(item => console.log('pick item ', item))
-    .concatMap(async item =>
-      await robot.dynamicGrab2(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 150, 0, runningStopped))
-    .subscribe(async i => {
-      console.log('pick done', i);
-      dynamicPick.next(await getNextItem());
-    });
+//   dynamicPick
+//     .takeUntil(runningStopped)
+//     .do(item => console.log('pick item ', item))
+//     .concatMap(async item =>
+//       await robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 150, 0, runningStopped))
+//     .subscribe(async i => {
+//       console.log('pick done', i);
+//       dynamicPick.next(await getNextItem());
+//     });
 
-  dynamicPick.next(await getNextItem());
-});
+//   dynamicPick.next(await getNextItem());
+// });
 
-Doc.addClickListener('one-dynamic-grab2-btn', async () => {
+// Doc.addClickListener('one-dynamic-grab2-btn', async () => {
 
-  const item = await Observable
-    .interval(50)
-    .takeUntil(runningStopped)
-    .map(() => queue.getClosestItemToRobot())
-    .filter(i => i !== undefined)
-    .take(1)
-    .toPromise();
+//   const item = await Observable
+//     .interval(50)
+//     .takeUntil(runningStopped)
+//     .map(() => queue.getClosestItemToRobot())
+//     .filter(i => i !== undefined)
+//     .take(1)
+//     .toPromise();
 
-  robot.dynamicGrab2(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 100, 0, runningStopped);
-});
+//   robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 100, 0, runningStopped);
+// });
 // async function dynamicGrabFromInput() {
 
 //   let item = queue.remove();
@@ -537,7 +537,7 @@ Doc.addClickListener('start-model', async () => {
       .takeUntil(runningStopped)
       .do(item => console.log('pick item ', item))
       .concatMap(async item =>
-        await robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 150, 0, runningStopped))
+        await robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 70, 0, runningStopped))
       .subscribe(async i => {
         console.log('pick done', i);
         dynamicPick.next(await getNextItem());

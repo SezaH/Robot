@@ -66,7 +66,7 @@ export class Robot {
         maxZ: { scalar: -350, coord: CoordType.RCS },
         minX: { scalar: -100, coord: CoordType.RCS },
         minY: { scalar: -250, coord: CoordType.BCS },
-        minZ: { scalar: -10, coord: CoordType.BCS },
+        minZ: { scalar: -20, coord: CoordType.BCS },
       },
     },
     calPoints: {
@@ -339,6 +339,8 @@ export class Robot {
 
   // determines if a point is within a CuboidBoundary
   public isInCuboidBoundary(coord: BCoord | RCoord, boundary: CuboidBoundary, tolerance = 0): boolean {
+    if (isNaN(coord.x) || isNaN(coord.y) || isNaN(coord.z)) throw new Error('NaN');
+
     // get both robot and belt coordinates
     const rCoord = this.toRobotCoords(coord);
     const bCoord = this.toBeltCoords(coord);
@@ -511,8 +513,9 @@ export class Robot {
     } else {
       await this.moveTo({ type, x, y, z: z + zOffset });
     }
-
+    await Util.delay(50);
     await this.closeGripper();
+    await Util.delay(300);
     await this.moveTo({ type: CoordType.RCS, x: 0, y: 0, z: -400 });
   }
 
@@ -551,108 +554,59 @@ export class Robot {
     console.log('DGA: robot itemX: ', this.toRobotCoords(item.projectCoords(0)).x);
     console.log('DGA: robot targetX: ', this.toRobotCoords(target).x);
 
-    if (this.isInPickBoundary(target)) {
-      await this.moveTo({ type: CoordType.BCS, x: target.x, y: item.y, z: item.z + zOffsetHover });
-    } else if (this.belt2RobotCoords(target).x > 0) {
-      // if out of range, but in front of robot
+    try {
+      if (!this.isInPickBoundary(target) && this.belt2RobotCoords(target).x > 0) {
+        // if in front of robot
 
-      // move to most forward place on belt
-      // since the conveyor is a bit skewed with respect to the robot, need to adjust for that.
-      await this.moveTo({ type: CoordType.BCS, x: this.cal.minPick.x, y: item.y, z: item.z + zOffsetHover });
+        // move to most forward place on belt
+        // since the conveyor is a bit skewed with respect to the robot, need to adjust for that.
+        await this.moveTo({ type: CoordType.BCS, x: this.cal.minPick.x, y: item.y, z: item.z + zOffsetHover });
 
-      try {
         await item.coordsUpdated
           .takeUntil(runningStopped)
           .map(() => predictTarget())
           .do(targ => console.log(targ))
           .first(targ => this.isInPickBoundary(targ))
           .toPromise();
-      } catch {
+      } else {
+        console.log('DGA: Item initially past pickable range');
         item.destroy();
         return;
       }
-    } else {
-      console.log('DGA: Item initially past pickable range');
+
+      const promise = item.coordsUpdated
+        .takeUntil(runningStopped)
+        .map(() => predictTarget())
+        .first()
+        .toPromise();
+      Conveyor.fetchCount();
+      target = await promise;
+
+      if (!this.isInPickBoundary(target)) {
+        console.log('DGA: final target out of range');
+        item.destroy();
+        return;
+      }
+
+      // now since in range, try to pick item
+      await this.pick(target);
+      // now place it at intended target
+      await this.place(place);
+      // want to wait after picking
+      await Util.delay(400);
+      // return to home
+      await this.moveTo({ type: CoordType.RCS, x: 0, y: 0, z: -400 });
+
+      // Add item to counter of items picked up by robot
+      if (this.itemsPickedByRobot[item.className] !== undefined) {
+        this.itemsPickedByRobot[item.className]++;
+      } else {
+        this.itemsPickedByRobot[item.className] = 1;
+      }
+    } catch {
       item.destroy();
       return;
     }
-
-    console.log('DGA: about to pick');
-    console.log('DGA: about to pick');
-    console.log('DGA: about to pick');
-
-    const promise = item.coordsUpdated
-      .takeUntil(runningStopped)
-      .map(() => predictTarget())
-      .first()
-      .toPromise();
-    Conveyor.fetchCount();
-    target = await promise;
-
-    console.log('DGA: pick belt itemX: ', item.x);
-    console.log('DGA: pick belt itemY: ', item.y);
-    console.log('DGA: pick belt itemZ: ', item.z);
-    console.log('DGA: pick belt targetX: ', target.x);
-    console.log('DGA: pick belt targetY: ', target.y);
-    console.log('DGA: pick belt targetZ: ', target.z);
-
-    console.log('DGA: pick robot itemX: ', this.toRobotCoords(item.projectCoords(0)).x);
-    console.log('DGA: pick robot itemY: ', this.toRobotCoords(item.projectCoords(0)).y);
-    console.log('DGA: pick robot itemZ: ', this.toRobotCoords(item.projectCoords(0)).z);
-    console.log('DGA: pick robot targetX: ', this.toRobotCoords(target).x);
-    console.log('DGA: pick robot targetY: ', this.toRobotCoords(target).y);
-    console.log('DGA: pick robot targetZ: ', this.toRobotCoords(target).z);
-
-    if (!this.isInPickBoundary(target)) {
-      console.log('DGA: final target out of range');
-      item.destroy();
-      return;
-    }
-
-    // now since in range, try to pick item
-    await this.pick(target);
-    // now wait a tiny bit for better pickup
-    await Util.delay(100);
-    // now place it at intended target
-    await this.place(place);
-    // want to wait after picking
-    await Util.delay(300);
-    // return to home
-    await this.moveTo({ type: CoordType.RCS, x: 0, y: 0, z: -400 });
-
-    // Add item to counter of items picked up by robot
-    if (this.itemsPickedByRobot[item.className] !== undefined) {
-      this.itemsPickedByRobot[item.className]++;
-    } else {
-      this.itemsPickedByRobot[item.className] = 1;
-    }
-
-    item.destroy();
-    console.log('DGA: Item Successful Pick Attempt');
-  }
-
-  // keeps attempting dynamic grabs until successful
-  public async dynamicGrab2(
-    item: Item,
-    place: RCoord,
-    zOffsetHover: number,
-    zOffsetPick: number,
-    runningStopped: Subject<void>,
-  ) {
-    // Take ownership of the item.
-    item.picked = true;
-
-    await this.openGripper();
-
-    let target: BCoord = { type: CoordType.BCS, ...item.xyz };
-
-    while (!this.isInPickBoundary(target)) {
-      await Util.delay(50);
-      target = { type: CoordType.BCS, ...item.xyz };
-    }
-
-    // return to home
-    await this.moveTo(target);
 
     item.destroy();
     console.log('DGA: Item Successful Pick Attempt');

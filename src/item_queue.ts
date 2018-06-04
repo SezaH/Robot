@@ -7,7 +7,7 @@ export class ItemQueue {
   public itemsDetectedByCV: { [className: string]: number } = {};
   private _items: Item[] = [];
   private deviationThreshold = 40; // 40 mm radius
-  private xLimit = 1200;
+  private xLimit = 1100;
 
   constructor() {
     // Purge out of range items.
