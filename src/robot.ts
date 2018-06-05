@@ -508,7 +508,7 @@ export class Robot {
     const r = await this.sendMessage(`M720 S${samples}`);
     const ms = r.match(/X(-?[0-9]{1,4}\.[0-9]{3})\sY(-?[0-9]{1,4}\.[0-9]{3})\sZ(-?[0-9]{1,4}\.[0-9]{3})/);
 
-    if (ms !== undefined) {
+    if (ms !== undefined && ms !== null) {
       const c: RCoord = {
         type: CoordType.RCS,
         x: parseFloat(ms[1]),
