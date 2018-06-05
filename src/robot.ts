@@ -92,6 +92,7 @@ export class Robot {
     zOffset: 100,
   };
   public itemsPickedByRobot: { [className: string]: number } = {};
+  public cal = Robot.defaultCal;
 
   private isConnected = false;
   private port: SerialPort;
@@ -106,8 +107,6 @@ export class Robot {
   // used for converting (augmented) points between belt and robot coordinates
   private b2rATM: number[][];
   private r2bATM: number[][];
-
-  private cal = Robot.defaultCal;
 
   private _coords: RCoord;
 
@@ -655,5 +654,14 @@ export class Robot {
     }
     data += '\n';
     return data;
+  }
+
+  public getBeltWidth() {
+    return this.cal.boundaries.pickBoundary.maxY.scalar + (-1) * this.cal.boundaries.pickBoundary.minY.scalar;
+  }
+
+  public setBeltWidth(beltWidth: number) {
+    this.cal.boundaries.pickBoundary.maxY.scalar = beltWidth / 2;
+    this.cal.boundaries.pickBoundary.minY.scalar = (-1) * (beltWidth / 2);
   }
 }

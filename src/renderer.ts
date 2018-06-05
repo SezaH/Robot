@@ -254,7 +254,31 @@ Doc.addClickListener('cal-browse-btn', async () => {
 });
 
 Doc.addClickListener('robot-config-browse-btn', async () => {
-  Doc.setInputValue('robot-config-path-input', await Util.getFilepath('Configuration file', ['.json']));
+  Doc.setInputValue('robot-config-path-input', await Util.getFilepath('Configuration file', ['json']));
+});
+
+Doc.addClickListener('robot-config-load-btn', async () => {
+  const configPath = Doc.getInputString('robot-config-path-input');
+  try {
+    const rawData = await fs.readFile(configPath, 'utf8');
+    // merge the defualt calibration with the loaded calibration.
+    // The right most object will override any values from objects on the left.
+    // Meaning the loaded file will override the defualts but any are missing the defaults are taken.
+    robot.cal = { ...Robot.defaultCal, ...JSON.parse(rawData) };
+  } catch {
+    return;
+  }
+
+  Doc.setInputValue('robot-config-speed', robot.cal.speed);
+  Doc.setInputValue('robot-hover-Z-offset', robot.cal.zOffset);
+  Doc.setInputValue('robot-belt-width', robot.getBeltWidth());
+});
+
+
+
+Doc.addClickListener('save-robot-config', async () => {
+  const calPath = 'robot-config-path-input';
+  fs.outputFile(calPath, JSON.stringify(robot.cal));
 });
 
 const robotCalPoints: { p1: RCoord, p2: RCoord, p3: RCoord } = {
