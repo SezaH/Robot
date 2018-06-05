@@ -250,7 +250,7 @@ Doc.addClickListener('cal-save-btn', async () => {
 });
 
 Doc.addClickListener('cal-browse-btn', async () => {
-  Doc.setInputValue('cal-path-input', await Util.getFilepath('Calibration file', ['.json']));
+  Doc.setInputValue('cal-path-input', await Util.getFilepath('Calibration file', ['json']));
 });
 
 Doc.addClickListener('robot-config-browse-btn', async () => {
@@ -499,11 +499,11 @@ Doc.addClickListener('origin-camera', async () => {
 });
 
 Doc.addClickListener('model-name-btn', async () => {
-  Doc.setInputValue('modelName', await Util.getFilepath('Model file', ['.pb']));
+  Doc.setInputValue('modelName', await Util.getFilepath('Model file', ['pb']));
 });
 
 Doc.addClickListener('label-map-btn', async () => {
-  Doc.setInputValue('labelMap', await Util.getFilepath('Label map file', ['pb.txt']));
+  Doc.setInputValue('labelMap', await Util.getFilepath('Label map file', ['pbtxt']));
 });
 
 Doc.addClickListener('apply-model', () => {
