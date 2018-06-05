@@ -196,10 +196,12 @@ Doc.addClickListener('clean', () => {
 
 Doc.addClickListener('cal-load-btn', async () => {
   const calPath = Doc.getInputString('cal-path-input');
-
   try {
     const rawData = await fs.readFile(calPath, 'utf8');
-    Conveyor.sysCal = JSON.parse(rawData) as SysCal;
+    // merge the defualt calibration with the loaded calibration.
+    // The right most object will override any values from objects on the left.
+    // Meaning the loaded file will override the defualts but any are missing the defaults are taken.
+    Conveyor.sysCal = { ...Conveyor.defaultSysCal, ...JSON.parse(rawData) };
   } catch {
     return;
   }

@@ -14,12 +14,13 @@ export namespace Conveyor {
   /** The maximum value (exclusive) the encoder can have before restarting at 0 */
   export const encoderLimit = Math.pow(2, 20);
 
-  export let sysCal: SysCal = {
+  export const defaultSysCal: SysCal = {
     cameraEncoder: 0,
     encoderPort: '/dev/ttyACM1',
     mmPerCount: 0,
     robotConfigs: [Robot.defaultCal],
   };
+  export let sysCal = defaultSysCal;
 
   /** Emits everytime a new encoder count is received */
   export const countUpdated = new Subject<number>();
