@@ -66,6 +66,8 @@ let sysConfig: SysConfig = {
 async function main() {
   Camera.init();
 
+  await robot.connect();
+
   // Code here runs on page load.
 
   // await Conveyer.connect('/dev/ttyACM0', 9600); // Real connection
@@ -149,7 +151,7 @@ class Doc {
 }
 
 // connect
-Doc.addClickListener('robot-connect-btn', () => robot.connect(Doc.getInputString('robot-port'), 115200));
+// Doc.addClickListener('robot-connect-btn', () => robot.connect());
 Doc.addClickListener('encoder-connect-btn', () => Conveyor.connect(Doc.getInputString('encoder-port'), 9600));
 
 // send message to robot

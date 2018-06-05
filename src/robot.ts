@@ -24,6 +24,7 @@ export interface CuboidBoundary {
 
 // robot cal read from cal.json
 export interface RobotCal {
+  baudRate: number;
   boundaries: {
     dropBoundary: CuboidBoundary,
     pickBoundary: CuboidBoundary,
@@ -51,6 +52,7 @@ export interface RobotCal {
 
 export class Robot {
   public static readonly defaultCal: RobotCal = {
+    baudRate: 115200,
     boundaries: {
       dropBoundary: {
         maxX: { scalar: 200, coord: CoordType.RCS },
@@ -115,13 +117,32 @@ export class Robot {
   // if it overshoots destination and goes a bit out of bounds
   private originTolerance = 10; // origin bounds extension
 
-  public async connect(portName: string, baudRate: number) {
-    this.port = new SerialPort(portName, { baudRate }, err => console.error(err));
-    this.isConnected = true;
-    await Util.delay(1000);
-    await this.getCoordsRCS();
-    await this.getCoordsRCS();
-    await this.getCoordsRCS();
+  public async connect() {
+    // if already connected, don't want to connect again.
+    if (this.isConnected) return;
+
+    const portList = await SerialPort.list();
+    console.log(portList);
+
+    for (const port of portList) {
+      if (port.vendorId === '1d50') {
+        this.port = new SerialPort(port.comName, { baudRate: this.cal.baudRate });
+        this.isConnected = true;
+        break;
+      }
+    }
+
+    if (this.isConnected) {
+      await Util.delay(1000);
+      await this.getCoordsRCS();
+      await this.getCoordsRCS();
+      await this.getCoordsRCS();
+      document.getElementById('robot-status').classList.remove('badge-danger', 'badge-secondary');
+      document.getElementById('robot-status').classList.add('badge-success');
+    } else {
+      document.getElementById('robot-status').classList.remove('badge-success', 'badge-secondary');
+      document.getElementById('robot-status').classList.add('badge-danger');
+    }
   }
 
   public sendMessage(message: string) {
