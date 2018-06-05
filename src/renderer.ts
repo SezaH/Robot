@@ -169,25 +169,21 @@ let ratio = 0;
 
 Doc.addClickListener('position1', async () => {
   position1 = await Conveyor.fetchCount();
-  console.log('p1 ', position1);
-
 });
+
 Doc.addClickListener('position2', async () => {
   position2 = await Conveyor.fetchCount();
-  console.log('p2 ', position2);
-
 });
 
 Doc.addClickListener('ratio', () => {
   const deltaPosition = Conveyor.calcDeltaT(position1, position2);
-  console.log(Conveyor.countToDist(deltaPosition));
-
-  // const distance = Doc.getInputFloat('distance');
-  // numOfEncoderCalibration++;
-  // ratio += (distance / deltaPosition);
-  // Conveyor.sysCal.mmPerCount = ratio / numOfEncoderCalibration;
+  const distance = Doc.getInputFloat('distance');
+  numOfEncoderCalibration++;
+  ratio += (distance / deltaPosition);
+  Conveyor.sysCal.mmPerCount = ratio / numOfEncoderCalibration;
   Doc.setInnerHtml('cal-encoder', Conveyor.sysCal.mmPerCount * 1000);
 });
+
 Doc.addClickListener('clean', () => {
   numOfEncoderCalibration = 0;
   ratio = 0;
