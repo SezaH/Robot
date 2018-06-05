@@ -10,8 +10,9 @@ export class Model {
       return;
     }
 
+    // Next line is NEEDED to run model
     // tslint:disable-next-line:max-line-length
-    this.mol = spawn('python3', ['io_object_detection.py', modelName, pbTXT, percentage], { cwd: '../models/research/object_detection' });
+    this.mol = spawn('python3', ['io_object_detection.py', modelName, pbTXT, percentage], { cwd: '/home/wastebusters/repos/models/research/object_detection' });
     this.running = true;
 
     console.log('running');

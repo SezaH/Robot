@@ -14,7 +14,9 @@ export namespace Camera {
   export function origin() {
     capture(originImageFile);
 
-    const cal = spawn('python3', ['calibration.py'], { cwd: '../models/research/object_detection' });
+    // Next line is NEEDED to run calibration
+    // tslint:disable-next-line:max-line-length
+    const cal = spawn('python3', ['calibration.py'], { cwd: '/home/wastebusters/repos/models/research/object_detection' });
 
     cal.stdout.on('data', (data) => {
       console.log(`stdout: ${data}`);
