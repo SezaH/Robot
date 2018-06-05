@@ -389,32 +389,32 @@ Doc.addClickListener('motor-on-side-btn', robotMotorsOn);
 Doc.addClickListener('motor-off-side-btn', robotMotorsOff);
 
 document.getElementById('X+').addEventListener('mousedown', async () => {
-  const coords = await robot.getCoordsRCS();
+  const coords = robot.coordRCS;
   await robot.moveTo({ type: CoordType.RCS, x: coords.x + 10, y: coords.y, z: coords.z }, 5000);
 });
 
 document.getElementById('X-').addEventListener('mousedown', async () => {
-  const coords = await robot.getCoordsRCS();
+  const coords = robot.coordRCS;
   await robot.moveTo({ type: CoordType.RCS, x: coords.x - 10, y: coords.y, z: coords.z }, 5000);
 });
 
 document.getElementById('Y+').addEventListener('mousedown', async () => {
-  const coords = await robot.getCoordsRCS();
+  const coords = robot.coordRCS;
   await robot.moveTo({ type: CoordType.RCS, x: coords.x, y: coords.y + 10, z: coords.z }, 5000);
 });
 
 document.getElementById('Y-').addEventListener('mousedown', async () => {
-  const coords = await robot.getCoordsRCS();
+  const coords = robot.coordRCS;
   await robot.moveTo({ type: CoordType.RCS, x: coords.x, y: coords.y - 10, z: coords.z }, 5000);
 });
 
 document.getElementById('Z+').addEventListener('mousedown', async () => {
-  const coords = await robot.getCoordsRCS();
+  const coords = robot.coordRCS;
   await robot.moveTo({ type: CoordType.RCS, x: coords.x, y: coords.y, z: coords.z + 10 }, 5000);
 });
 
 document.getElementById('Z-').addEventListener('mousedown', async () => {
-  const coords = await robot.getCoordsRCS();
+  const coords = robot.coordRCS;
   await robot.moveTo({ type: CoordType.RCS, x: coords.x, y: coords.y, z: coords.z - 10 }, 5000);
 });
 
