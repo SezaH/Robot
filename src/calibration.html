@@ -247,22 +247,76 @@
         </div>
       </div>
 
-
-
-      <!-- Load config -->
-      <div class="input-group input-group-lg mb-3">
-        <input id='config-path-input'
-               type="text"
-               class="form-control"
-               value="./config.json"
-               placeholder="Configuration File">
-        <div class="input-group-append">
-          <button id="config-browse-btn"
-                  class="btn btn-outline-secondary"
-                  type="button">Browse</button>
-          <button id="config-load-btn"
-                  class="btn btn-outline-secondary"
-                  type="button">Load</button>
+      <!-- Robot config -->
+      <div class="card mb-3">
+        <h5 class="card-header">Robot Configuration</h5>
+        <div class="card-body">
+          <div class="input-group mb-3">
+            <input id='robot-config-path-input'
+                   type="text"
+                   class="form-control"
+                   value="./config.json"
+                   placeholder="Configuration File">
+            <div class="input-group-append">
+              <button id="robot-config-browse-btn"
+                      class="btn btn-outline-secondary"
+                      type="button">Browse</button>
+              <button id="robot-config-load-btn"
+                      class="btn btn-outline-secondary"
+                      type="button">Load</button>
+            </div>
+          </div>
+          <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Robot Speed</span>
+              </div>
+            <input id='robot-config-speed'
+                   type="text"
+                   class="form-control"
+                   placeholder="mm/min">
+          </div>
+          <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Belt Width</span>
+              </div>
+            <input id='robot-belt-width'
+                   type="number"
+                   class="form-control"
+                   placeholder="millimeters">
+          </div>
+          <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Hover Z-Offset</span>
+              </div>
+            <input id='robot-hover-Z-offset'
+                   type="number"
+                   class="form-control"
+                   placeholder="millimeters">
+          </div>
+          <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Wall Z-Offset</span>
+              </div>
+            <input id='robot-wall-Z-offset'
+                   type="number"
+                   class="form-control"
+                   placeholder="millimeters">
+          </div>
+          <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Gripper Z-Offset</span>
+              </div>
+            <input id='robot-gripper-Z-offset'
+                   type="number"
+                   class="form-control"
+                   placeholder="millimeters">
+          </div>
+          <button id="apply-robot-config"
+            class="btn btn-primary"
+            type="button">Apply</button>
+          <button id="save-robot-config"
+            class="btn btn-primary"
+            type="button">Save</button>
         </div>
       </div>
 

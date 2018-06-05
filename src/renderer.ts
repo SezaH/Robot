@@ -55,7 +55,7 @@ interface SysConfig {
   };
 }
 
-let sysConfig: SysConfig = {
+const sysConfig: SysConfig = {
   model: {
     labelMap: 'waste_busters/data/cup_label_map.pbtxt',
     name: 'waste_busters/export/faster_rcnn_resnet101_cups_1239.pb',
@@ -253,8 +253,8 @@ Doc.addClickListener('cal-browse-btn', async () => {
   Doc.setInputValue('cal-path-input', await Util.getFilepath('Calibration file', ['.json']));
 });
 
-Doc.addClickListener('config-browse-btn', async () => {
-  Doc.setInputValue('config-path-input', await Util.getFilepath('Configuration file', ['.json']));
+Doc.addClickListener('robot-config-browse-btn', async () => {
+  Doc.setInputValue('robot-config-path-input', await Util.getFilepath('Configuration file', ['.json']));
 });
 
 const robotCalPoints: { p1: RCoord, p2: RCoord, p3: RCoord } = {
