@@ -118,7 +118,9 @@ export class Robot {
   public async connect(portName: string, baudRate: number) {
     this.port = new SerialPort(portName, { baudRate }, err => console.error(err));
     this.isConnected = true;
-    await Util.delay(500);
+    await Util.delay(1000);
+    await this.getCoordsRCS();
+    await this.getCoordsRCS();
     await this.getCoordsRCS();
   }
 
@@ -479,21 +481,25 @@ export class Robot {
     return this.sendMessage('M18');
   }
 
-  public async getCoordsRCS() {
+  public async getCoordsRCS(samples = 500) {
 
-    await this.sendMessage('M895');
-    const coordinates = await this.sendMessage('M895');
+    // The more samples the more accurate the coordinates the robot returns
+    const r = await this.sendMessage(`M720 S${samples}`);
+    const ms = r.match(/X(-?[0-9]{1,4}\.[0-9]{3})\sY(-?[0-9]{1,4}\.[0-9]{3})\sZ(-?[0-9]{1,4}\.[0-9]{3})/);
 
-    const [x, y, z] = coordinates.split(',').map(str => {
-      const num = str.match(/[-+]?[0-9]*\.?[0-9]+/);
-      return (num !== null) ? parseFloat(num[0]) : undefined;
-    });
+    if (ms !== undefined) {
+      const c: RCoord = {
+        type: CoordType.RCS,
+        x: parseFloat(ms[1]),
+        y: parseFloat(ms[2]),
+        z: parseFloat(ms[3]),
+      };
 
-    if (x !== undefined && y !== undefined && z !== undefined) {
-      this._coords = { type: CoordType.RCS, x, y, z };
-      console.log(this._coords);
-
+      if (c.x !== undefined && c.y !== undefined && c.z !== undefined) {
+        this._coords = c;
+      }
     }
+
     return this._coords;
   }
 

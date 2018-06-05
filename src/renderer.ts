@@ -287,7 +287,7 @@ const robotCalPoints: { p1: RCoord, p2: RCoord, p3: RCoord } = {
 Doc.addClickListener('point1-capture-btn', async () => {
   // add this here for now
   Conveyor.sysCal.robotConfigs[0].encoder = await Conveyor.fetchCount();
-  const coords = await robot.getCoordsRCS();
+  const coords = await robot.getCoordsRCS(10000);
   robotCalPoints.p1 = coords;
   Doc.setInnerHtml('cal-x1', coords.x);
   Doc.setInnerHtml('cal-y1', coords.y);
@@ -296,7 +296,7 @@ Doc.addClickListener('point1-capture-btn', async () => {
 });
 
 Doc.addClickListener('point2-capture-btn', async () => {
-  const coords = await robot.getCoordsRCS();
+  const coords = await robot.getCoordsRCS(10000);
   robotCalPoints.p2 = coords;
   Doc.setInnerHtml('cal-x2', coords.x);
   Doc.setInnerHtml('cal-y2', coords.y);
@@ -305,7 +305,7 @@ Doc.addClickListener('point2-capture-btn', async () => {
 });
 
 Doc.addClickListener('point3-capture-btn', async () => {
-  const coords = await robot.getCoordsRCS();
+  const coords = await robot.getCoordsRCS(10000);
   robotCalPoints.p3 = coords;
   Doc.setInnerHtml('cal-x3', coords.x);
   Doc.setInnerHtml('cal-y3', coords.y);
