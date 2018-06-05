@@ -67,6 +67,7 @@ async function main() {
   Camera.init();
 
   await robot.connect();
+  await Conveyor.connect();
 
   // Code here runs on page load.
 
@@ -152,7 +153,7 @@ class Doc {
 
 // connect
 // Doc.addClickListener('robot-connect-btn', () => robot.connect());
-Doc.addClickListener('encoder-connect-btn', () => Conveyor.connect(Doc.getInputString('encoder-port'), 9600));
+// Doc.addClickListener('encoder-connect-btn', () => Conveyor.connect(Doc.getInputString('encoder-port'), 9600));
 
 // send message to robot
 // Doc.addClickListener('send-btn', async () => robot.sendMessage(Doc.getInputString('input-command')));
@@ -221,9 +222,6 @@ Doc.addClickListener('cal-load-btn', async () => {
 
   Doc.setInnerHtml('robot-encoder', Conveyor.sysCal.robotConfigs[0].encoder);
   Doc.setInnerHtml('camera-encoder', Conveyor.sysCal.cameraEncoder);
-
-  Doc.setInputValue('robot-port', Conveyor.sysCal.robotConfigs[0].port);
-  Doc.setInputValue('encoder-port', Conveyor.sysCal.encoderPort);
 
   isPointCaptured = [false, false, false];
 

@@ -30,7 +30,6 @@ export namespace Conveyor {
 
   /** The last received encoder count. */
   let prevT = 0;
-  let mockT = 0;
 
   let prevMs = 0;
 
@@ -61,27 +60,37 @@ export namespace Conveyor {
 
   const fetchCounts = new Subject<void>();
 
-  export async function connect(portName: string, baudRate: number, mock = false) {
+  export async function connect() {
 
-    // Fetch new encoder counts at least 10 times a second.
-    Observable.interval(50).subscribe(() => fetchCount());
+    // if already connected, don't want to connect again.
+    if (isConnected) return;
 
-    if (mock) {
-      Observable.interval(1).subscribe(t => mockT = t);
-      fetchCounts.debounceTime(1).subscribe(() => countUpdated.next(mockT));
-      return;
+    const portList = await SerialPort.list();
+    console.log(portList);
+
+    for (const p of portList) {
+      if (p.vendorId === '16c0') {
+        port = new SerialPort(p.comName, { baudRate: 9600 });
+        isConnected = true;
+        break;
+      }
     }
 
-    port = new SerialPort(portName, { baudRate }, err => console.error(err));
-    isConnected = true;
+    if (isConnected) {
+      document.getElementById('encoder-status').classList.remove('badge-danger', 'badge-secondary');
+      document.getElementById('encoder-status').classList.add('badge-success');
 
-    port.on('data', (data: any) => {
-      countUpdated.next(parseInt(data.toString(), 10));
-    });
+      port.on('data', (data: any) => {
+        countUpdated.next(parseInt(data.toString(), 10));
+      });
 
-    // Limit the encoder fetches to a rate of 1000Hz max.
-    fetchCounts.debounceTime(1).subscribe(() => port.write('\n'));
-    await fetchCounts.next();
+      // Limit the encoder fetches to a rate of 1000Hz max.
+      fetchCounts.debounceTime(1).subscribe(() => port.write('\n'));
+      await fetchCounts.next();
+    } else {
+      document.getElementById('encoder-status').classList.remove('badge-success', 'badge-secondary');
+      document.getElementById('encoder-status').classList.add('badge-danger');
+    }
   }
 
   /**
