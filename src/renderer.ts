@@ -249,35 +249,12 @@ Doc.addClickListener('cal-save-btn', async () => {
 
 });
 
-Doc.addClickListener('config-load-btn', async () => {
-  const configPath = Doc.getInputString('config-path-input');
-
-  try {
-    const rawData = await fs.readFile(configPath, 'utf8');
-    sysConfig = JSON.parse(rawData) as SysConfig;
-  } catch {
-    return;
-  }
-
-  Doc.setInnerHtml('modelName', sysConfig.model.name);
-  Doc.setInnerHtml('labelMap', sysConfig.model.labelMap);
-  Doc.setInnerHtml('threshold-percentage', sysConfig.model.threshold);
-});
-
 Doc.addClickListener('cal-browse-btn', async () => {
   Doc.setInputValue('cal-path-input', await Util.getFilepath('Calibration file', ['.json']));
 });
 
 Doc.addClickListener('config-browse-btn', async () => {
   Doc.setInputValue('config-path-input', await Util.getFilepath('Configuration file', ['.json']));
-});
-
-Doc.addClickListener('config-save-btn', async () => {
-
-  const configPath = Doc.getInputString('config-path-input');
-  fs.outputFile(configPath, JSON.stringify(sysConfig));
-
-  // }
 });
 
 const robotCalPoints: { p1: RCoord, p2: RCoord, p3: RCoord } = {
