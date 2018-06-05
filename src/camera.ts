@@ -9,7 +9,7 @@ export namespace Camera {
   const context = canvas.getContext('2d');
 
   /** Checkerboard centered image sent to calibration.py to set origin. */
-  const originImageFile = '../models/research/object_detection/io/origin.jpg';
+  const originImageFile = '/home/wastebusters/repos/models/research/object_detection/io/origin.jpg';
 
   export function origin() {
     capture(originImageFile);

@@ -11,13 +11,13 @@ import { Robot, RobotCal } from './robot';
 import { Coord3, CoordType, RCoord, Util } from './utils';
 
 /** Object bounding boxes returned from CV. */
-const datafile = '../models/research/object_detection/io/output.json';
+const datafile = '/home/wastebusters/repos/models/research/object_detection/io/output.json';
 
 /** Image returned from CV with bounding boxes. */
-const labeledImageFile = '../models/research/object_detection/io/output.jpg';
+const labeledImageFile = '/home/wastebusters/repos/models/research/object_detection/io/output.jpg';
 
 /** Unlabeled image sent to CV. */
-const unlabeledImageFile = '../models/research/object_detection/io/input.jpg';
+const unlabeledImageFile = '/home/wastebusters/repos/models/research/object_detection/io/input.jpg';
 
 /** Unlabeled image sent to CV. */
 const exportDirectory = './unlabeled/';
