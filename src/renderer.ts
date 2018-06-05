@@ -48,7 +48,6 @@ const imageContext = imageCanvas.getContext('2d');
 const queue = new ItemQueue();
 
 interface SysConfig {
-  dropLocations: DropLoc[];
   model: {
     name: string,
     labelMap: string,
@@ -56,15 +55,7 @@ interface SysConfig {
   };
 }
 
-interface DropLoc {
-  dropLoc: RCoord;
-  classId: number;
-  className: string;
-
-}
-
 let sysConfig: SysConfig = {
-  dropLocations: [],
   model: {
     labelMap: 'waste_busters/data/cup_label_map.pbtxt',
     name: 'waste_busters/export/faster_rcnn_resnet101_cups_1239.pb',
@@ -158,7 +149,7 @@ class Doc {
 }
 
 // connect
-Doc.addClickListener('robot-connect-btn', () => robot.connect(Doc.getInputString('robot-port'), 115200));
+Doc.addClickListener('robot-connect-btn', () => robot.connect());
 Doc.addClickListener('encoder-connect-btn', () => Conveyor.connect(Doc.getInputString('encoder-port'), 9600));
 
 // send message to robot
@@ -276,11 +267,11 @@ Doc.addClickListener('config-load-btn', async () => {
 });
 
 Doc.addClickListener('cal-browse-btn', async () => {
-  Doc.setInputValue('cal-path-input', await Util.getFilepath('Calibration file', ['json']));
+  Doc.setInputValue('cal-path-input', await Util.getFilepath('Calibration file', ['.json']));
 });
 
 Doc.addClickListener('config-browse-btn', async () => {
-  Doc.setInputValue('config-path-input', await Util.getFilepath('Configuration file', ['json']));
+  Doc.setInputValue('config-path-input', await Util.getFilepath('Configuration file', ['.json']));
 });
 
 Doc.addClickListener('config-save-btn', async () => {
@@ -503,11 +494,11 @@ Doc.addClickListener('origin-camera', async () => {
 });
 
 Doc.addClickListener('model-name-btn', async () => {
-  Doc.setInputValue('modelName', await Util.getFilepath('Model file', ['pb']));
+  Doc.setInputValue('modelName', await Util.getFilepath('Model file', ['.pb']));
 });
 
 Doc.addClickListener('label-map-btn', async () => {
-  Doc.setInputValue('labelMap', await Util.getFilepath('Label map file', ['pbtxt']));
+  Doc.setInputValue('labelMap', await Util.getFilepath('Label map file', ['.pbtxt']));
 });
 
 Doc.addClickListener('apply-model', () => {
@@ -546,7 +537,7 @@ Doc.addClickListener('start-model', async () => {
       .takeUntil(runningStopped)
       .do(item => console.log('pick item ', item))
       .concatMap(async item =>
-        await robot.dynamicGrab(item, getDropLocation(item), 150, 0, runningStopped))
+        await robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 70, 0, runningStopped))
       .subscribe(async i => {
         console.log('pick done', i);
         dynamicPick.next(await getNextItem());
@@ -555,20 +546,6 @@ Doc.addClickListener('start-model', async () => {
     dynamicPick.next(await getNextItem());
   }
 });
-
-function getDropLocation(item: Item): RCoord {
-  for (const dropLoc of sysConfig.dropLocations) {
-    if (dropLoc.classId === item.classID) {
-      return dropLoc.dropLoc;
-    }
-  }
-  // if not, return all coordinates as NaN, signifying no drop location found
-  // almost certainly a better way to do this, but easiset for now because
-  // isInCuboidBoundary already checks for this
-  // and giving non existant coordiantes seems better than giving bad coordiantes
-  // that the robot might try to move to.
-  return { type: CoordType.RCS, x: NaN, y: NaN, z: NaN };
-}
 
 const itemListBody = document.getElementById('items-list-body') as HTMLDivElement;
 

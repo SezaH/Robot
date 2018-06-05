@@ -24,6 +24,7 @@ export interface CuboidBoundary {
 
 // robot cal read from cal.json
 export interface RobotCal {
+  baudRate: number;
   boundaries: {
     dropBoundary: CuboidBoundary,
     pickBoundary: CuboidBoundary,
@@ -51,6 +52,7 @@ export interface RobotCal {
 
 export class Robot {
   public static readonly defaultCal: RobotCal = {
+    baudRate: 115200,
     boundaries: {
       dropBoundary: {
         maxX: { scalar: 200, coord: CoordType.RCS },
@@ -115,8 +117,17 @@ export class Robot {
   // if it overshoots destination and goes a bit out of bounds
   private originTolerance = 10; // origin bounds extension
 
-  public async connect(portName: string, baudRate: number) {
-    this.port = new SerialPort(portName, { baudRate }, err => console.error(err));
+  public async connect() {
+    // if already connected, don't want to connect again.
+    if (this.isConnected === true) {
+      return;
+    }
+    const portList = await SerialPort.list();
+    for (const port of portList) {
+      if (port.serialNumber === '19FFB00CAEC584E4570669EEF50020C6') {
+        this.port = new SerialPort(port.comName, { baudRate: this.cal.baudRate });
+      }
+    }
     this.isConnected = true;
     await Util.delay(500);
     await this.getCoordsRCS();
