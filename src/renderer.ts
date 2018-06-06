@@ -64,15 +64,14 @@ const sysConfig: SysConfig = {
 };
 
 async function main() {
+  // Code here runs on page load.
+
   Camera.init();
 
   await robot.connect();
   await Conveyor.connect();
 
-  // Code here runs on page load.
-
-  // await Conveyer.connect('/dev/ttyACM0', 9600); // Real connection
-  // await Conveyer.connect('/dev/ttyACM1', 9600, true); // Mock connection
+  await loadCalibration();
 
   await Util.delay(2000);
 
@@ -195,15 +194,13 @@ Doc.addClickListener('clean', () => {
   Doc.setInnerHtml('cal-encoder', Conveyor.sysCal.mmPerCount * 1000);
 });
 
-Doc.addClickListener('cal-load-btn', async () => {
-  const calPath = Doc.getInputString('cal-path-input');
+async function loadCalibration() {
   try {
-    const rawData = await fs.readFile(calPath, 'utf8');
-    // merge the defualt calibration with the loaded calibration.
-    // The right most object will override any values from objects on the left.
-    // Meaning the loaded file will override the defualts but any are missing the defaults are taken.
+    const rawData = await fs.readFile('./cal.json', 'utf8');
     Conveyor.sysCal = { ...Conveyor.defaultSysCal, ...JSON.parse(rawData) };
   } catch {
+    Conveyor.sysCal = { ...Conveyor.defaultSysCal };
+    saveCalibration();
     return;
   }
 
@@ -228,31 +225,16 @@ Doc.addClickListener('cal-load-btn', async () => {
 
   isPointCaptured = [false, false, false];
 
-  robot.setConfig(Conveyor.sysCal.robotConfigs[0]);
+  robot.setCal(Conveyor.sysCal.robotConfigs[0]);
   robot.calibrate(Conveyor.sysCal.cameraEncoder);
-});
+}
 
-Doc.addClickListener('cal-save-btn', async () => {
-  // if (Conveyor.sysConfig.robotConfigs.every(c => c.valid)) {
+Doc.addClickListener('cal-save-btn', () => saveCalibration());
 
-  // already saved camera encoder  when take picture
-  // already saved robot encoder when capture first point or calibrate
-  // should save this only when press save, methinks
-
-  // if (this.robotCalPoints) {
-  Conveyor.sysCal.robotConfigs[0].calPoints.robot.p1 = robotCalPoints.p1;
-  Conveyor.sysCal.robotConfigs[0].calPoints.robot.p2 = robotCalPoints.p2;
-  Conveyor.sysCal.robotConfigs[0].calPoints.robot.p3 = robotCalPoints.p3;
-  // }
-
-  const calPath = Doc.getInputString('cal-path-input');
-  fs.outputFile(calPath, JSON.stringify(Conveyor.sysCal));
-
-});
-
-Doc.addClickListener('cal-browse-btn', async () => {
-  Doc.setInputValue('cal-path-input', await Util.getFilepath('Calibration file', ['json']));
-});
+function saveCalibration() {
+  Conveyor.sysCal.robotConfigs[0] = robot.getCal();
+  fs.outputFile('./cal.json', JSON.stringify(Conveyor.sysCal));
+}
 
 Doc.addClickListener('robot-config-browse-btn', async () => {
   Doc.setInputValue('robot-config-path-input', await Util.getFilepath('Configuration file', ['json']));
@@ -295,8 +277,6 @@ const robotCalPoints: { p1: RCoord, p2: RCoord, p3: RCoord } = {
 };
 
 Doc.addClickListener('point1-capture-btn', async () => {
-  // add this here for now
-  Conveyor.sysCal.robotConfigs[0].encoder = await Conveyor.fetchCount();
   const coords = await robot.getCoordsRCS(10000);
   robotCalPoints.p1 = coords;
   Doc.setInnerHtml('cal-x1', coords.x);
@@ -329,11 +309,6 @@ Doc.addClickListener('calibrate-btn', async () => {
     console.log('Error: you should callibrate the camera first');
     return;
   }
-
-  // if (!isPointCaptured.every(b => b)) {
-  //   console.log('Error: you should capture every point first');
-  //   return;
-  // }
 
   const count = await Conveyor.fetchCount();
   Conveyor.sysCal.robotConfigs[0].encoder = count;

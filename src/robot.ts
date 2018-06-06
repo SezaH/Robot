@@ -156,9 +156,11 @@ export class Robot {
     return retval;
   }
 
-  public setConfig(cal: RobotCal) {
+  public setCal(cal: RobotCal) {
     this.cal = cal;
   }
+
+  public getCal() { return this.cal; }
 
   public calibrate(
     cameraEncoder: number,
@@ -252,7 +254,7 @@ export class Robot {
     this.cal.maxPick.x = xOffset + 100;
     this.cal.minPick.x = xOffset - 100;
 
-    this.cal.calPoints.robot = robotPoints;
+    this.cal.calPoints.robot = { ...robotPoints };
     this.cal.encoder = robotEncoder;
 
     this.cal.valid = true;
