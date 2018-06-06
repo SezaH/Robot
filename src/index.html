@@ -86,23 +86,6 @@
         </div>
       </div>
 
-      <!-- Load calibration -->
-      <div class="input-group input-group-lg mb-3">
-        <input id='cal-path-input'
-               type="text"
-               class="form-control"
-               value="./cal.json"
-               placeholder="Configuration File">
-        <div class="input-group-append">
-          <button id="cal-browse-btn"
-                  class="btn btn-outline-secondary"
-                  type="button">Browse</button>
-          <button id="cal-load-btn"
-                  class="btn btn-outline-secondary"
-                  type="button">Load</button>
-        </div>
-      </div>
-
       <!-- Encoder Calibration -->
       <div class="card mb-3">
         <h5 class="card-header">Encoder</h5>
@@ -112,7 +95,7 @@
             <span id="cal-encoder">0</span>
           </p>
 
-          <div class="input-group my-3">
+          <div class="input-group mt-3">
             <div class="input-group-prepend">
               <button id="position1"
                       class="btn btn-outline-secondary">Position 1</button>
@@ -122,7 +105,7 @@
             <input id="distance"
                    class="form-control"
                    placeholder="Distance mm">
-            <div class="input-group-prepend">
+            <div class="input-group-append">
               <button id="ratio"
                       type="button"
                       class="btn btn-outline-secondary">Next</button>
