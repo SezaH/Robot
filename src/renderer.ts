@@ -149,20 +149,17 @@ class Doc {
   private static inputs = new Map<string, HTMLInputElement>();
 }
 
-// connect
-// Doc.addClickListener('robot-connect-btn', () => robot.connect());
-// Doc.addClickListener('encoder-connect-btn', () => Conveyor.connect(Doc.getInputString('encoder-port'), 9600));
+robot.connectionEstablished.subscribe(() => {
+  document.getElementById('robot-status').classList.remove('badge-danger', 'badge-secondary');
+  document.getElementById('robot-status').classList.add('badge-success');
+});
 
-// send message to robot
-// Doc.addClickListener('send-btn', async () => robot.sendMessage(Doc.getInputString('input-command')));
+robot.connectionLost.subscribe(() => {
+  console.warn('ROBOT CONNECTION LOST');
+  document.getElementById('robot-status').classList.remove('badge-success', 'badge-secondary');
+  document.getElementById('robot-status').classList.add('badge-danger');
+});
 
-// document.getElementById('encoder-btn').addEventListener('click', async () => {
-//   const newT = await Conveyer.fetchCount();
-//   const deltaT = Conveyer.calcDeltaT(lastT, newT);
-//   const deltaX = Conveyer.countToDist(deltaT);
-//   console.log(`new ${newT}, old ${lastT}, delta: ${deltaT}, deltaX ${deltaX}`);
-//   lastT = newT;
-// });
 let numOfEncoderCalibration = 0;
 let position1: number;
 let position2: number;
@@ -543,7 +540,7 @@ Doc.addClickListener('apply-model', () => {
 });
 
 Doc.addClickListener('start-model', async () => {
-  if (!running) {
+  if (!running && robot.isConnected && Conveyor.isConnected) {
     running = true;
 
     (document.getElementById('start-model') as HTMLButtonElement).disabled = true;

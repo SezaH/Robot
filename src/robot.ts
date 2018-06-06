@@ -1,4 +1,4 @@
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { throttleTime } from 'rxjs/operator/throttleTime';
 import * as SerialPort from 'serialport';
 import { Conveyor } from './conveyor';
@@ -92,7 +92,10 @@ export class Robot {
   public itemsPickedByRobot: { [className: string]: number } = {};
   public cal = Robot.defaultCal;
 
-  private isConnected = false;
+  private _connectionEstablished = new Subject<void>();
+  private _connectionLost = new Subject<void>();
+
+  private _isConnected = false;
   private port: SerialPort;
   private transform: number[][];
 
@@ -114,23 +117,41 @@ export class Robot {
   // if it overshoots destination and goes a bit out of bounds
   private originTolerance = 10; // origin bounds extension
 
+  constructor() {
+    this._connectionLost.subscribe(async () => {
+      this._isConnected = false;
+      Observable
+        .interval(1000)
+        .takeUntil(this._connectionEstablished)
+        .takeUntil(this._connectionLost)
+        .subscribe(() => this.connect());
+    });
+  }
+
   public async connect() {
     // if already connected, don't want to connect again.
-    if (this.isConnected) return;
+    if (this._isConnected) return;
 
     try {
+      if (this.port !== undefined) this.port.close();
+
       const portList = await SerialPort.list();
       console.log(portList);
 
       for (const port of portList) {
         if (port.vendorId === '1d50') {
           this.port = new SerialPort(port.comName, { baudRate: this.cal.baudRate });
-          this.isConnected = true;
+          this._isConnected = true;
           break;
         }
       }
 
-      if (!this.isConnected) throw new Error('Robot Connection Failed');
+      if (!this._isConnected) throw new Error('Robot Connection Failed');
+
+      this.port.once('close', () => {
+        this.port = undefined;
+        this._connectionLost.next();
+      });
 
       for (let i = 0; i < 5; i++) {
         await Util.delay(500);
@@ -140,32 +161,35 @@ export class Robot {
 
       if (this._coords.x === undefined) throw new Error('Failed to get Robot Coordinates');
 
-      document.getElementById('robot-status').classList.remove('badge-danger', 'badge-secondary');
-      document.getElementById('robot-status').classList.add('badge-success');
+      this._connectionEstablished.next();
     } catch (error) {
       console.error(error);
-      this.isConnected = false;
-      document.getElementById('robot-status').classList.remove('badge-success', 'badge-secondary');
-      document.getElementById('robot-status').classList.add('badge-danger');
+      if (this._isConnected) this._connectionLost.next();
     }
   }
 
   public sendMessage(message: string) {
-    const retval = new Promise<string>((resolve, reject) => {
-      this.port.once('data', data => {
-        const str = data.toString();
-        if (str.includes('!!')) {
-          reject(new Error('ESTOP ENABLED'));
-        } else {
-          console.log(data.toString());
-          resolve(data.toString());
-        }
-      });
-    });
+    const retval = Util.timeout(
+      new Promise<string>((resolve, reject) => {
+        this.port.once('data', data => {
+          const str = data.toString();
+          if (str.includes('!!')) {
+            reject(new Error('ESTOP ENABLED'));
+          } else {
+            console.log(data.toString());
+            resolve(data.toString());
+          }
+        });
+      }),
+      200, // Messages timeout in 200ms
+    );
 
     this.port.write(message + '\r\n');
     console.log(message);
-    return retval;
+    return retval.catch((err) => {
+      this._connectionLost.next();
+      throw err;
+    });
   }
 
   public setCal(cal: RobotCal) {
@@ -173,6 +197,10 @@ export class Robot {
   }
 
   public getCal() { return this.cal; }
+
+  public get isConnected() { return this._isConnected; }
+  public get connectionEstablished() { return this._connectionEstablished.asObservable(); }
+  public get connectionLost() { return this._connectionLost.asObservable(); }
 
   public calibrate(
     cameraEncoder: number,
@@ -643,7 +671,8 @@ export class Robot {
       } else {
         this.itemsPickedByRobot[item.className] = 1;
       }
-    } catch {
+    } catch (error) {
+      console.error(error);
       item.destroy();
       return;
     }
