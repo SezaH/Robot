@@ -6,7 +6,7 @@ export interface SysCal {
   cameraEncoder: number;
   encoderPort: string;
   mmPerCount: number;
-  robotConfigs: RobotCal[];
+  robotConfig: RobotCal;
 }
 
 // var SerialPort = require('serialport');
@@ -18,7 +18,7 @@ export namespace Conveyor {
     cameraEncoder: 0,
     encoderPort: '/dev/ttyACM1',
     mmPerCount: 0,
-    robotConfigs: [Robot.defaultCal],
+    robotConfig: Robot.defaultCal,
   };
   export let sysCal = defaultSysCal;
 
@@ -57,7 +57,7 @@ export namespace Conveyor {
   });
 
   let port: SerialPort;
-  let isConnected = false;
+  export let isConnected = false;
 
   const fetchCounts = new Subject<void>();
 

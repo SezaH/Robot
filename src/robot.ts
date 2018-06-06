@@ -44,7 +44,6 @@ export interface RobotCal {
   encoder: number;
   maxPick: BCoord;
   minPick: BCoord;
-  port: string;
   speed: number;
   valid: boolean;
   zOffset: number;
@@ -86,7 +85,6 @@ export class Robot {
     encoder: -1,
     maxPick: { type: CoordType.BCS, x: 0, y: 0, z: 0 },
     minPick: { type: CoordType.BCS, x: 0, y: 0, z: 0 },
-    port: '/dev/ttyACM0',
     speed: 5000,
     valid: false,
     zOffset: 100,

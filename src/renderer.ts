@@ -68,10 +68,9 @@ async function main() {
 
   Camera.init();
 
+  await loadCalibration();
   await robot.connect();
   await Conveyor.connect();
-
-  await loadCalibration();
 
   await Util.delay(2000);
 
@@ -197,14 +196,14 @@ Doc.addClickListener('clean', () => {
 async function loadCalibration() {
   try {
     const rawData = await fs.readFile('./cal.json', 'utf8');
-    Conveyor.sysCal = { ...Conveyor.defaultSysCal, ...JSON.parse(rawData) };
+    Conveyor.sysCal = Util.mergeDeep(Conveyor.defaultSysCal, JSON.parse(rawData) as SysCal);
   } catch {
     Conveyor.sysCal = { ...Conveyor.defaultSysCal };
     saveCalibration();
     return;
   }
 
-  const calPoints = Conveyor.sysCal.robotConfigs[0].calPoints.robot;
+  const calPoints = Conveyor.sysCal.robotConfig.calPoints.robot;
 
   Doc.setInnerHtml('cal-x1', calPoints.p1.x);
   Doc.setInnerHtml('cal-y1', calPoints.p1.y);
@@ -220,19 +219,19 @@ async function loadCalibration() {
 
   Doc.setInnerHtml('cal-encoder', Conveyor.sysCal.mmPerCount * 1000);
 
-  Doc.setInnerHtml('robot-encoder', Conveyor.sysCal.robotConfigs[0].encoder);
+  Doc.setInnerHtml('robot-encoder', Conveyor.sysCal.robotConfig.encoder);
   Doc.setInnerHtml('camera-encoder', Conveyor.sysCal.cameraEncoder);
 
   isPointCaptured = [false, false, false];
 
-  robot.setCal(Conveyor.sysCal.robotConfigs[0]);
+  robot.setCal(Conveyor.sysCal.robotConfig);
   robot.calibrate(Conveyor.sysCal.cameraEncoder);
 }
 
 Doc.addClickListener('cal-save-btn', () => saveCalibration());
 
 function saveCalibration() {
-  Conveyor.sysCal.robotConfigs[0] = robot.getCal();
+  Conveyor.sysCal.robotConfig = robot.getCal();
   fs.outputFile('./cal.json', JSON.stringify(Conveyor.sysCal));
 }
 
@@ -311,7 +310,7 @@ Doc.addClickListener('calibrate-btn', async () => {
   }
 
   const count = await Conveyor.fetchCount();
-  Conveyor.sysCal.robotConfigs[0].encoder = count;
+  robot.cal.encoder = count;
 
   Doc.setInnerHtml('robot-encoder', count);
 
