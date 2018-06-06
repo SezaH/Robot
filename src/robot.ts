@@ -120,37 +120,51 @@ export class Robot {
     // if already connected, don't want to connect again.
     if (this.isConnected) return;
 
-    const portList = await SerialPort.list();
-    console.log(portList);
+    try {
+      const portList = await SerialPort.list();
+      console.log(portList);
 
-    for (const port of portList) {
-      if (port.vendorId === '1d50') {
-        this.port = new SerialPort(port.comName, { baudRate: this.cal.baudRate });
-        this.isConnected = true;
+      for (const port of portList) {
+        if (port.vendorId === '1d50') {
+          this.port = new SerialPort(port.comName, { baudRate: this.cal.baudRate });
+          this.isConnected = true;
+          break;
+        }
+      }
+
+      if (!this.isConnected) throw new Error('Robot Connection Failed');
+
+      for (let i = 0; i < 5; i++) {
+        await Util.delay(500);
+        await this.getCoordsRCS(); // Will throw if E-STOPPED
         break;
       }
-    }
 
-    if (this.isConnected) {
-      await Util.delay(1000);
-      await this.getCoordsRCS();
-      await this.getCoordsRCS();
-      await this.getCoordsRCS();
+      if (this._coords.x === undefined) throw new Error('Failed to get Robot Coordinates');
+
       document.getElementById('robot-status').classList.remove('badge-danger', 'badge-secondary');
       document.getElementById('robot-status').classList.add('badge-success');
-    } else {
+    } catch (error) {
+      console.error(error);
+      this.isConnected = false;
       document.getElementById('robot-status').classList.remove('badge-success', 'badge-secondary');
       document.getElementById('robot-status').classList.add('badge-danger');
     }
   }
 
   public sendMessage(message: string) {
-    const retval = new Promise<string>(resolve => {
+    const retval = new Promise<string>((resolve, reject) => {
       this.port.once('data', data => {
-        console.log(data.toString());
-        resolve(data.toString());
+        const str = data.toString();
+        if (str.includes('!!')) {
+          reject(new Error('ESTOP ENABLED'));
+        } else {
+          console.log(data.toString());
+          resolve(data.toString());
+        }
       });
     });
+
     this.port.write(message + '\r\n');
     console.log(message);
     return retval;
