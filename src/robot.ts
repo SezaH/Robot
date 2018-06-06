@@ -348,7 +348,7 @@ export class Robot {
     // cannot move to belt coordinates if not calibrated
     if (!this.cal.valid && coords.type === CoordType.BCS) return;
 
-    if (!this.isValidMove(this.coordBCS, coords)) {
+    if (!this.isValidMove(this.coordRCS, coords)) {
       console.log('invalid move to: ', coords);
       // return;
     }
