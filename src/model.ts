@@ -5,13 +5,17 @@ export class Model {
   private running = false;
 
   public Run(modelName: string, pbTXT: string, percentage: string) {
-    if (this.running === true) {
+    if (this.running) {
       console.log('it is running in the background');
       return;
     }
 
     // tslint:disable-next-line:max-line-length
-    this.mol = spawn('python3', ['io_object_detection.py', modelName, pbTXT, percentage], { cwd: '/home/wastebusters/repos/models/research/object_detection' });
+    this.mol = spawn(
+      'python3',
+      ['io_object_detection.py', modelName, pbTXT, percentage],
+      { cwd: '/home/wastebusters/repos/models/research/object_detection' },
+    );
     this.running = true;
 
     console.log('running');
