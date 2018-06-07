@@ -267,14 +267,12 @@ Doc.addClickListener('robot-config-load-btn', async () => {
   Doc.setInputValue('robot-config-speed', robot.cal.speed);
   Doc.setInputValue('robot-belt-width', robot.getBeltWidth());
   Doc.setInputValue('robot-hover-Z-offset', robot.cal.zOffset);
-  Doc.setInputValue('robot-baudRate', robot.cal.baudRate);
 });
 
 Doc.addClickListener('apply-robot-config', async () => {
   robot.cal.speed = Doc.getInputFloat('robot-config-speed');
   robot.setBeltWidth(Doc.getInputFloat('robot-belt-width'));
   robot.cal.zOffset = Doc.getInputFloat('robot-hover-Z-offset');
-  robot.cal.baudRate = Doc.getInputFloat('robot-baudRate');
 });
 
 Doc.addClickListener('save-robot-config', async () => {
