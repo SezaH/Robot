@@ -160,6 +160,17 @@ robot.connectionLost.subscribe(() => {
   document.getElementById('robot-status').classList.add('badge-danger');
 });
 
+Conveyor.connectionEstablished.subscribe(() => {
+  document.getElementById('encoder-status').classList.remove('badge-danger', 'badge-secondary');
+  document.getElementById('encoder-status').classList.add('badge-success');
+});
+
+Conveyor.connectionLost.subscribe(() => {
+  console.warn('ENCODER CONNECTION LOST');
+  document.getElementById('encoder-status').classList.remove('badge-success', 'badge-secondary');
+  document.getElementById('encoder-status').classList.add('badge-danger');
+});
+
 let numOfEncoderCalibration = 0;
 let position1: number;
 let position2: number;

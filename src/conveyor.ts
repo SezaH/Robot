@@ -58,6 +58,17 @@ export namespace Conveyor {
 
   let port: SerialPort;
   export let isConnected = false;
+  export let connectionEstablished = new Subject<void>();
+  export let connectionLost = new Subject<void>();
+
+  connectionLost.subscribe(async () => {
+    isConnected = false;
+    Observable
+      .interval(1000)
+      .takeUntil(connectionEstablished)
+      .takeUntil(connectionLost)
+      .subscribe(() => connect());
+  });
 
   const fetchCounts = new Subject<void>();
 
@@ -66,31 +77,37 @@ export namespace Conveyor {
     // if already connected, don't want to connect again.
     if (isConnected) return;
 
-    const portList = await SerialPort.list();
-    console.log(portList);
+    try {
+      if (port !== undefined) port.close();
+      const portList = await SerialPort.list();
+      console.log(portList);
 
-    for (const p of portList) {
-      if (p.vendorId === '16c0') {
-        port = new SerialPort(p.comName, { baudRate: 9600 });
-        isConnected = true;
-        break;
+      for (const p of portList) {
+        if (p.vendorId === '16c0') {
+          port = new SerialPort(p.comName, { baudRate: 9600 });
+          isConnected = true;
+          break;
+        }
       }
-    }
+      if (!isConnected) throw new Error('Encoder Connection Failed');
 
-    if (isConnected) {
-      document.getElementById('encoder-status').classList.remove('badge-danger', 'badge-secondary');
-      document.getElementById('encoder-status').classList.add('badge-success');
+      connectionEstablished.next();
 
       port.on('data', (data: any) => {
         countUpdated.next(parseInt(data.toString(), 10));
       });
 
+      port.once('close', () => {
+        port = undefined;
+        connectionLost.next();
+      });
+
       // Limit the encoder fetches to a rate of 1000Hz max.
       fetchCounts.debounceTime(1).subscribe(() => port.write('\n'));
       await fetchCounts.next();
-    } else {
-      document.getElementById('encoder-status').classList.remove('badge-success', 'badge-secondary');
-      document.getElementById('encoder-status').classList.add('badge-danger');
+    } catch (error) {
+      console.error(error);
+      if (isConnected) connectionLost.next();
     }
   }
 
