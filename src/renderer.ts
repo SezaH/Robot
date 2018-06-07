@@ -235,9 +235,15 @@ async function loadCalibration() {
   Doc.setInnerHtml('robot-encoder', Conveyor.sysCal.robotConfig.encoder);
   Doc.setInnerHtml('camera-encoder', Conveyor.sysCal.cameraEncoder);
 
+  robot.setCal(Conveyor.sysCal.robotConfig);
+
+  Doc.setInputValue('robot-config-speed', robot.cal.speed);
+  Doc.setInputValue('robot-belt-width', robot.getBeltWidth());
+  Doc.setInputValue('robot-Z-offset', robot.cal.zOffset);
+  Doc.setInputValue('robot-Z-hover', robot.cal.zHover);
+
   isPointCaptured = [false, false, false];
 
-  robot.setCal(Conveyor.sysCal.robotConfig);
   robot.calibrate(Conveyor.sysCal.cameraEncoder);
 }
 
@@ -248,37 +254,14 @@ function saveCalibration() {
   fs.outputFile('./cal.json', JSON.stringify(Conveyor.sysCal));
 }
 
-Doc.addClickListener('robot-config-browse-btn', async () => {
-  Doc.setInputValue('robot-config-path-input', await Util.getFilepath('Configuration file', ['json']));
-});
-
-Doc.addClickListener('robot-config-load-btn', async () => {
-  const configPath = Doc.getInputString('robot-config-path-input');
-  try {
-    const rawData = await fs.readFile(configPath, 'utf8');
-    // merge the defualt calibration with the loaded calibration.
-    // The right most object will override any values from objects on the left.
-    // Meaning the loaded file will override the defualts but any are missing the defaults are taken.
-    robot.cal = { ...Robot.defaultCal, ...JSON.parse(rawData) };
-  } catch {
-    return;
-  }
-
-  Doc.setInputValue('robot-config-speed', robot.cal.speed);
-  Doc.setInputValue('robot-belt-width', robot.getBeltWidth());
-  Doc.setInputValue('robot-hover-Z-offset', robot.cal.zOffset);
-});
-
 Doc.addClickListener('apply-robot-config', async () => {
   robot.cal.speed = Doc.getInputFloat('robot-config-speed');
   robot.setBeltWidth(Doc.getInputFloat('robot-belt-width'));
-  robot.cal.zOffset = Doc.getInputFloat('robot-hover-Z-offset');
+  robot.cal.zOffset = Doc.getInputFloat('robot-Z-offset');
+  robot.cal.zHover = Doc.getInputFloat('robot-Z-hover');
 });
 
-Doc.addClickListener('save-robot-config', async () => {
-  const calPath = Doc.getInputString('robot-config-path-input');
-  fs.outputFile(calPath, JSON.stringify(robot.cal));
-});
+Doc.addClickListener('save-robot-config', () => saveCalibration());
 
 const robotCalPoints: { p1: RCoord, p2: RCoord, p3: RCoord } = {
   p1: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
@@ -446,8 +429,9 @@ Doc.addClickListener('start-model', async () => {
       .do(item => console.log('pick item ', item))
       .concatMap(async item =>
         await robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 70, 0, runningStopped))
-      .subscribe(async i => {
-        console.log('pick done', i);
+      .subscribe(async succ => {
+        if (!succ) queue.clear();
+        console.log('pick done');
         dynamicPick.next(await getNextItem());
       });
 

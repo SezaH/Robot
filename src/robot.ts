@@ -47,6 +47,7 @@ export interface RobotCal {
   speed: number;
   valid: boolean;
   zOffset: number;
+  zHover: number;
 }
 
 export class Robot {
@@ -87,8 +88,10 @@ export class Robot {
     minPick: { type: CoordType.BCS, x: 0, y: 0, z: 0 },
     speed: 5000,
     valid: false,
-    zOffset: 100,
+    zHover: 80,
+    zOffset: -20,
   };
+
   public itemsPickedByRobot: { [className: string]: number } = {};
   public cal = Robot.defaultCal;
 
@@ -570,18 +573,15 @@ export class Robot {
     return this.robot2BeltCoords(await this.getCoordsRCS());
   }
 
-  public async pick({ type, x, y, z }: BCoord | RCoord, zOffset = this.cal.zOffset) {
+  public async pick(coord: BCoord | RCoord, zOffset = this.cal.zOffset) {
     await this.openGripper();
+    const { type, x, y, z } = this.toRobotCoords(coord);
 
-    if (type === CoordType.BCS) {
-      await this.moveTo({ type, x, y, z: z + zOffset });
-    } else {
-      await this.moveTo({ type, x, y, z: z + zOffset });
-    }
+    await this.moveTo({ type, x, y, z: z + zOffset });
     await Util.delay(50);
     await this.closeGripper();
     await Util.delay(300);
-    await this.moveTo({ type: CoordType.RCS, x: 0, y: 0, z: -400 });
+    await this.moveTo({ type, x: x / 2, y, z: -400 });
   }
 
   public async place(coord: BCoord | RCoord) {
@@ -598,7 +598,7 @@ export class Robot {
     runningStopped: Subject<void>,
   ) {
     const predictTarget = () => {
-      const secs = (Conveyor.beltV * 1.5 > this.cal.speed * 60) ?
+      const secs = (Conveyor.beltV * 1.5 > this.cal.speed / 60) ?
         0 : // Robot is too slow.
         Vector.distance(item.xyz, this.coordBCS) / this.cal.speed * 60;
       return item.projectCoords(secs);
@@ -631,6 +631,7 @@ export class Robot {
           .takeUntil(runningStopped)
           .map(() => predictTarget())
           .do(targ => console.log(targ))
+          .takeWhile(targ => this.toRobotCoords(targ).x > -100)
           .first(targ => this.isInPickBoundary(targ))
           .toPromise();
       } else {
@@ -671,11 +672,12 @@ export class Robot {
     } catch (error) {
       console.error(error);
       item.destroy();
-      return;
+      return false;
     }
 
     item.destroy();
     console.log('DGA: Item Successful Pick Attempt');
+    return true;
   }
 
   public clearItemsPickedByRobot() {

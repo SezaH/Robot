@@ -236,21 +236,7 @@
       <div class="card mb-3">
         <h5 class="card-header">Robot Configuration</h5>
         <div class="card-body">
-          <div class="input-group mb-3">
-            <input id='robot-config-path-input'
-                   type="text"
-                   class="form-control"
-                   value="./config.json"
-                   placeholder="Configuration File">
-            <div class="input-group-append">
-              <button id="robot-config-browse-btn"
-                      class="btn btn-outline-secondary"
-                      type="button">Browse</button>
-              <button id="robot-config-load-btn"
-                      class="btn btn-outline-secondary"
-                      type="button">Load</button>
-            </div>
-          </div>
+          
           <div class="input-group mb-3">
             <div class="input-group-prepend">
               <span class="input-group-text">Robot Speed</span>
@@ -271,9 +257,18 @@
           </div>
           <div class="input-group mb-3">
             <div class="input-group-prepend">
+              <span class="input-group-text">Pick Z-Offset</span>
+            </div>
+            <input id='robot-Z-offset'
+                   type="number"
+                   class="form-control"
+                   placeholder="millimeters">
+          </div>
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
               <span class="input-group-text">Hover Z-Offset</span>
             </div>
-            <input id='robot-hover-Z-offset'
+            <input id='robot-Z-hover'
                    type="number"
                    class="form-control"
                    placeholder="millimeters">
