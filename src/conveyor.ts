@@ -104,6 +104,8 @@ export namespace Conveyor {
 
       // Limit the encoder fetches to a rate of 1000Hz max.
       fetchCounts.debounceTime(1).subscribe(() => port.write('\n'));
+      Observable.interval(50).subscribe(() => fetchCount());
+
       await fetchCounts.next();
     } catch (error) {
       console.error(error);

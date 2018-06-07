@@ -169,20 +169,17 @@ export class Robot {
   }
 
   public sendMessage(message: string) {
-    const retval = Util.timeout(
-      new Promise<string>((resolve, reject) => {
-        this.port.once('data', data => {
-          const str = data.toString();
-          if (str.includes('!!')) {
-            reject(new Error('ESTOP ENABLED'));
-          } else {
-            console.log(data.toString());
-            resolve(data.toString());
-          }
-        });
-      }),
-      200, // Messages timeout in 200ms
-    );
+    const retval = new Promise<string>((resolve, reject) => {
+      this.port.once('data', data => {
+        const str = data.toString();
+        if (str.includes('!!')) {
+          reject(new Error('ESTOP ENABLED'));
+        } else {
+          console.log(data.toString());
+          resolve(data.toString());
+        }
+      });
+    });
 
     this.port.write(message + '\r\n');
     console.log(message);

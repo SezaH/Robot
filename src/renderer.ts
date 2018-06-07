@@ -171,6 +171,11 @@ Conveyor.connectionLost.subscribe(() => {
   document.getElementById('encoder-status').classList.add('badge-danger');
 });
 
+Observable.merge(
+  robot.connectionLost,
+  Conveyor.connectionLost,
+).subscribe(() => runningStopped.next());
+
 let numOfEncoderCalibration = 0;
 let position1: number;
 let position2: number;
