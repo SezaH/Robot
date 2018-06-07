@@ -560,6 +560,14 @@ export class Robot {
     zOffsetPick: number,
     runningStopped: Subject<void>,
   ) {
+
+    // check if place location is valid, and if not, abort the pick
+    //
+    if (!this.isInDropBoundary(place)) {
+      console.log('drop not in boundary');
+      return;
+    }
+
     const predictTarget = () => {
       const secs = (Conveyor.beltV * 1.5 > this.cal.speed * 60) ?
         0 : // Robot is too slow.

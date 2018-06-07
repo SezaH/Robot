@@ -154,6 +154,7 @@ class Doc {
 // Doc.addClickListener('robot-connect-btn', () => robot.connect());
 // Doc.addClickListener('encoder-connect-btn', () => Conveyor.connect(Doc.getInputString('encoder-port'), 9600));
 
+
 // send message to robot
 // Doc.addClickListener('send-btn', async () => robot.sendMessage(Doc.getInputString('input-command')));
 
@@ -535,6 +536,7 @@ Doc.addClickListener('model-name-btn', async () => {
 
 Doc.addClickListener('label-map-btn', async () => {
   Doc.setInputValue('labelMap', await Util.getFilepath('Label map file', ['pbtxt']));
+
 });
 
 Doc.addClickListener('apply-model', () => {
