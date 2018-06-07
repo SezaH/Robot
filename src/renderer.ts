@@ -154,7 +154,6 @@ class Doc {
 // Doc.addClickListener('robot-connect-btn', () => robot.connect());
 // Doc.addClickListener('encoder-connect-btn', () => Conveyor.connect(Doc.getInputString('encoder-port'), 9600));
 
-
 // send message to robot
 // Doc.addClickListener('send-btn', async () => robot.sendMessage(Doc.getInputString('input-command')));
 
