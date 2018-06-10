@@ -41,6 +41,12 @@ export interface RobotCal {
       p3: RCoord,
     },
   };
+  dropPoints: {
+    p1: RCoord,
+    p2: RCoord,
+    p3: RCoord,
+    p4: RCoord,
+  };
   encoder: number;
   maxPick: BCoord;
   minPick: BCoord;
@@ -82,6 +88,12 @@ export class Robot {
         p2: { type: CoordType.RCS, x: 272, y: 142, z: -686 },
         p3: { type: CoordType.RCS, x: -207, y: 146, z: -703 },
       },
+    },
+    dropPoints: {
+      p1: { type: CoordType.RCS, x: 200, y: 600, z: -400 },
+      p2: { type: CoordType.RCS, x: -200, y: 600, z: -400 },
+      p3: { type: CoordType.RCS, x: 200, y: -600, z: -400 },
+      p4: { type: CoordType.RCS, x: -200, y: -600, z: -400 },
     },
     encoder: -1,
     maxPick: { type: CoordType.BCS, x: 0, y: 0, z: 0 },
