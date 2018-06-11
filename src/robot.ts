@@ -641,13 +641,16 @@ export class Robot {
     console.log('DGA: robot itemX: ', this.toRobotCoords(item.projectCoords(0)).x);
     console.log('DGA: robot targetX: ', this.toRobotCoords(target).x);
 
+    // rough center of robot from belt
+    const beltX = this.robot2BeltCoords({ type: CoordType.RCS, x: 0, y: 0, z: 0 }).x;
+
     try {
       if (!this.isInPickBoundary(target) && this.belt2RobotCoords(target).x > 0) {
         // if in front of robot
 
-        // move to most forward place on belt
+        // move to y location on belt
         // since the conveyor is a bit skewed with respect to the robot, need to adjust for that.
-        await this.moveTo({ type: CoordType.BCS, x: this.cal.minPick.x, y: item.y, z: item.z + zOffsetHover });
+        await this.moveTo({ type: CoordType.BCS, x: beltX, y: item.y, z: item.z + zOffsetHover });
 
         await item.coordsUpdated
           .takeUntil(runningStopped)
