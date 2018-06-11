@@ -398,13 +398,13 @@ export class Robot {
     return this.robot2BeltVector(coords);
   }
 
-  public async moveTo(coords: BCoord | RCoord, speed = this.cal.speed) {
+  public async moveTo(coords: BCoord | RCoord, speed = this.cal.speed, boundsCheck = true) {
     // cannot move to belt coordinates if not calibrated
-    if (!this.cal.valid && coords.type === CoordType.BCS) return;
+    if (!this.cal.valid && coords.type === CoordType.BCS) return null;
 
-    if (!this.isValidMove(this.coordRCS, coords)) {
+    if (boundsCheck && !this.isValidMove(this.coordRCS, coords)) {
       console.log('invalid move to: ', coords);
-      // return;
+      return null;
     }
 
     if (coords.type === CoordType.BCS) coords = this.belt2RobotCoords(coords);
@@ -548,7 +548,9 @@ export class Robot {
   }
 
   public async motorsOn() {
-    return this.sendMessage('M17');
+    await this.sendMessage('M17');
+    // need to get coords when motors on, or else problems later
+    await this.getCoordsRCS();
   }
 
   public async motorsOff() {

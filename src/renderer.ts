@@ -383,7 +383,7 @@ Doc.addClickListener('calibrate-btn', async () => {
 });
 
 function robotMoveTo() {
-  robot.moveTo({ type: CoordType.RCS, x: 0, y: 0, z: -400 }, 5000);
+  robot.moveTo({ type: CoordType.RCS, x: 0, y: 0, z: -400 }, 5000, false);
 }
 
 function robotOpenGripper() {
@@ -414,34 +414,107 @@ Doc.addClickListener('close-gripper-side-btn', robotCloseGripper);
 Doc.addClickListener('motor-on-side-btn', robotMotorsOn);
 Doc.addClickListener('motor-off-side-btn', robotMotorsOff);
 
+let continuousMove = false;
+
 document.getElementById('X+').addEventListener('mousedown', async () => {
-  const coords = robot.coordRCS;
-  await robot.moveTo({ type: CoordType.RCS, x: coords.x + 10, y: coords.y, z: coords.z }, 5000);
+  continuousMove = true;
+  while (continuousMove) {
+    const coords = robot.coordRCS;
+    await robot.moveTo({ type: CoordType.RCS, x: coords.x + 10, y: coords.y, z: coords.z }, 5000);
+    await Util.delay(10);
+  }
 });
 
 document.getElementById('X-').addEventListener('mousedown', async () => {
-  const coords = robot.coordRCS;
-  await robot.moveTo({ type: CoordType.RCS, x: coords.x - 10, y: coords.y, z: coords.z }, 5000);
+  continuousMove = true;
+  while (continuousMove) {
+    const coords = robot.coordRCS;
+    await robot.moveTo({ type: CoordType.RCS, x: coords.x - 10, y: coords.y, z: coords.z }, 5000);
+    await Util.delay(10);
+  }
 });
 
 document.getElementById('Y+').addEventListener('mousedown', async () => {
-  const coords = robot.coordRCS;
-  await robot.moveTo({ type: CoordType.RCS, x: coords.x, y: coords.y + 10, z: coords.z }, 5000);
+  continuousMove = true;
+  while (continuousMove) {
+    const coords = robot.coordRCS;
+    await robot.moveTo({ type: CoordType.RCS, x: coords.x, y: coords.y + 10, z: coords.z }, 5000);
+    await Util.delay(10);
+  }
 });
-
 document.getElementById('Y-').addEventListener('mousedown', async () => {
-  const coords = robot.coordRCS;
-  await robot.moveTo({ type: CoordType.RCS, x: coords.x, y: coords.y - 10, z: coords.z }, 5000);
+  continuousMove = true;
+  while (continuousMove) {
+    const coords = robot.coordRCS;
+    await robot.moveTo({ type: CoordType.RCS, x: coords.x, y: coords.y - 10, z: coords.z }, 5000);
+    await Util.delay(10);
+  }
 });
 
 document.getElementById('Z+').addEventListener('mousedown', async () => {
-  const coords = robot.coordRCS;
-  await robot.moveTo({ type: CoordType.RCS, x: coords.x, y: coords.y, z: coords.z + 10 }, 5000);
+  continuousMove = true;
+  while (continuousMove) {
+    const coords = robot.coordRCS;
+    await robot.moveTo({ type: CoordType.RCS, x: coords.x, y: coords.y, z: coords.z + 10 }, 5000);
+    await Util.delay(10);
+  }
 });
 
 document.getElementById('Z-').addEventListener('mousedown', async () => {
-  const coords = robot.coordRCS;
-  await robot.moveTo({ type: CoordType.RCS, x: coords.x, y: coords.y, z: coords.z - 10 }, 5000);
+  continuousMove = true;
+  while (continuousMove) {
+    const coords = robot.coordRCS;
+    await robot.moveTo({ type: CoordType.RCS, x: coords.x, y: coords.y, z: coords.z - 10 }, 5000);
+    await Util.delay(10);
+  }
+});
+
+document.getElementById('X+').addEventListener('mouseup', async () => {
+  continuousMove = false;
+});
+
+document.getElementById('X-').addEventListener('mouseup', async () => {
+  continuousMove = false;
+});
+
+document.getElementById('Y+').addEventListener('mouseup', async () => {
+  continuousMove = false;
+});
+
+document.getElementById('Y-').addEventListener('mouseup', async () => {
+  continuousMove = false;
+});
+
+document.getElementById('Z+').addEventListener('mouseup', async () => {
+  continuousMove = false;
+});
+
+document.getElementById('Z-').addEventListener('mouseup', async () => {
+  continuousMove = false;
+});
+
+document.getElementById('X+').addEventListener('mouseout', async () => {
+  continuousMove = false;
+});
+
+document.getElementById('X-').addEventListener('mouseout', async () => {
+  continuousMove = false;
+});
+
+document.getElementById('Y+').addEventListener('mouseout', async () => {
+  continuousMove = false;
+});
+
+document.getElementById('Y-').addEventListener('mouseout', async () => {
+  continuousMove = false;
+});
+
+document.getElementById('Z+').addEventListener('mouseout', async () => {
+  continuousMove = false;
+});
+
+document.getElementById('Z-').addEventListener('mouseout', async () => {
+  continuousMove = false;
 });
 
 const labels = new Map<number, string>();
