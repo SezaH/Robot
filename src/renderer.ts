@@ -300,7 +300,9 @@ Doc.addClickListener('apply-robot-config', async () => {
   robot.cal.zHover = Doc.getInputFloat('robot-Z-hover');
 });
 
-Doc.addClickListener('save-robot-config', () => saveCalibration());
+Doc.addClickListener('save-robot-config', () => {
+  saveCalibration();
+});
 
 Doc.addClickListener('point1-capture-btn', async () => {
   const coords = await robot.getCoordsRCS(10000);
@@ -335,7 +337,6 @@ Doc.addClickListener('drop1-capture-btn', async () => {
   Doc.setInnerHtml('drop1-x', coords.x);
   Doc.setInnerHtml('drop1-y', coords.y);
   Doc.setInnerHtml('drop1-z', coords.z);
-  isPointCaptured[0] = true;
 });
 
 Doc.addClickListener('drop2-capture-btn', async () => {
@@ -344,7 +345,6 @@ Doc.addClickListener('drop2-capture-btn', async () => {
   Doc.setInnerHtml('drop2-x', coords.x);
   Doc.setInnerHtml('drop2-y', coords.y);
   Doc.setInnerHtml('drop2-z', coords.z);
-  isPointCaptured[1] = true;
 });
 
 Doc.addClickListener('drop3-capture-btn', async () => {
@@ -353,7 +353,6 @@ Doc.addClickListener('drop3-capture-btn', async () => {
   Doc.setInnerHtml('drop3-x', coords.x);
   Doc.setInnerHtml('drop3-y', coords.y);
   Doc.setInnerHtml('drop3-z', coords.z);
-  isPointCaptured[2] = true;
 });
 
 Doc.addClickListener('drop4-capture-btn', async () => {
@@ -362,12 +361,37 @@ Doc.addClickListener('drop4-capture-btn', async () => {
   Doc.setInnerHtml('drop4-x', coords.x);
   Doc.setInnerHtml('drop4-y', coords.y);
   Doc.setInnerHtml('drop4-z', coords.z);
-  isPointCaptured[2] = true;
 });
 
 Doc.addClickListener('save-drop-config', async () => {
-  const calPath = Doc.getInputString('robot-config-path-input');
-  fs.outputFile(calPath, JSON.stringify(robot.cal));
+  robot.cal.dropPoints.p1 = robotDropPoints.p1;
+  robot.cal.dropPoints.p2 = robotDropPoints.p2;
+  robot.cal.dropPoints.p3 = robotDropPoints.p3;
+  robot.cal.dropPoints.p4 = robotDropPoints.p4;
+  saveCalibration();
+});
+
+// reset drop config to 4 corners
+Doc.addClickListener('reset-drop-config', async () => {
+  Doc.setInnerHtml('drop1-x', 200);
+  Doc.setInnerHtml('drop1-y', 600);
+  Doc.setInnerHtml('drop1-z', -400);
+  robotDropPoints.p1 = { type: CoordType.RCS, x: 200, y: 600, z: -400 };
+
+  Doc.setInnerHtml('drop2-x', 200);
+  Doc.setInnerHtml('drop2-y', -600);
+  Doc.setInnerHtml('drop2-z', -400);
+  robotDropPoints.p2 = { type: CoordType.RCS, x: 200, y: -600, z: -400 };
+
+  Doc.setInnerHtml('drop3-x', -200);
+  Doc.setInnerHtml('drop3-y', 600);
+  Doc.setInnerHtml('drop3-z', -400);
+  robotDropPoints.p3 = { type: CoordType.RCS, x: -200, y: 600, z: -400 };
+
+  Doc.setInnerHtml('drop4-x', -200);
+  Doc.setInnerHtml('drop4-y', -600);
+  Doc.setInnerHtml('drop4-z', -400);
+  robotDropPoints.p4 = { type: CoordType.RCS, x: -200, y: -600, z: -400 };
 });
 
 // calibrate
@@ -605,14 +629,6 @@ function getDropLocation(classId: number): RCoord {
   return { type: CoordType.RCS, x: NaN, y: NaN, z: NaN };
 
 }
-
-Doc.addClickListener('test-btn', () => {
-  for (const k of labels.keys()) {
-    const loc = getDropLocation(k);
-    console.log(loc);
-  }
-
-});
 
 Doc.addClickListener('start-model', async () => {
   if (!running && robot.isConnected && Conveyor.isConnected) {
