@@ -357,11 +357,20 @@ Doc.addClickListener('drop3-capture-btn', async () => {
 
 Doc.addClickListener('drop4-capture-btn', async () => {
   const coords = await robot.getCoordsRCS(10000);
-  robotDropPoints.p3 = coords;
+  robotDropPoints.p4 = coords;
   Doc.setInnerHtml('drop4-x', coords.x);
   Doc.setInnerHtml('drop4-y', coords.y);
   Doc.setInnerHtml('drop4-z', coords.z);
   isPointCaptured[2] = true;
+});
+
+Doc.addClickListener('apply-drop-config', async () => {
+  robot.cal.dropPoints = robotDropPoints;
+});
+
+Doc.addClickListener('save-drop-config', async () => {
+  const calPath = Doc.getInputString('robot-config-path-input');
+  fs.outputFile(calPath, JSON.stringify(robot.cal));
 });
 
 // calibrate
