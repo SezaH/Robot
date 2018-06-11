@@ -393,8 +393,6 @@ document.getElementById('Z-').addEventListener('mousedown', async () => {
   await robot.moveTo({ type: CoordType.RCS, x: coords.x, y: coords.y, z: coords.z - 10 }, 5000);
 });
 
-
-
 const labels = new Map<number, string>();
 
 /** Maps the class id to the class name */
@@ -455,7 +453,19 @@ Doc.addClickListener('apply-model', () => {
   addItemConfigs();
 });
 
+function getDropLocation(classId: number): RCoord {
+  const itemConfig = document.getElementById('item-' + classId);
+  const dropSelect = itemConfig.getElementsByTagName('select')[0] as HTMLSelectElement;
+  console.log('drop value:', dropSelect.value);
+  return { type: CoordType.RCS, x: NaN, y: NaN, z: NaN };
+}
 
+Doc.addClickListener('test-btn', () => {
+  for (const k of labels.keys()) {
+    getDropLocation(k);
+  }
+
+});
 
 Doc.addClickListener('start-model', async () => {
   if (!running) {
@@ -487,7 +497,7 @@ Doc.addClickListener('start-model', async () => {
       .takeUntil(runningStopped)
       .do(item => console.log('pick item ', item))
       .concatMap(async item =>
-        await robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 70, 0, runningStopped))
+        await robot.dynamicGrab(item, getDropLocation(item.classID), 70, 0, runningStopped))
       .subscribe(async i => {
         console.log('pick done', i);
         dynamicPick.next(await getNextItem());
