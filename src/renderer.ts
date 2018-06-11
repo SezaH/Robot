@@ -218,6 +218,24 @@ async function loadCalibration() {
   Doc.setInnerHtml('cal-y3', calPoints.p3.y);
   Doc.setInnerHtml('cal-z3', calPoints.p3.z);
 
+  const dropPoints = Conveyor.sysCal.robotConfigs[0].dropPoints;
+
+  Doc.setInnerHtml('drop1-x', dropPoints.p1.x);
+  Doc.setInnerHtml('drop1-y', dropPoints.p1.y);
+  Doc.setInnerHtml('drop1-z', dropPoints.p1.z);
+
+  Doc.setInnerHtml('drop2-x', dropPoints.p2.x);
+  Doc.setInnerHtml('drop2-y', dropPoints.p2.y);
+  Doc.setInnerHtml('drop2-z', dropPoints.p2.z);
+
+  Doc.setInnerHtml('drop3-x', dropPoints.p3.x);
+  Doc.setInnerHtml('drop3-y', dropPoints.p3.y);
+  Doc.setInnerHtml('drop3-z', dropPoints.p3.z);
+
+  Doc.setInnerHtml('drop4-x', dropPoints.p4.x);
+  Doc.setInnerHtml('drop4-y', dropPoints.p4.y);
+  Doc.setInnerHtml('drop4-z', dropPoints.p4.z);
+
   Doc.setInnerHtml('cal-encoder', Conveyor.sysCal.mmPerCount * 1000);
 
   Doc.setInnerHtml('robot-encoder', Conveyor.sysCal.robotConfigs[0].encoder);
@@ -276,6 +294,13 @@ const robotCalPoints: { p1: RCoord, p2: RCoord, p3: RCoord } = {
   p3: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
 };
 
+const robotDropPoints: { p1: RCoord, p2: RCoord, p3: RCoord, p4: RCoord } = {
+  p1: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+  p2: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+  p3: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+  p4: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+};
+
 Doc.addClickListener('point1-capture-btn', async () => {
   const coords = await robot.getCoordsRCS(10000);
   robotCalPoints.p1 = coords;
@@ -301,6 +326,51 @@ Doc.addClickListener('point3-capture-btn', async () => {
   Doc.setInnerHtml('cal-y3', coords.y);
   Doc.setInnerHtml('cal-z3', coords.z);
   isPointCaptured[2] = true;
+});
+
+Doc.addClickListener('drop1-capture-btn', async () => {
+  const coords = await robot.getCoordsRCS(10000);
+  robotDropPoints.p1 = coords;
+  Doc.setInnerHtml('drop1-x', coords.x);
+  Doc.setInnerHtml('drop1-y', coords.y);
+  Doc.setInnerHtml('drop1-z', coords.z);
+  isPointCaptured[0] = true;
+});
+
+Doc.addClickListener('drop2-capture-btn', async () => {
+  const coords = await robot.getCoordsRCS(10000);
+  robotDropPoints.p2 = coords;
+  Doc.setInnerHtml('drop2-x', coords.x);
+  Doc.setInnerHtml('drop2-y', coords.y);
+  Doc.setInnerHtml('drop2-z', coords.z);
+  isPointCaptured[1] = true;
+});
+
+Doc.addClickListener('drop3-capture-btn', async () => {
+  const coords = await robot.getCoordsRCS(10000);
+  robotDropPoints.p3 = coords;
+  Doc.setInnerHtml('drop3-x', coords.x);
+  Doc.setInnerHtml('drop3-y', coords.y);
+  Doc.setInnerHtml('drop3-z', coords.z);
+  isPointCaptured[2] = true;
+});
+
+Doc.addClickListener('drop4-capture-btn', async () => {
+  const coords = await robot.getCoordsRCS(10000);
+  robotDropPoints.p4 = coords;
+  Doc.setInnerHtml('drop4-x', coords.x);
+  Doc.setInnerHtml('drop4-y', coords.y);
+  Doc.setInnerHtml('drop4-z', coords.z);
+  isPointCaptured[2] = true;
+});
+
+Doc.addClickListener('apply-drop-config', async () => {
+  robot.cal.dropPoints = robotDropPoints;
+});
+
+Doc.addClickListener('save-drop-config', async () => {
+  const calPath = Doc.getInputString('robot-config-path-input');
+  fs.outputFile(calPath, JSON.stringify(robot.cal));
 });
 
 // calibrate
