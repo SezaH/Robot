@@ -296,7 +296,7 @@ function saveCalibration() {
 Doc.addClickListener('apply-robot-config', async () => {
   robot.cal.speed = Doc.getInputFloat('robot-config-speed');
   robot.setBeltWidth(Doc.getInputFloat('robot-belt-width'));
-  robot.cal.zOffset = Doc.getInputFloat('robot-Z-offset');
+  robot.setZoffsetPick(Doc.getInputFloat('robot-Z-offset'));
   robot.cal.zHover = Doc.getInputFloat('robot-Z-hover');
 });
 
