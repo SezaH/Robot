@@ -527,12 +527,27 @@ function getDropLocation(classId: number): RCoord {
   const itemConfig = document.getElementById('item-' + classId);
   const dropSelect = itemConfig.getElementsByTagName('select')[0] as HTMLSelectElement;
   console.log('drop value:', dropSelect.value);
+  const dropLoc = Number(dropSelect.value);
+  if (dropLoc === 1) {
+    return robotDropPoints.p1;
+  }
+  if (dropLoc === 2) {
+    return robotDropPoints.p2;
+  }
+  if (dropLoc === 3) {
+    return robotDropPoints.p3;
+  }
+  if (dropLoc === 4) {
+    return robotDropPoints.p4;
+  }
   return { type: CoordType.RCS, x: NaN, y: NaN, z: NaN };
+
 }
 
 Doc.addClickListener('test-btn', () => {
   for (const k of labels.keys()) {
-    getDropLocation(k);
+    const loc = getDropLocation(k);
+    console.log(loc);
   }
 
 });
