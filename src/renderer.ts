@@ -357,10 +357,6 @@ Doc.addClickListener('drop4-capture-btn', async () => {
   isPointCaptured[2] = true;
 });
 
-Doc.addClickListener('apply-drop-config', async () => {
-  robot.cal.dropPoints = robotDropPoints;
-});
-
 Doc.addClickListener('save-drop-config', async () => {
   const calPath = Doc.getInputString('robot-config-path-input');
   fs.outputFile(calPath, JSON.stringify(robot.cal));
@@ -476,10 +472,10 @@ async function readLabelMap() {
   const labelMap = await fs.readFile(sysConfig.model.labelMap, 'utf8');
   let match: RegExpExecArray;
   const labelRegex = /\bitem\s?{\s*id:\s?(\d+)\s*name:\s?'(\w+)'\s*}/gm;
-  let temp = match = labelRegex.exec(labelMap);
-  while (temp !== null) {
+  match = labelRegex.exec(labelMap);
+  while (match !== null) {
     labels.set(parseInt(match[1], 10), match[2]);
-    temp = match = labelRegex.exec(labelMap);
+    match = labelRegex.exec(labelMap);
   }
 
 }
@@ -499,12 +495,12 @@ Doc.addClickListener('label-map-btn', async () => {
 
 });
 
-Doc.addClickListener('apply-model', () => {
+Doc.addClickListener('apply-model', async () => {
   sysConfig.model.labelMap = Doc.getInputString('labelMap');
   sysConfig.model.name = Doc.getInputString('modelName');
   sysConfig.model.threshold = Doc.getInputString('threshold-percentage');
   clearItemConfigs();
-  readLabelMap();
+  await readLabelMap();
   addItemConfigs();
 });
 
