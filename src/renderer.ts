@@ -523,6 +523,42 @@ document.getElementById('Z-').addEventListener('mousedown', async () => {
 //   robot.moveTo({ type: CoordType.BCS, x, y, z });
 // });
 
+const labels = new Map<number, string>();
+
+/** Maps the class id to the class name */
+function addItemConfigs() {
+
+  for (const l of labels.keys()) {
+    const tempNode = document.getElementById('item-config-template').cloneNode(true) as HTMLDivElement;
+    tempNode.id = 'item-' + l;
+    tempNode.style.display = 'block';
+    tempNode.getElementsByTagName('p')[0].getElementsByTagName('span')[0].innerHTML = labels.get(l);
+    document.getElementById('item-configs').appendChild(tempNode);
+
+  }
+}
+
+function clearItemConfigs() {
+
+  const itemConfig = document.getElementById('item-configs');
+  while (itemConfig.firstChild) {
+    itemConfig.removeChild(itemConfig.firstChild);
+  }
+}
+
+async function readLabelMap() {
+  labels.clear();
+  const labelMap = await fs.readFile(sysConfig.model.labelMap, 'utf8');
+  let match: RegExpExecArray;
+  const labelRegex = /\bitem\s?{\s*id:\s?(\d+)\s*name:\s?'(\w+)'\s*}/gm;
+  let temp = match = labelRegex.exec(labelMap);
+  while (temp !== null) {
+    labels.set(parseInt(match[1], 10), match[2]);
+    temp = match = labelRegex.exec(labelMap);
+  }
+
+}
+
 Doc.addClickListener('origin-camera', async () => {
   Camera.origin();
   Conveyor.sysCal.cameraEncoder = await Conveyor.fetchCount();
@@ -542,7 +578,76 @@ Doc.addClickListener('apply-model', () => {
   sysConfig.model.labelMap = Doc.getInputString('labelMap');
   sysConfig.model.name = Doc.getInputString('modelName');
   sysConfig.model.threshold = Doc.getInputString('threshold-percentage');
+  clearItemConfigs();
+  readLabelMap();
+  addItemConfigs();
 });
+
+// var keys = Object.keys(movies); //get the keys.
+// var docFrag = document.createDocumentFragment();
+// for (var i = 0; i < keys.length; i++)
+// {
+//   var tempNode = document.querySelector("div[data-type='template']").cloneNode(true); //true for deep clone
+//   tempNode.querySelector("div.title").textContent = movies[keys[i]].title;
+//   tempNode.querySelector("img").src = movies[keys[i]].imageurl;
+//   tempNode.querySelector("button").onclick = window[movies[keys[i]].func];
+//   tempNode.querySelector("a").href = movies[keys[i]].details;
+//   tempNode.style.display = "block";
+//   document.body.appendChild(tempNode);
+
+// }
+// document.body.appendChild(docFrag);
+// delete docFrag;
+
+// function addDropItemInput(){
+//   const DropItemList = document.getElementById('drop-item-list') as HTMLUListElement;
+//   const li = document.createElement('li');
+//   li.appendChild()
+//   DropItemList.appendChild();
+// }
+
+// function clearDropItemInput(){
+//   document.getElementById('drop-item-list').d
+// }
+
+/**
+ * Reads and parses the label map file.
+ * Populates the label map
+ */
+// document.getElementById('label-map-browse-btn').addEventListener('click', async () => {
+//   const labelMapFileName = await Util.getFileName({ name: 'Label Map', extensions: ['pbtxt'] });
+//   const labelMap = await fs.readFile(labelMapFileName, 'utf8');
+
+//   let match: RegExpExecArray;
+//   const labelRegex = /\bitem\s?{\s*id:\s?(\d+)\s*name:\s?'(\w+)'\s*}/gm;
+//   labels.clear();
+//   // tslint:disable-next-line:no-conditional-assignment
+//   while ((match = labelRegex.exec(labelMap)) !== null) {
+//     labels.set(parseInt(match[1], 10), match[2]);
+//   }
+
+//   const labelList = document.getElementById('label-map-list') as HTMLUListElement;
+//   const labelFileNameInput = document.getElementById('label-map-filename') as HTMLInputElement;
+
+//   labelFileNameInput.value = labelMapFileName;
+
+//   labelList.innerHTML = '';
+//   labelSelect.innerHTML = '';
+
+//   // Populate the list in the modal.
+//   for (const [id, name] of labels) {
+//     const li = document.createElement('li');
+//     li.innerHTML = `${id}: ${name}`;
+//     li.classList.add('list-group-item');
+//     labelList.appendChild(li);
+
+//     const option = document.createElement('option');
+//     option.innerHTML = `${id}: ${name}`;
+//     option.value = id.toString();
+//     labelSelect.appendChild(option);
+//   }
+//   checkEnableStartLabelBtn();
+// });
 
 Doc.addClickListener('start-model', async () => {
   if (!running) {

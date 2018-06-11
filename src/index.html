@@ -421,26 +421,29 @@
             </tbody>
           </table>
 
-          <ul id="drop-item-list">
-            <li class="list-group">
-
-              item: cup
-              <select id="label-select"
-                class="custom-select"
-                style="max-width: 300px;">
-                <option>None</option>
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-              </select>
-            </li>
 
 
+          <!-- template for item list -->
+          <div style="display: none"
+               id="item-config-template">
+            <p class="card-text" name="item-p">Item:
+              <span name="item-name">cup</span>
+            </p>  
+            <select class="custom-select"
+                    style="max-width: 300px;">
+              <option>None</option>
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+            </select>
+            
+          </div>
 
 
-          </ul>
-
+          <!-- division holding items -->
+          <div id="item-configs">
+          </div>
 
         </div>
       </div>
