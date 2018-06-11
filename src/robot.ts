@@ -63,7 +63,7 @@ export class Robot {
       dropBoundary: {
         maxX: { scalar: 200, coord: CoordType.RCS },
         maxY: { scalar: 600, coord: CoordType.RCS },
-        maxZ: { scalar: -350, coord: CoordType.RCS },
+        maxZ: { scalar: -385, coord: CoordType.RCS },
         minX: { scalar: -200, coord: CoordType.RCS },
         minY: { scalar: -600, coord: CoordType.RCS },
         minZ: { scalar: -415, coord: CoordType.RCS },
@@ -732,9 +732,8 @@ export class Robot {
     this.cal.boundaries.pickBoundary.minY.scalar = (-1) * (beltWidth / 2);
   }
 
-
   public setZoffsetPick(zOffset: number) {
-    this.cal.boundaries.pickBoundary.minZ = {scalar: zOffset, coord: CoordType.BCS}
+    this.cal.boundaries.pickBoundary.minZ = { scalar: zOffset, coord: CoordType.BCS };
     this.cal.zOffset = zOffset;
   }
 }
