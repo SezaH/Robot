@@ -206,6 +206,19 @@ Doc.addClickListener('clean', () => {
   Doc.setInnerHtml('cal-encoder', Conveyor.sysCal.mmPerCount * 1000);
 });
 
+const robotCalPoints: { p1: RCoord, p2: RCoord, p3: RCoord } = {
+  p1: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+  p2: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+  p3: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+};
+
+const robotDropPoints: { p1: RCoord, p2: RCoord, p3: RCoord, p4: RCoord } = {
+  p1: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+  p2: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+  p3: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+  p4: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+};
+
 async function loadCalibration() {
   try {
     const rawData = await fs.readFile('./cal.json', 'utf8');
@@ -221,32 +234,40 @@ async function loadCalibration() {
   Doc.setInnerHtml('cal-x1', calPoints.p1.x);
   Doc.setInnerHtml('cal-y1', calPoints.p1.y);
   Doc.setInnerHtml('cal-z1', calPoints.p1.z);
+  // set global variable as well, so stuff works
+  robotCalPoints.p1 = calPoints.p1;
 
   Doc.setInnerHtml('cal-x2', calPoints.p2.x);
   Doc.setInnerHtml('cal-y2', calPoints.p2.y);
   Doc.setInnerHtml('cal-z2', calPoints.p2.z);
+  robotCalPoints.p2 = calPoints.p2;
 
   Doc.setInnerHtml('cal-x3', calPoints.p3.x);
   Doc.setInnerHtml('cal-y3', calPoints.p3.y);
   Doc.setInnerHtml('cal-z3', calPoints.p3.z);
+  robotCalPoints.p3 = calPoints.p3;
 
   const dropPoints = Conveyor.sysCal.robotConfig.dropPoints;
 
   Doc.setInnerHtml('drop1-x', dropPoints.p1.x);
   Doc.setInnerHtml('drop1-y', dropPoints.p1.y);
   Doc.setInnerHtml('drop1-z', dropPoints.p1.z);
+  robotDropPoints.p1 = dropPoints.p1;
 
   Doc.setInnerHtml('drop2-x', dropPoints.p2.x);
   Doc.setInnerHtml('drop2-y', dropPoints.p2.y);
   Doc.setInnerHtml('drop2-z', dropPoints.p2.z);
+  robotDropPoints.p2 = dropPoints.p2;
 
   Doc.setInnerHtml('drop3-x', dropPoints.p3.x);
   Doc.setInnerHtml('drop3-y', dropPoints.p3.y);
   Doc.setInnerHtml('drop3-z', dropPoints.p3.z);
+  robotDropPoints.p3 = dropPoints.p3;
 
   Doc.setInnerHtml('drop4-x', dropPoints.p4.x);
   Doc.setInnerHtml('drop4-y', dropPoints.p4.y);
   Doc.setInnerHtml('drop4-z', dropPoints.p4.z);
+  robotDropPoints.p4 = dropPoints.p4;
 
   Doc.setInnerHtml('cal-encoder', Conveyor.sysCal.mmPerCount * 1000);
 
@@ -280,19 +301,6 @@ Doc.addClickListener('apply-robot-config', async () => {
 });
 
 Doc.addClickListener('save-robot-config', () => saveCalibration());
-
-const robotCalPoints: { p1: RCoord, p2: RCoord, p3: RCoord } = {
-  p1: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
-  p2: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
-  p3: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
-};
-
-const robotDropPoints: { p1: RCoord, p2: RCoord, p3: RCoord, p4: RCoord } = {
-  p1: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
-  p2: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
-  p3: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
-  p4: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
-};
 
 Doc.addClickListener('point1-capture-btn', async () => {
   const coords = await robot.getCoordsRCS(10000);
