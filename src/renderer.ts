@@ -230,6 +230,24 @@ async function loadCalibration() {
   Doc.setInnerHtml('cal-y3', calPoints.p3.y);
   Doc.setInnerHtml('cal-z3', calPoints.p3.z);
 
+  const dropPoints = Conveyor.sysCal.robotConfig.dropPoints;
+
+  Doc.setInnerHtml('drop1-x', dropPoints.p1.x);
+  Doc.setInnerHtml('drop1-y', dropPoints.p1.y);
+  Doc.setInnerHtml('drop1-z', dropPoints.p1.z);
+
+  Doc.setInnerHtml('drop2-x', dropPoints.p2.x);
+  Doc.setInnerHtml('drop2-y', dropPoints.p2.y);
+  Doc.setInnerHtml('drop2-z', dropPoints.p2.z);
+
+  Doc.setInnerHtml('drop3-x', dropPoints.p3.x);
+  Doc.setInnerHtml('drop3-y', dropPoints.p3.y);
+  Doc.setInnerHtml('drop3-z', dropPoints.p3.z);
+
+  Doc.setInnerHtml('drop4-x', dropPoints.p4.x);
+  Doc.setInnerHtml('drop4-y', dropPoints.p4.y);
+  Doc.setInnerHtml('drop4-z', dropPoints.p4.z);
+
   Doc.setInnerHtml('cal-encoder', Conveyor.sysCal.mmPerCount * 1000);
 
   Doc.setInnerHtml('robot-encoder', Conveyor.sysCal.robotConfig.encoder);
@@ -269,6 +287,13 @@ const robotCalPoints: { p1: RCoord, p2: RCoord, p3: RCoord } = {
   p3: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
 };
 
+const robotDropPoints: { p1: RCoord, p2: RCoord, p3: RCoord, p4: RCoord } = {
+  p1: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+  p2: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+  p3: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+  p4: { type: CoordType.RCS, x: 0, y: 0, z: 0 },
+};
+
 Doc.addClickListener('point1-capture-btn', async () => {
   const coords = await robot.getCoordsRCS(10000);
   robotCalPoints.p1 = coords;
@@ -294,6 +319,51 @@ Doc.addClickListener('point3-capture-btn', async () => {
   Doc.setInnerHtml('cal-y3', coords.y);
   Doc.setInnerHtml('cal-z3', coords.z);
   isPointCaptured[2] = true;
+});
+
+Doc.addClickListener('drop1-capture-btn', async () => {
+  const coords = await robot.getCoordsRCS(10000);
+  robotDropPoints.p1 = coords;
+  Doc.setInnerHtml('drop1-x', coords.x);
+  Doc.setInnerHtml('drop1-y', coords.y);
+  Doc.setInnerHtml('drop1-z', coords.z);
+  isPointCaptured[0] = true;
+});
+
+Doc.addClickListener('drop2-capture-btn', async () => {
+  const coords = await robot.getCoordsRCS(10000);
+  robotDropPoints.p2 = coords;
+  Doc.setInnerHtml('drop2-x', coords.x);
+  Doc.setInnerHtml('drop2-y', coords.y);
+  Doc.setInnerHtml('drop2-z', coords.z);
+  isPointCaptured[1] = true;
+});
+
+Doc.addClickListener('drop3-capture-btn', async () => {
+  const coords = await robot.getCoordsRCS(10000);
+  robotDropPoints.p3 = coords;
+  Doc.setInnerHtml('drop3-x', coords.x);
+  Doc.setInnerHtml('drop3-y', coords.y);
+  Doc.setInnerHtml('drop3-z', coords.z);
+  isPointCaptured[2] = true;
+});
+
+Doc.addClickListener('drop4-capture-btn', async () => {
+  const coords = await robot.getCoordsRCS(10000);
+  robotDropPoints.p4 = coords;
+  Doc.setInnerHtml('drop4-x', coords.x);
+  Doc.setInnerHtml('drop4-y', coords.y);
+  Doc.setInnerHtml('drop4-z', coords.z);
+  isPointCaptured[2] = true;
+});
+
+Doc.addClickListener('apply-drop-config', async () => {
+  robot.cal.dropPoints = robotDropPoints;
+});
+
+Doc.addClickListener('save-drop-config', async () => {
+  const calPath = Doc.getInputString('robot-config-path-input');
+  fs.outputFile(calPath, JSON.stringify(robot.cal));
 });
 
 // calibrate
@@ -378,6 +448,42 @@ document.getElementById('Z-').addEventListener('mousedown', async () => {
   await robot.moveTo({ type: CoordType.RCS, x: coords.x, y: coords.y, z: coords.z - 10 }, 5000);
 });
 
+const labels = new Map<number, string>();
+
+/** Maps the class id to the class name */
+function addItemConfigs() {
+
+  for (const l of labels.keys()) {
+    const tempNode = document.getElementById('item-config-template').cloneNode(true) as HTMLDivElement;
+    tempNode.id = 'item-' + l;
+    tempNode.style.display = 'block';
+    tempNode.getElementsByTagName('p')[0].getElementsByTagName('span')[0].innerHTML = labels.get(l);
+    document.getElementById('item-configs').appendChild(tempNode);
+
+  }
+}
+
+function clearItemConfigs() {
+
+  const itemConfig = document.getElementById('item-configs');
+  while (itemConfig.firstChild) {
+    itemConfig.removeChild(itemConfig.firstChild);
+  }
+}
+
+async function readLabelMap() {
+  labels.clear();
+  const labelMap = await fs.readFile(sysConfig.model.labelMap, 'utf8');
+  let match: RegExpExecArray;
+  const labelRegex = /\bitem\s?{\s*id:\s?(\d+)\s*name:\s?'(\w+)'\s*}/gm;
+  let temp = match = labelRegex.exec(labelMap);
+  while (temp !== null) {
+    labels.set(parseInt(match[1], 10), match[2]);
+    temp = match = labelRegex.exec(labelMap);
+  }
+
+}
+
 Doc.addClickListener('origin-camera', async () => {
   Camera.origin();
   Conveyor.sysCal.cameraEncoder = await Conveyor.fetchCount();
@@ -390,12 +496,45 @@ Doc.addClickListener('model-name-btn', async () => {
 
 Doc.addClickListener('label-map-btn', async () => {
   Doc.setInputValue('labelMap', await Util.getFilepath('Label map file', ['pbtxt']));
+
 });
 
 Doc.addClickListener('apply-model', () => {
   sysConfig.model.labelMap = Doc.getInputString('labelMap');
   sysConfig.model.name = Doc.getInputString('modelName');
   sysConfig.model.threshold = Doc.getInputString('threshold-percentage');
+  clearItemConfigs();
+  readLabelMap();
+  addItemConfigs();
+});
+
+function getDropLocation(classId: number): RCoord {
+  const itemConfig = document.getElementById('item-' + classId);
+  const dropSelect = itemConfig.getElementsByTagName('select')[0] as HTMLSelectElement;
+  console.log('drop value:', dropSelect.value);
+  const dropLoc = Number(dropSelect.value);
+  if (dropLoc === 1) {
+    return robotDropPoints.p1;
+  }
+  if (dropLoc === 2) {
+    return robotDropPoints.p2;
+  }
+  if (dropLoc === 3) {
+    return robotDropPoints.p3;
+  }
+  if (dropLoc === 4) {
+    return robotDropPoints.p4;
+  }
+  return { type: CoordType.RCS, x: NaN, y: NaN, z: NaN };
+
+}
+
+Doc.addClickListener('test-btn', () => {
+  for (const k of labels.keys()) {
+    const loc = getDropLocation(k);
+    console.log(loc);
+  }
+
 });
 
 Doc.addClickListener('start-model', async () => {
@@ -428,10 +567,9 @@ Doc.addClickListener('start-model', async () => {
       .takeUntil(runningStopped)
       .do(item => console.log('pick item ', item))
       .concatMap(async item =>
-        await robot.dynamicGrab(item, { type: CoordType.RCS, x: 0, y: 600, z: -400 }, 70, 0, runningStopped))
-      .subscribe(async succ => {
-        if (!succ) queue.clear();
-        console.log('pick done');
+        await robot.dynamicGrab(item, getDropLocation(item.classID), 70, 0, runningStopped))
+      .subscribe(async i => {
+        console.log('pick done', i);
         dynamicPick.next(await getNextItem());
       });
 

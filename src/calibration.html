@@ -28,7 +28,7 @@
 
     <div class="collapse navbar-collapse"
          id="navbarSupportedContent">
-      <ul class="nav navbar-nav mr-5"
+      <ul class="nav navbar-nav mr-auto"
           id="pills-tab"
           role="tablist">
         <li class="nav-item">
@@ -59,10 +59,6 @@
              aria-selected="false">Run</a>
         </li>
       </ul>
-      <span id="robot-status"
-            class="badge badge-secondary mr-3">Robot</span>
-      <span id="encoder-status"
-            class="badge badge-secondary mr-auto">Encoder</span>
       <button id="sidebar-toggle"
               class="btn btn-sm btn-outline-secondary my-1">
         <span class="navbar-toggler-icon"></span>
@@ -86,16 +82,45 @@
         </div>
       </div>
 
+      <!-- Load calibration -->
+      <div class="input-group input-group-lg mb-3">
+        <input id='cal-path-input'
+               type="text"
+               class="form-control"
+               value="./cal.json"
+               placeholder="Configuration File">
+        <div class="input-group-append">
+          <button id="cal-browse-btn"
+                  class="btn btn-outline-secondary"
+                  type="button">Browse</button>
+          <button id="cal-load-btn"
+                  class="btn btn-outline-secondary"
+                  type="button">Load</button>
+        </div>
+      </div>
+
       <!-- Encoder Calibration -->
       <div class="card mb-3">
         <h5 class="card-header">Encoder</h5>
         <div class="card-body">
 
+          <div class="input-group mb-3">
+            <input id='encoder-port'
+                   type="text"
+                   class="form-control"
+                   placeholder="Serial Port">
+            <div class="input-group-append">
+              <button id="encoder-connect-btn"
+                      class="btn btn-outline-secondary"
+                      type="button">Connect</button>
+            </div>
+          </div>
+
           <p class="card-text">&mu;m/count:
             <span id="cal-encoder">0</span>
           </p>
 
-          <div class="input-group mt-3">
+          <div class="input-group my-3">
             <div class="input-group-prepend">
               <button id="position1"
                       class="btn btn-outline-secondary">Position 1</button>
@@ -105,7 +130,7 @@
             <input id="distance"
                    class="form-control"
                    placeholder="Distance mm">
-            <div class="input-group-append">
+            <div class="input-group-prepend">
               <button id="ratio"
                       type="button"
                       class="btn btn-outline-secondary">Next</button>
@@ -136,6 +161,19 @@
       <div class="card mb-3">
         <h5 class="card-header">Robot</h5>
         <div class="card-body">
+
+          <div class="input-group mb-3">
+            <input id='robot-port'
+                   type="text"
+                   class="form-control"
+                   placeholder="Serial Port">
+            <div class="input-group-append">
+              <button id="robot-connect-btn"
+                      class="btn btn-outline-secondary"
+                      type="button">Connect</button>
+            </div>
+          </div>
+
 
           <button id="home-btn"
                   class="btn btn-outline-secondary mb-3"
@@ -232,76 +270,26 @@
         </div>
       </div>
 
-      <!-- Robot config -->
-      <div class="card mb-3">
-        <h5 class="card-header">Robot Configuration</h5>
-        <div class="card-body">
-          
-          <div class="input-group mb-3">
-            <div class="input-group-prepend">
-              <span class="input-group-text">Robot Speed</span>
-            </div>
-            <input id='robot-config-speed'
-                   type="text"
-                   class="form-control"
-                   placeholder="mm/min">
-          </div>
-          <div class="input-group mb-3">
-            <div class="input-group-prepend">
-              <span class="input-group-text">Belt Width</span>
-            </div>
-            <input id='robot-belt-width'
-                   type="number"
-                   class="form-control"
-                   placeholder="millimeters">
-          </div>
-          <div class="input-group mb-3">
-            <div class="input-group-prepend">
-              <span class="input-group-text">Pick Z-Offset</span>
-            </div>
-            <input id='robot-Z-offset'
-                   type="number"
-                   class="form-control"
-                   placeholder="millimeters">
-          </div>
-          <div class="input-group mb-3">
-            <div class="input-group-prepend">
-              <span class="input-group-text">Hover Z-Offset</span>
-            </div>
-            <input id='robot-Z-hover'
-                   type="number"
-                   class="form-control"
-                   placeholder="millimeters">
-          </div>
-          <!-- <div class="input-group mb-3">
-              <div class="input-group-prepend">
-                <span class="input-group-text">Wall Z-Offset</span>
-              </div>
-            <input id='robot-wall-Z-offset'
-                   type="number"
-                   class="form-control"
-                   placeholder="millimeters">
-          </div>
-          <div class="input-group mb-3">
-              <div class="input-group-prepend">
-                <span class="input-group-text">Gripper Z-Offset</span>
-              </div>
-            <input id='robot-gripper-Z-offset'
-                   type="number"
-                   class="form-control"
-                   placeholder="millimeters">
-          </div> -->
 
-          <button id="apply-robot-config"
-                  class="btn btn-primary"
-                  type="button">Apply</button>
-          <button id="save-robot-config"
-                  class="btn btn-primary"
-                  type="button">Save</button>
+
+      <!-- Load config -->
+      <div class="input-group input-group-lg mb-3">
+        <input id='config-path-input'
+               type="text"
+               class="form-control"
+               value="./config.json"
+               placeholder="Configuration File">
+        <div class="input-group-append">
+          <button id="config-browse-btn"
+                  class="btn btn-outline-secondary"
+                  type="button">Browse</button>
+          <button id="config-load-btn"
+                  class="btn btn-outline-secondary"
+                  type="button">Load</button>
         </div>
-      </div>
+      </div>      
 
-      <!-- MODEL -->
+      <!-- Model config -->
       <div class="card mb-3">
         <h5 class="card-header">Model Configuration</h5>
         <div class="card-body">
@@ -343,104 +331,32 @@
         </div>
       </div>
 
-
-      <!-- Item Config -->
+      <!-- Place config -->
       <div class="card mb-3">
-        <h5 class="card-header">Item Drop Configuration</h5>
+        <h5 class="card-header">Drop Configuration</h5>
         <div class="card-body">
-          <h6 class="card-header">Drop Locations</h6>
-          <table class="table table-sm table-bordered">
-            <thead>
-              <tr>
-                <th scope="col">Drop #</th>
-                <th scope="col">X</th>
-                <th scope="col">Y</th>
-                <th scope="col">Z</th>
-                <th scope="col"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th scope="row">1</th>
-                <td id="drop1-x">0</td>
-                <td id="drop1-y">0</td>
-                <td id="drop1-z">0</td>
-                <td>
-                  <button id="drop1-capture-btn"
-                          class="btn btn-outline-primary w-100 btn-sm my-0"
-                          type="button">Capture</button>
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">2</th>
-                <td id="drop2-x">0</td>
-                <td id="drop2-y">0</td>
-                <td id="drop2-z">0</td>
-                <td>
-                  <button id="drop2-capture-btn"
-                          class="btn btn-outline-primary w-100 btn-sm my-0"
-                          type="button">Capture</button>
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">3</th>
-                <td id="drop3-x">0</td>
-                <td id="drop3-y">0</td>
-                <td id="drop3-z">0</td>
-                <td>
-                  <button id="drop3-capture-btn"
-                          class="btn btn-outline-primary w-100 btn-sm my-0"
-                          type="button">Capture</button>
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">4</th>
-                <td id="drop4-x">0</td>
-                <td id="drop4-y">0</td>
-                <td id="drop4-z">0</td>
-                <td>
-                  <button id="drop4-capture-btn"
-                          class="btn btn-outline-primary w-100 btn-sm my-0"
-                          type="button">Capture</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <button id="apply-drop-config"
+          <div class="input-group mb-3", id='drop-locations'>
+            <input id='threshold-percentage'
+                   type="text"
+                   class="form-control"
+                   placeholder="Threshold %">
+          </div>
+
+          <button id="add-drop-location"
                   class="btn btn-primary"
-                  type="button">Apply</button>
-          <button id="save-drop-config"
+                  type="button">Add</button>
+          <button id="save-drop-locations"
                   class="btn btn-primary"
                   type="button">Save</button>
-
-
-
-          <!-- template for item list -->
-          <div style="display: none"
-               id="item-config-template">
-            <p class="card-text" name="item-p">Item:
-              <span name="item-name">cup</span>
-            </p>  
-            <select class="custom-select"
-                    style="max-width: 300px;">
-              <option>None</option>
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-              <option>4</option>
-            </select>
-            
-          </div>
-
-          <button id="test-btn">test</button>
-
-          <!-- division holding items -->
-          <div id="item-configs">
-          </div>
-
         </div>
       </div>
 
+      <!-- MODEL -->
+
+
+
+      <button id="config-save-btn"
+              class="btn btn-primary w-100 btn-lg mb-3">Save</button>
 
     </div>
 
@@ -465,6 +381,24 @@
                  aria-controls="split-stream"
                  aria-selected="true">Split</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link"
+                 id="live-stream-tab"
+                 data-toggle="tab"
+                 href="#live-stream"
+                 role="tab"
+                 aria-controls="live-stream"
+                 aria-selected="false">Live</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link"
+                 id="labeled-stream-tab"
+                 data-toggle="tab"
+                 href="#labeled-stream"
+                 role="tab"
+                 aria-controls="labeled-stream"
+                 aria-selected="false">Labeled</a>
+            </li>
           </ul>
         </div>
         <div class="card-body">
@@ -487,6 +421,16 @@
                 </div>
               </div>
             </div>
+
+            <div class="tab-pane fade"
+                 id="live-stream"
+                 role="tabpanel"
+                 aria-labelledby="live-stream-tab">B</div>
+
+            <div class="tab-pane fade"
+                 id="labeled-stream"
+                 role="tabpanel"
+                 aria-labelledby="labeled-stream-tab">C</div>
           </div>
         </div>
       </div>
@@ -506,7 +450,7 @@
         <div class="col-6">
           <button id="one-dynamic-grab-btn"
                   class="btn btn-success w-100 btn-lg">Single Grab Fake</button>
-        </div>
+        </div>  
               <div class="col-6">
           <button id="one-dynamic-grab2-btn"
                   class="btn btn-success w-100 btn-lg">Single Grab Real</button>
@@ -540,59 +484,28 @@
        class="container">
     <div class="row mt-3">
       <div class="col">
-        <button id="home-side-btn"
-                class="btn btn-outline-info mb-3 w-100"
+        <button id="home-btn"
+                class="btn btn-outline-secondary mb-3"
                 type="button">Home</button>
 
-        <button id="open-gripper-side-btn"
-                class="btn btn-outline-info mb-3 w-100"
+        <button id="open-gripper-btn"
+                class="btn btn-outline-secondary mb-3"
                 type="button">Open Gripper</button>
 
-        <button id="close-gripper-side-btn"
-                class="btn btn-outline-info mb-3 w-100"
+        <button id="close-gripper-btn"
+                class="btn btn-outline-secondary mb-3"
                 type="button">Close Gripper</button>
 
-        <button id="motor-on-side-btn"
-                class="btn btn-outline-info mb-3 w-100"
+        <button id="motor-on-btn"
+                class="btn btn-outline-secondary mb-3"
                 type="button">Motors On</button>
 
-        <button id="motor-off-side-btn"
-                class="btn btn-outline-info mb-3 w-100"
+        <button id="motor-off-btn"
+                class="btn btn-outline-secondary mb-3"
                 type="button">Motors Off</button>
       </div>
     </div>
-    <div class="row">
-      <div class="col control d-flex">
-        <button id="X+"
-                class="btn btn-info mb-3 mr-3"
-                type="button">X +</button>
-
-        <button id="Y+"
-                class="btn btn-info mb-3 mr-3"
-                type="button">Y +</button>
-
-        <button id="Z+"
-                class="btn btn-info mb-3 "
-                type="button">Z +</button>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col control d-flex">
-        <button id="X-"
-                class="btn btn-info mb-3 mr-3"
-                type="button">X -</button>
-
-        <button id="Y-"
-                class="btn btn-info mb-3 mr-3"
-                type="button">Y -</button>
-
-        <button id="Z-"
-                class="btn btn-info mb-3 "
-                type="button">Z -</button>
-      </div>
-    </div>
   </div>
-
 
   <script>var exports = {};</script>
   <script src="./node_modules/jquery/dist/jquery.slim.min.js"
