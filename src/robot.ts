@@ -398,7 +398,7 @@ export class Robot {
     return this.robot2BeltVector(coords);
   }
 
-  public async moveTo(coords: BCoord | RCoord, speed = this.cal.speed, boundsCheck = true) {
+  public async moveTo(coords: BCoord | RCoord, speed = this.cal.speed, boundsCheck = false) {
     // cannot move to belt coordinates if not calibrated
     if (!this.cal.valid && coords.type === CoordType.BCS) return null;
 
