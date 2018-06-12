@@ -376,22 +376,22 @@ Doc.addClickListener('reset-drop-config', async () => {
   Doc.setInnerHtml('drop1-x', 200);
   Doc.setInnerHtml('drop1-y', 550);
   Doc.setInnerHtml('drop1-z', -400);
-  robotDropPoints.p1 = { type: CoordType.RCS, x: 200, y: 600, z: -400 };
+  robotDropPoints.p1 = { type: CoordType.RCS, x: 200, y: 550, z: -400 };
 
   Doc.setInnerHtml('drop2-x', 200);
   Doc.setInnerHtml('drop2-y', -550);
   Doc.setInnerHtml('drop2-z', -400);
-  robotDropPoints.p2 = { type: CoordType.RCS, x: 200, y: -600, z: -400 };
+  robotDropPoints.p2 = { type: CoordType.RCS, x: 200, y: -550, z: -400 };
 
   Doc.setInnerHtml('drop3-x', -200);
   Doc.setInnerHtml('drop3-y', 550);
   Doc.setInnerHtml('drop3-z', -400);
-  robotDropPoints.p3 = { type: CoordType.RCS, x: -200, y: 600, z: -400 };
+  robotDropPoints.p3 = { type: CoordType.RCS, x: -200, y: 550, z: -400 };
 
   Doc.setInnerHtml('drop4-x', -200);
   Doc.setInnerHtml('drop4-y', -550);
   Doc.setInnerHtml('drop4-z', -400);
-  robotDropPoints.p4 = { type: CoordType.RCS, x: -200, y: -600, z: -400 };
+  robotDropPoints.p4 = { type: CoordType.RCS, x: -200, y: -550, z: -400 };
 });
 
 // calibrate
