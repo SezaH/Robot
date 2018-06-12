@@ -62,10 +62,10 @@ export class Robot {
     boundaries: {
       dropBoundary: {
         maxX: { scalar: 200, coord: CoordType.RCS },
-        maxY: { scalar: 600, coord: CoordType.RCS },
+        maxY: { scalar: 550, coord: CoordType.RCS },
         maxZ: { scalar: -385, coord: CoordType.RCS },
         minX: { scalar: -200, coord: CoordType.RCS },
-        minY: { scalar: -600, coord: CoordType.RCS },
+        minY: { scalar: -550, coord: CoordType.RCS },
         minZ: { scalar: -415, coord: CoordType.RCS },
       },
       pickBoundary: {
@@ -642,7 +642,7 @@ export class Robot {
     console.log('DGA: robot targetX: ', this.toRobotCoords(target).x);
 
     // rough center of robot from belt
-    const beltX = this.robot2BeltCoords({ type: CoordType.RCS, x: 0, y: 0, z: 0 }).x;
+    const beltX = this.robot2BeltCoords({ type: CoordType.RCS, x: 90, y: 0, z: 0 }).x;
 
     try {
       if (!this.isInPickBoundary(target) && this.belt2RobotCoords(target).x > 0) {
