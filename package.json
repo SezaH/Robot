@@ -40,7 +40,7 @@
     "@types/mathjs": "^3.20.0",
     "@types/serialport": "^6.0.1",
     "copyfiles": "^2.0.0",
-    "electron": "2.0.0-beta.8",
+    "electron": "15.5.5",
     "electron-builder": "^20.15.1",
     "electron-rebuild": "^1.7.3",
     "electron-reload": "^1.2.2",
